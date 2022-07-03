@@ -1,0 +1,92 @@
+#!/bin/bash
+
+echo ---- Information extractor ----
+echo
+read -p 'How would you like to call the output directory? ' dir_name
+
+mkdir ../"$dir_name"
+
+cp -R -u -p //gpfs0/gaus/users/barkais/home/obabel/build/bin/obabel .
+
+./obabel *.log -omol2 -m --gen3d
+
+for file in *.mol2
+do
+	clean_name=$(basename $file .mol2)
+	cat $file | grep @\<TRIPOS\>ATOM -A 1000 | grep @\<TRIPOS\>BOND -B 1000 | head -n -1 | tail -n +2 | awk '{ print $6 }' > atypes_"$clean_name".csv
+	
+	rm "$clean_name".mol2
+done
+
+rm obabel
+
+for file in *.log
+do
+	echo
+	echo 'Extracting information for '  $file
+	echo
+
+	clean_name=$(basename $file .log)
+
+	tac $file | grep -m 1 'Summary of' -B 10000 | grep '* Total *' -A 10000 | tac | grep -A 10000 '^ -' | grep -B 10000 '^ =' -v | grep -v '^ -' | head -n -2 | awk '{print $3}' > nbo_"$clean_name".csv
+
+	tac $file | grep -m 1 'Dipole moment (field-independent basis, Debye):' -B 1 | tac | tail -n 1 | awk '{ print $2 , $4 , $6 , $8 }' | sed -e 's/\s\+/,/g' > dipole_moment_"$clean_name".csv
+	
+	symm_check=$( grep 'Symmetry turned off by external request.' $file | wc -l )
+
+	if [ "$symm_check" -eq 0 ]
+	then
+
+		tac $file | grep -m 1 'Standard orientation' -B 1000 | grep '^ --' -A 1000 | tac | grep -E '[[:digit:]]' | awk '{ print $2,  $4 , $5 , $6 }' | sed -e 's/\s\+/,/g' > standard_orientation_"$clean_name".csv
+	else
+
+		tac $file | grep -F '1\1\' -m 1 -B 100000 | grep -F '@' -A 100000 | tac | tr -d '\n' | tr -d "[:blank:]" | tr '\' '\n' | grep Title -A 1000 | grep Version -B 1000 | grep , | tail -n +2 > standard_orientation_"$clean_name".csv
+	
+	fi
+	grep -A3000 -m1 'Optimized Parameters' $file | grep -B1000 -m1 '\*' | grep ' ! R' | awk -F"[()]" '{print $2}' > bonds_"$clean_name".csv
+
+	grep -A100000 Harmonic $file | grep -B100000 Thermochemistry > full_"$clean_name".csv
+	
+
+	egrep '^ {15}|^ Freq*|^ IR ' full_"$clean_name".csv > info_"$clean_name".csv
+	
+	if [ "$symm_check" -eq 0 ]
+        then
+		lines=$(tac $file | grep -m 1 'Standard orientation' -B 1000 | grep '^ -' -A 1000 | tac | grep -E '[[:digit:]]' | awk '{ print $2,  $4 , $5 , $6 }' | sed -e 's/\s\+/,/g' | wc -l)
+		anums=$(seq $lines)
+	else
+                lines=$(tac $file | grep -F '1\1\' -m 1 -B 100000 | grep -F '@' -A 100000 | tac | tr -d '\n' | tr -d "[:blank:]" | tr '\' '\n' | grep Title -A 1000 | grep Version -B 1000 | grep , | tail -n +2 | wc -l)
+                anums=$(seq $lines)
+	fi
+
+	for num in $anums
+	do
+        	egrep "^ {2,7}\<$num\>" full_"$clean_name".csv > vib_"$num"_"$clean_name".csv
+	done
+
+	echo
+
+	tac $file | grep -m 1 'Dipole polarizability' -B 100 | grep 'aniso' -A 100 | tac > Pol_"$clean_name".csv
+
+	mkdir "$clean_name"
+	
+	mv atypes_"$clean_name".csv "$clean_name"
+	mv info_"$clean_name".csv "$clean_name"
+	mv vib_*_"$clean_name".csv "$clean_name"
+	mv bonds_"$clean_name".csv "$clean_name"
+	mv nbo_"$clean_name".csv "$clean_name"
+	mv dipole_moment_"$clean_name".csv "$clean_name"
+	mv standard_orientation_"$clean_name".csv "$clean_name"
+	mv Pol_"$clean_name".csv "$clean_name"
+	rm full_"$clean_name".csv
+	
+	
+	mv "$clean_name" ../"$dir_name"
+
+	echo A directory named "$clean_name" was created, it contains all extracted data.
+	echo
+done
+
+echo A new directory named "$dir_name" was created with all requested files.
+echo ---- All done ----
+
