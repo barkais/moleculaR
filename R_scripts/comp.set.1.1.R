@@ -220,7 +220,7 @@ measure_cv <- function(formula, data, out.col, folds, iterations) {
 sub_model <- function(data, out.col = dim(data)[2],
                       min = 2, max = floor(dim(data)[1] / 5),
                       folds = nrow(data), iterations = 1,
-                      cutoff = 0.6, cross.terms = F) {
+                      cutoff = 0.85, cross.terms = F) {
   output <- stringr::str_c("`", names(data[out.col]), "`")
   vars <- names(data[, -out.col])
   for (i in 1:length(vars)) {
@@ -919,7 +919,7 @@ npa_dipole <- function(mol.dir, coor.atoms, type = 'npa', center.of.mass = F) {
   colnames(final) <- c("dip_x", "dip_y", "dip_z", "total")
   setwd("..")
   return(final)
-}
+} #obselete
 
 npa_dipole.df <- function(path) {
   molecules <- list.dirs(recursive = F)
@@ -934,7 +934,7 @@ npa_dipole.df <- function(path) {
   dipole.dafr <- data.frame(data.table::rbindlist(dipole.list))
   row.names(dipole.dafr) <- molecules
   return(dipole.dafr)
-}
+} #obselete
 
 diversitree::set.defaults(npa_dipole.df, getwd())
 
@@ -1272,7 +1272,9 @@ dot.prod.info <- function(infofile) {
     "IR",
     "Inten",
     "--",
-    'A'
+    'A',
+    "A'",
+    'A"'
   )
   for (i in leave.out) {
     info[info == i] <- NA
@@ -1558,7 +1560,7 @@ comp.set <- function(path, dipole.mode = 'gaussian', radii = 'CPK') {
   }
   atom.dist <- readline('Distances - Atom pairs: ')
   B.L <- bond.lengths(atom.dist)
-  pol <- pol.df()
+  #pol <- pol.df()
   dih_answer <- readline("Do you want to compute any angles/dihedrals? y/n ")
   if (dih_answer == "y") {
     cat("        Insert a list of atom triads/quartets for which you wish to have angles/dihedrals.\n 
@@ -1567,10 +1569,10 @@ comp.set <- function(path, dipole.mode = 'gaussian', radii = 'CPK') {
         For example - 1 2 3  1 2 3 4 will give angle(1, 2, 3) and dihedral(1, 2, 3, 4)")
     vect <- readline("Insert a list of atom triads/quartets for which you wish to have angles/dihedrals")
     dih <- df.angles(unlist(strsplit(vect, '  ')))
-    comp <- cbind(ring, vib, B.L, dip, nbo, ste, dih, pol)
+    comp <- cbind(ring, vib, B.L, dip, nbo, ste, dih)
   } else {
     if (dih_answer == "n") {
-      comp <- cbind(ring, vib, B.L, dip, nbo, ste, pol)
+      comp <- cbind(ring, vib, B.L, dip, nbo, ste)
     }
   }
   row.names(comp) <- molecules
@@ -1718,6 +1720,7 @@ model.info <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5), leav
   mod_data <- data.frame(data.table::fread(dataset, header = T, check.names = T))
   RN <- mod_data[,1]
   mod_data <- mod_data[,-1]
+  mod_data <- mod_data[complete.cases(mod_data), ]
   CN <- names(mod_data)
   mod_data <- data.frame(cbind(scale(mod_data[,1:dim(mod_data)[2] - 1], T, T), mod_data$output))
   names(mod_data) <- CN
