@@ -1,7 +1,7 @@
 
 <img src="moleculaR_logo.png" width="600" height="120">
 
-**An R package for the physical-organic chemist - designed for easy, chemical-intuition based molecular features extraction and statistical modelling.**
+**An R package for the physical-organic chemist - designed for easy, chemical-intuition based molecular features extraction and statistical modeling.**
 
 ## Installation 
 
