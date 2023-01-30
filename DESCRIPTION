@@ -1,0 +1,40 @@
+Type: Package
+Package: moleculaR
+Title: Extract and Compute User Guided Quantum-Chemical Molecular Features
+Version: 1.0.0
+Author: Shahar Barkai
+Authors@R: person("Shahar", "Barkai", , "barkais@post.bgu.ac.il", role = c("aut", "cre"),
+  comment = c(ORCID = "0000-0001-7242-6551"))
+Maintainer: <barkais@post.bgu.ac.il>
+Description: A physical-organic chemistry toolset - designed for easy, 
+    chemical-intuition based molecular features extarction and statistical modelling.
+Depends: 
+    R (>= 2.10)
+Imports:
+    caret,
+    data.table,
+    dplyr,
+    feather,
+    ggplot2,
+    ggrepel,
+    igraph,
+    knitr,
+    plyr,
+    pracma,
+    reshape2,
+    rgl,
+    stats,
+    stringr,
+    svDialogs,
+    tibble,
+    tools,
+    utils
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Suggests: 
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+License: MIT + file LICENSE
