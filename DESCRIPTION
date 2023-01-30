@@ -1,6 +1,6 @@
 Type: Package
 Package: moleculaR
-Title: Extract and Compute User Guided Quantum-Chemical Molecular Features
+Title: moleculaR - Extract and Compute User Guided Quantum-Chemical Molecular Features
 Version: 1.0.0
 Author: Shahar Barkai
 Authors@R: person("Shahar", "Barkai", , "barkais@post.bgu.ac.il", role = c("aut", "cre"),
