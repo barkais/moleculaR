@@ -1,8 +1,5 @@
----
-output: html_document
----
 
-<img src="man/figures/moleculaR_logo.png" width="600" height="120">
+<img src="moleculaR_logo.png" width="600" height="120">
 
 **An R package for the physical-organic chemist - designed for easy, chemical-intuition based molecular features extraction and statistical modelling.**
 
