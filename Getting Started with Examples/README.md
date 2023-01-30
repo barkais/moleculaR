@@ -263,3 +263,64 @@ moleculaR will note it is done with its request to name the output file, followe
 #### Inputs file 
 
 The inputs file is saved in a .RData format, which is only readable using R. To see its contents (and for advanced use - edit it for different uses) use `readRDS()`. 
+
+```
+$steRimol
+$steRimol$input.vector
+[1] "1 2" "1 3"
+
+$steRimol$CPK
+[1] FALSE
+
+$steRimol$only.sub
+[1] TRUE
+
+
+$NBO
+$NBO$atom_indices
+[1] "1 2 3 15"
+
+$NBO$difference_indices
+[1] "1 2 1 3 1 15"
+
+
+$Dipole
+$Dipole$coor_atoms
+[1] "1 2 3"
+
+$Dipole$center_of_mass
+[1] FALSE
+
+$Dipole$center_of_mass_substructure
+[1] FALSE
+
+$Dipole$subunits_input_vector
+NULL
+
+
+$`Bond Vibs`
+$`Bond Vibs`$atom_pairs
+[1] "1 27"
+
+
+$`Ring Vibs`
+$`Ring Vibs`$inputs_vector
+[1] "6 3 4 8 5 7"
+
+
+$`Bend Vibs`
+[1] NA
+
+$Angles
+$Angles$inputs_vector
+[1] "4 3 1 2"
+
+
+$Distances
+[1] NA
+
+$Polarizability
+$Polarizability$polariz.answer
+[1] "yes"
+
+```
