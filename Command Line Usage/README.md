@@ -1,5 +1,6 @@
 # Command Line Usgae - Guide
-This guide will demonstrate the use of moleculaR's stand-alone functionalities. 
+
+**This guide will demonstrate the use of moleculaR's stand-alone functionalities.**
 
 Note that there are some additional features that were not included in `moleculaR()` and are only available with interactive use. 
 
@@ -7,6 +8,18 @@ Note that there are some additional features that were not included in `molecula
 # Load moleculaR
 library(moleculaR)
 ```
+***
+
+## Molecule Visualization 
+
+moleculaR's visual aid is accessible from the command line (for Mac and Windows installations).
+
+```
+# To generate a plot of an xyz file, use:
+
+plot_molecule(xyz_file)
+```
+***
 
 >**All functions (but `steRimol.xyz` functions) require users to set the working directory to _moleculaR_csv_files_**
 
