@@ -76,7 +76,7 @@ mol.angles.set <- function(atoms_vector) {
 #' @param atoms_vector a vector of characters
 #' @return (num of molecules)x(num of sets) data frame of the angle/dihedral values in degrees
 #' @export
-mol.angles.df <- function(atoms_vector) {
+mol.angles.multi <- function(atoms_vector) {
   molecules <- list.files()
   mol.list <- list()
   for (molecule in molecules) {

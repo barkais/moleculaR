@@ -11,8 +11,8 @@
 #'
 #' Works directly
 #' on xyz files, creates a new file with the suffix _tc added
-#' @param coor_atoms 3 atoms as character, separated by spaces (e.g. '1 2 3'),
-#' atom 1 - origin, atom 2 - y direction, atom 3 - xy plane
+#' @param coor_atoms 3 or 4 atoms as character, separated by spaces (e.g. '1 2 3'),
+#' atom 1 (or atoms 1 and 2) - origin, atom 2 (or 3) - y direction, atom 3 (or 4) - xy plane
 #' @return a new xyz file with the suffix _tc added
 #' @keywords internal
 #' @aliases coor.trans
@@ -21,7 +21,7 @@ coor.trans <- function(coor_atoms) {
   unlisted.atoms <- unlist(atoms)
   numeric.atoms <- as.numeric(unlisted.atoms)
   molecule <- list.files(pattern = '.xyz')
-  xyz <- data.table::fread(molecule, header = F)
+  xyz <- data.frame(data.table::fread(molecule, header = F))
   count.0 <- function(x) sum(cumsum(x != 0) == 0)
   if (count.0(colSums(xyz[, 2:4])) >= 2) {
     col.1 <- count.0(xyz[,2])
@@ -98,7 +98,7 @@ coor.trans <- function(coor_atoms) {
 #'
 #' Works directly
 #' on xyz files, creates a new file with the suffix _tc added
-#' @param coor_atoms 3 atoms as character, separated by spaces (e.g. '1 2 3'),
+#' @param coor_atoms 3 or 4 atoms as character, separated by spaces (e.g. '1 2 3' or '1 2 3 4'),
 #' atom 1 - origin, atom 2 - y direction, atom 3 - xy plane
 #' @param molecule An xyz file to work on
 #' @return a new xyz file with the suffix _tc added
@@ -108,7 +108,7 @@ coor.trans.file <- function(coor_atoms, molecule) {
   atoms <- strsplit(coor_atoms, " ")
   unlisted.atoms <- unlist(atoms)
   numeric.atoms <- as.numeric(unlisted.atoms)
-  xyz <- data.table::fread(molecule, header = F)
+  xyz <- data.frame(data.table::fread(molecule, header = F))
   count.0 <- function(x) sum(cumsum(x != 0) == 0)
   if (count.0(colSums(xyz[, 2:4])) >= 2) {
     col.1 <- count.0(xyz[,2])

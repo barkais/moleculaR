@@ -227,7 +227,7 @@ One or more bonds do not exist, please validate your choice')
 #' Get a bond's stretching frequency for a set of molecules
 #'
 #' @param atom.pairs a character of atom pairs
-#' @param threshold minimal frequency value (above fingerprint region)
+#' @param threshold minimal wave number value (above fingerprint region)
 #' @return A data frame with stretching frequencies
 #' @export
 stretch.vib.df <- function(atom.pairs, threshold = 1350) {
@@ -362,13 +362,13 @@ ring.vib.df <- function(input = NA) {
 #'
 #' used on a set of molecules, applicable for as many rings wanted
 #'
-#' @param inputs_vector vector of characters of 6 atoms, ordered as follows:
-#' para (opposite of primary - doesn't matter, but must be consistent),
-#' two ortho atoms to primary and two meta atoms to primary.
-#'  See full manual for a detailed explanation.
+#' @param inputs_vector vector of characters of 6 atoms, ordered as follows: 
+#' para (opposite of primary - doesn't matter, but must be consistent), primary,
+#' two ortho atoms to primary, and two meta atoms to primary.
+#' 
 #' @return A data frame with stretching frequencies
 #' @export
-ring.vib.df.multi <- function(inputs_vector) {
+ring.vib.multi <- function(inputs_vector) {
   multi.df <- lapply(inputs_vector, ring.vib.df)
   for (i in 1:length(multi.df)) {
     names(multi.df[[i]]) <- paste0(names(multi.df[[i]]), paste0('_', as.character(i)))

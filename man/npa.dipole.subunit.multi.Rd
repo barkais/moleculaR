@@ -7,7 +7,7 @@
 npa.dipole.subunit.multi(coor_atoms, subunits_inputs_vector)
 }
 \arguments{
-\item{coor_atoms}{3 atoms character (e.g. '1 2 3')}
+\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3')}
 
 \item{subunits_inputs_vector}{vector of atoms characters
 (e.g. c('10,11,12,13', '4 5 6 7 8 9'))}

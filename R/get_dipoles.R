@@ -226,7 +226,7 @@ dip.gaussian <- function(coor_atoms = '',
 # the coordinate system (defines origin and y direction);
 # subunit - character of as many atoms wanted.
 #' Extract NBO charge based DM of a substructure alone
-#' @param coor_atoms 3 atoms character (e.g. '1 2 3')
+#' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3' or '1 2 3 4')
 #' @param sub_atoms atoms character (e.g. '4 5 6 7 8 9')
 #' @keywords internal
 #' @return dataframe with npa based DM of a substructure
@@ -251,7 +251,7 @@ npa.dipole.subunit.df <- function(coor_atoms = NA, sub_atoms = NA) {
 #   Expects a subunits_inputs_vector - a vector of subunit characters (e.g.
 #   c('1 2 3 4 5 6', '15 16 17 18 19 20'))
 #' Compute NBO based DM for several substructures
-#' @param coor_atoms 3 atoms character (e.g. '1 2 3')
+#' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
 #' @param subunits_inputs_vector vector of atoms characters
 #'  (e.g. c('10,11,12,13', '4 5 6 7 8 9'))
 #' @return dataframe with npa based DM of a substructure
@@ -280,7 +280,7 @@ npa.dipole.subunit.multi <- function(coor_atoms, subunits_inputs_vector) {
 #   sub_atoms- substructure atoms, as a character (e.g. '1 2 3 4 5 6').
 
 #' Pulls and manipulates dipole moment vector.
-#' @param coor_atoms 3 atoms character (e.g. '1 2 3')
+#' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
 #' @param center_of_mass logical, should use center of mass of the
 #' basic structure as origin or not, if TRUE - center_of_mass_substructure
 #' must be FALSE
@@ -317,7 +317,7 @@ dip.gaussian.df <- function(coor_atoms = '',
 
 #' Pulls and manipulates dipole moment vector.
 #' Allows for use of several substructures.
-#' @param coor_atoms 3 atoms character (e.g. '1 2 3')
+#' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
 #' @param center_of_mass logical, should use center of mass of the
 #' basic structure as origin or not, if TRUE - center_of_mass_substructure
 #' must be FALSE
@@ -325,13 +325,13 @@ dip.gaussian.df <- function(coor_atoms = '',
 #' a substructure as origin or not, if TRUE - center_of_mass must be FALSE
 #' @param subunits_inputs_vector
 #' ONLY if center_of_mass_substructure is TRUE - vector of
-#' atoms character (e.g. c('10,11,12,13', '4 5 6 7 8 9'))
+#' atoms character (e.g. c('10 11 12 13', '4 5 6 7 8 9'))
 #' @return data frame with multiple or single DMs
 #' @export
 dip.gaussian.multi <- function(coor_atoms = '',
                                   center_of_mass = F,
-                                  center_of_mass_substructure = T,
-                                  subunits_inputs_vector) {
+                                  center_of_mass_substructure = F,
+                                  subunits_inputs_vector = NULL) {
   if (!is.null(subunits_inputs_vector))  {
     multi.df <- lapply(subunits_inputs_vector,
                        function(x) {

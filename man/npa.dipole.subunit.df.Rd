@@ -7,7 +7,7 @@
 npa.dipole.subunit.df(coor_atoms = NA, sub_atoms = NA)
 }
 \arguments{
-\item{coor_atoms}{3 atoms character (e.g. '1 2 3')}
+\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3' or '1 2 3 4')}
 
 \item{sub_atoms}{atoms character (e.g. '4 5 6 7 8 9')}
 }

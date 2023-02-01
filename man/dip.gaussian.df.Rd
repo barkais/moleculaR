@@ -12,7 +12,7 @@ dip.gaussian.df(
 )
 }
 \arguments{
-\item{coor_atoms}{3 atoms character (e.g. '1 2 3')}
+\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3')}
 
 \item{center_of_mass}{logical, should use center of mass of the
 basic structure as origin or not, if TRUE - center_of_mass_substructure

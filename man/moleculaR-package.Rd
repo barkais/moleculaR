@@ -5,9 +5,9 @@
 \alias{moleculaR-package}
 \alias{_PACKAGE}
 \alias{imports-package}
-\title{moleculaR: Extract and Compute User Guided Quantum-Chemical Molecular Features}
+\title{moleculaR: moleculaR - Extract and Compute User Guided Quantum-Chemical Molecular Features}
 \description{
-A physical-organic chemistry toolset - designed for easy, chemical-intuition based molecular features extarction and statistical modelling.
+A physical-organic chemistry toolset - designed for easy, chemical-intuition based molecular features extarction and statistical modeling.
 }
 \author{
 \strong{Maintainer}: Shahar Barkai \email{barkais@post.bgu.ac.il} (\href{https://orcid.org/0000-0001-7242-6551}{ORCID})

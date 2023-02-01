@@ -7,7 +7,7 @@
 coor.trans.file(coor_atoms, molecule)
 }
 \arguments{
-\item{coor_atoms}{3 atoms as character, separated by spaces (e.g. '1 2 3'),
+\item{coor_atoms}{3 or 4 atoms as character, separated by spaces (e.g. '1 2 3' or '1 2 3 4'),
 atom 1 - origin, atom 2 - y direction, atom 3 - xy plane}
 
 \item{molecule}{An xyz file to work on}

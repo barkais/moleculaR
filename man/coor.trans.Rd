@@ -7,8 +7,8 @@
 coor.trans(coor_atoms)
 }
 \arguments{
-\item{coor_atoms}{3 atoms as character, separated by spaces (e.g. '1 2 3'),
-atom 1 - origin, atom 2 - y direction, atom 3 - xy plane}
+\item{coor_atoms}{3 or 4 atoms as character, separated by spaces (e.g. '1 2 3'),
+atom 1 (or atoms 1 and 2) - origin, atom 2 (or 3) - y direction, atom 3 (or 4) - xy plane}
 }
 \value{
 a new xyz file with the suffix _tc added

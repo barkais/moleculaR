@@ -9,7 +9,7 @@ stretch.vib.df(atom.pairs, threshold = 1350)
 \arguments{
 \item{atom.pairs}{a character of atom pairs}
 
-\item{threshold}{minimal frequency value (above fingerprint region)}
+\item{threshold}{minimal wave number value (above fingerprint region)}
 }
 \value{
 A data frame with stretching frequencies
