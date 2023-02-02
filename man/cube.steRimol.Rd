@@ -12,7 +12,7 @@ cube.steRimol(
   drop = NULL,
   plot = T,
   degrees = 90,
-  isovalue = 0.003
+  isovalue = 0.036
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ density surface and sterimol arrows.}
 
 \item{degrees}{define the rotational scan, defaults to 90 (same as 360)}
 
-\item{isovalue}{what minimal density isovalue should be considered, defaults to 0.003}
+\item{isovalue}{what minimal density isovalue should be considered, defaults to 0.036}
 }
 \value{
 sterimol values for a single molecule

@@ -12,4 +12,6 @@ utils::globalVariables(c("atomic_masses",
                          "col_and_size",
                          "cpk.radii",
                          "Radii.Pyykko",
-                         "desc"))
+                         "desc",
+                         "atomic_symbols"
+                         ))

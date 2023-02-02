@@ -12,7 +12,8 @@
 #' @aliases xyz.from.cube
 #' @export
 xyz.from.cube <- function(cube_file) {
-  unlink(list.files(pattern = '*.xyz'))
+  unlink(paste(stringr::str_remove(tools::file_path_sans_ext(cube_file),
+                                   '.cube'), ".xyz", sep = ""))
   full.cube <- data.frame(data.table::fread(cube_file, fill = T))
   full.cube <- full.cube[-(1:2),]
   n.atoms <- as.numeric(full.cube[1,1])
@@ -20,15 +21,10 @@ xyz.from.cube <- function(cube_file) {
   xyz <- structure[5:(4 + n.atoms), c(1, 3:5)]
   xyz[, 2:4] <- apply(xyz[,2:4], 2, as.numeric)
   xyz[, 2:4] <- xyz[, 2:4] * 0.529177249
-  atomic.numbers <- xyz$V1
   names(xyz) <- c('atom', 'x', 'y', 'z')
   suppressMessages(xyz$atom <- plyr::mapvalues(xyz$atom,
-                                               from = c("1", "5", "6", "7", "8",
-                                                        "9", "14", "15", "16", "17", "35", "53","27",'28'),
-                                               to = c(
-                                                 "H", "B", "C", "N", "O", "F", "Si", "P",
-                                                 "S", "Cl", "Br", "I","Co", "Ni"
-                                               )
+                                               from = atomic_symbols$V1,
+                                               to = atomic_symbols$V2
   ))
   num.atoms <- nrow(xyz)
   m <- as.data.frame(matrix(NA, ncol = 4, nrow = 2))
@@ -58,12 +54,12 @@ xyz.from.cube <- function(cube_file) {
 #' @param plot if TRUE (default) will generate a 3D plot of molecule, with the
 #' density surface and sterimol arrows.
 #' @param degrees define the rotational scan, defaults to 90 (same as 360)
-#' @param isovalue what minimal density isovalue should be considered, defaults to 0.003
+#' @param isovalue what minimal density isovalue should be considered, defaults to 0.036
 #' @return sterimol values for a single molecule
 #' @aliases cube.sterimol
 #' @export
 cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot = T, degrees = 90,
-                          isovalue = 0.003) {
+                          isovalue = 0.036) {
   B.scanner <- function(i) {
     rot.mat <- matrix(ncol = 2, nrow = 2)
     co.deg <- cos(i * (pi / 180))
@@ -86,7 +82,7 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
       x.b1 <- tcs[(which(abs(tc[, 1]) == min(avs), arr.ind = T))[1], 1]
       z.b1 <- tcs[(which(abs(tc[, 1]) == min(avs), arr.ind = T))[1], 3]
     }
-
+    
     if (any(which(avs == min(avs)) %in% c(3, 4))) {
       loc.B1 <- tcs[(which(abs(tc[, 2]) == min(avs), arr.ind = T))[1], 2] * 0.529177249
       x.b1 <- tcs[(which(abs(tc[, 2]) == min(avs), arr.ind = T))[1], 1]
@@ -151,7 +147,7 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
       coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V1 == origin, ][1, 2]), sep = " ")
     }
   }
-
+  
   if (only.sub == T) {
     G <- igraph::graph.data.frame(bonds, directed = T)
     C <- igraph::all_simple_paths(G, as.character(origin), mode = "all")
@@ -178,8 +174,11 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
     }
     rlev <- rlev[grep(paste("`", direction, "`", sep = ""), rlev)]
     rlev_atoms <- as.numeric(stringr::str_extract_all(unique(unlist(rlev)), "[0-9]{1,3}"))
+  } else {
+    G <- igraph::graph.data.frame(bonds, directed = T)
+    rlev_atoms <- 1:length(unique(c(bonds[, 1], bonds[, 2])))
   }
-
+  
   full.cube <- data.frame(data.table::fread(cubefile,
                                             fill = T))
   full.cube <- full.cube[-(1:2),]
@@ -200,42 +199,30 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
   atomic.numbers <- xyz$V1
   names(xyz) <- c('atom', 'x', 'y', 'z')
   suppressMessages(xyz$atom <- plyr::mapvalues(xyz$atom,
-   from = as.character(1:118),
-   to = c("H", "He", "Li", "Be", "B",
-          "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl",
-          "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni",
-          "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y",
-          "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
-          "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm",
-          "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf",
-          "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi",
-          "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu",
-          "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db",
-          "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv",
-          "Ts", "Og"
-          )
+                                               from = atomic_symbols$V1,
+                                               to = atomic_symbols$V2
   ))
-
+  
   blocks <- seq(1, nrow(density), ceiling(z.steps/6))
   density[is.na(density)] <- 0
   row.dens <- data.frame(do.call(rbind, lapply(1:length(blocks),
-                                         function(block) vec.organizer(block))))
+                                               function(block) vec.organizer(block))))
   row.dens[row.dens > isovalue*1.1 | row.dens < isovalue] <- 0
-
+  
   x.blocks <- list()
   for (i in seq(1, nrow(row.dens), y.steps)) {
     x.blocks[[i]] <- row.dens[i:(i + (y.steps - 1)), ]
   }
   x.blocks <- x.blocks[seq(1, nrow(row.dens), y.steps)]
   non.zero.regions <- which(lapply(x.blocks, function(x) sum(colSums(x))) != 0)
-
+  
   dense.points <- pt.space.block.binder(non.zero.regions)
-
+  
   coordinate.space <- data.frame(do.call(rbind, lapply(1:nrow(dense.points), function(x) dens.to.pt(x))))
   names(coordinate.space) <- names(xyz)[2:4]
   coordinate.space <- rbind(xyz[,2:4], coordinate.space)
-
-
+  
+  
   atoms <- strsplit(coordinates, " ")
   unlisted.atoms <- unlist(atoms)
   numeric.atoms <- as.numeric(unlisted.atoms)
@@ -288,11 +275,11 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
   if (!is.null(tag)) trans.co <- trans.co[-(n.atoms + 1),]
   trans.co[(n.atoms + 1):nrow(trans.co), 4] <- as.numeric(unlist(lapply((n.atoms + 1):nrow(trans.co),
                                                                         function(x) close.atom(x))))
-
+  
   trans.co <- data.frame(round(trans.co, 6))
   tcs <- trans.co[trans.co$X4 %in% rlev_atoms,1:3]
   tcs.rest.of.mol <- trans.co[-(trans.co$X4 %in% rlev_atoms),1:3]
-
+  
   if (plot == T) rgl::plot3d(tcs, col = 'black', axes = F) # Plot for maintenance
   if (plot == T) rgl::plot3d(tcs.rest.of.mol, col = 'grey', add = T)
   if (plot == T) rgl::plot3d(trans.co[1:n.atoms,1:3], col = col_and_size$V2[atomic.numbers],
@@ -323,7 +310,7 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
                                      loc.B5,
                                      tcs[which.max(tcs$B), 3]), barblen = 0.03,
                               type = "rotation",  col = "green") # plot B5 vector
-
+  
   if (plot == T) rgl::arrow3d(p0 = c(0, min(tcs[,2]), 0),
                               p1 = c(0,
                                      max(tcs[,2]),
@@ -359,6 +346,7 @@ cube.steRimol.df <- function(coor.atoms,
                              plot = F,
                              degrees = 90,
                              isovalue = 0.003) {
+  unlink(list.files(pattern = '.xyz'))
   molecules <- list.files(pattern = '.cube')
   steri.list <- list()
   for (molecule in molecules) {
@@ -373,6 +361,5 @@ cube.steRimol.df <- function(coor.atoms,
   row.names(steri.dafr) <- stringr::str_remove(molecules, '.cube')
   return(steri.dafr)
 }
-
 
 

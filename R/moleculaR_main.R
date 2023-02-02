@@ -280,7 +280,7 @@ by a comma, and different sets by a space.
     inputs_vector <- stringr::str_split(inputs_vector, ' ')
     inputs_vector <- lapply(inputs_vector,
                                function(x) gsub(',', ' ', x))[[1]]
-    ring.vibrations.result <- list(ring.vib.df.multi(inputs_vector))
+    ring.vibrations.result <- list(ring.vib.multi(inputs_vector))
     ring.inputs <- list(inputs_vector)
     names(ring.inputs) <- 'inputs_vector'
     results <- c(results, ring.vibrations.result)
@@ -335,7 +335,7 @@ and different sets should be separated by a space (e.g. 1,2,3 1,2,3,4).
     inputs_vector <- stringr::str_split(atom_sets, ' ')
     inputs_vector <- lapply(inputs_vector,
                             function(x) gsub(',', ' ', x))[[1]]
-    angles.result <- list(mol.angles.df(inputs_vector))
+    angles.result <- list(mol.angles.multi(inputs_vector))
     mol.angle.inputs <- list(inputs_vector)
     names(mol.angle.inputs) <- 'inputs_vector'
     results <- c(results, angles.result)
@@ -506,7 +506,7 @@ moleculaR.input <- function(input_file = NULL) {
   ### Ring Vibrations
 
   if (!is.na(input_file$`Ring Vibs`)) {
-    ring.vibrations.result <- list(ring.vib.df.multi(input_file$`Ring Vibs`$inputs_vector))
+    ring.vibrations.result <- list(ring.vib.multi(input_file$`Ring Vibs`$inputs_vector))
     results <- c(results, ring.vibrations.result)
   }
 
@@ -520,7 +520,7 @@ moleculaR.input <- function(input_file = NULL) {
   ### Angles
 
   if (!is.na(input_file$Angles)) {
-    angles.result <- list(mol.angles.df(input_file$Angles$inputs_vector))
+    angles.result <- list(mol.angles.multi(input_file$Angles$inputs_vector))
     results <- c(results, angles.result)
   }
 

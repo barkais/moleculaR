@@ -69,7 +69,7 @@ extRact.Dipole <- function() {
 #'
 #' No Parameters
 #' @return A 4 column data frame with atom symbols and coordinates
-#' @export
+#' @keywords internal
 extRact.xyz <- function() {
   text <- main
   if (length(grep('Standard orientation', text)) == 0) {
@@ -91,19 +91,8 @@ extRact.xyz <- function() {
   names(result) <- c('Atom', 'x', 'y', 'z')
   result$Atom <- round(result$Atom, 1)
   suppressMessages(result$Atom <- plyr::mapvalues(result$Atom,
-    from = as.character(1:118),
-    to = c("H", "He", "Li", "Be", "B",
-           "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl",
-           "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni",
-           "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y",
-           "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
-           "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm",
-           "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf",
-           "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi",
-           "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu",
-           "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db",
-           "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv",
-           "Ts", "Og")
+    from = atomic_symbols$V1,
+    to = atomic_symbols$V2
   ))
   num.atoms <- nrow(result)
   m <- as.data.frame(matrix(NA, ncol = 4, nrow = 2))

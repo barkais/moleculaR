@@ -7,7 +7,7 @@ Authors@R: person("Shahar", "Barkai", , "barkais@post.bgu.ac.il", role = c("aut"
   comment = c(ORCID = "0000-0001-7242-6551"))
 Maintainer: <barkais@post.bgu.ac.il>
 Description: A physical-organic chemistry toolset - designed for easy, 
-    chemical-intuition based molecular features extarction and statistical modelling.
+    chemical-intuition based molecular features extarction and statistical modeling.
 Depends: 
     R (>= 2.10)
 Imports:
