@@ -209,7 +209,7 @@ Note that atoms must be bonded, and that submitting non-bonded atoms will crash 
 
 Ring vibrations are defined with the ring's six atoms, in an ordered fashion. 
 
-<center><img src="figures/rings.png" class="center"></center>
+<center><img src="figures/rings.png"  width="600" height="382"></center>
 
 Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure, though it really doesn't matter. Once this atom is defined, the rest are relative to it, the one directly opposite to it is the "para" atom, the two next to is are the "ortho" atoms, and the rest are the "meta" atoms. 
 
