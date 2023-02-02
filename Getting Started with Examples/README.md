@@ -1,4 +1,4 @@
-It is highly recommended to begin by running the following example hand-in-hand with this guide
+**It is highly recommended to begin by running the following example hand-in-hand with this guide**
 
 ## Download example log files
 
