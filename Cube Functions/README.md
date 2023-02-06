@@ -4,13 +4,13 @@
 
 ## Download example cube files
 
-Please find the example cube files on the package's [Github]('https://github.com/barkais/moleculaR/blob/main/Cube%20Functions/Example_cube_files.zip')
+Please find the example cube files on the package's [Github](https://github.com/barkais/moleculaR/blob/main/Cube%20Functions/Example_cube_files.zip)
 
 Once downloaded and unzipped, you are ready to go!
 
 For user convenience, we demonstrate usage with a small number of molecules, such that downloading the log files directly to a local machine will stay within memory-usage reason. 
 
-As with other cases of 3D visualizations in moleculaR, the 3D visual tool that is supplied by `cube.steRimol()` is hard to use on Linux systems without sudo access. Though this shouldn't prevent users from running this on Linux systems, just that visualizations are not guaranteed to work smoothly. 
+As with other cases of 3D visualizations in moleculaR, the 3D visual tool that is supplied by `steRimol.cube()` is hard to use on Linux systems without sudo access. Though this shouldn't prevent users from running this on Linux systems, just that visualizations are not guaranteed to work smoothly. 
 
 > **Using cube functionalities requires setting the working directory to that holding at least one cube file. In cases where more than file is to be analyzed, all files should be in the same loctaion.**
 
@@ -51,11 +51,11 @@ Bn.xyz  1.7 3.26 7.03     4.07     3.22
 Cy.xyz  1.7 3.23 7.03     4.10     3.22
 ```
 
-Now do the same with cube.steRimol:
+Now do the same with steRimol.cube:
 
 ```
 # Compute cube steRimols with:
-cube.steRimol.df('1 15')
+steRimol.cube.df('1 15')
 ```
 
 Which gives:
@@ -69,26 +69,26 @@ Cy 1.6637 3.3260 6.9240 4.0382 1.2983     7.6851
 
 With this logic, it actually makes sense to evaluate even the unchanged substructures of molecular libraries, as it depicts the subtleties in stereo-electronic variations due to changing substituents. 
 
-**It is important to note that the cube.steRimol functionalities are left out of the moleculaR workflow, as they require users to generate cube files independently, and placing all of them in a designated folder, to prevent unnecessarily heavy file transfers.**
+**It is important to note that the steRimol.cube functionalities are left out of the moleculaR workflow, as they require users to generate cube files independently, and placing all of them in a designated folder, to prevent unnecessarily heavy file transfers.**
 
 > **Isovalues:**
 >
 >
-cube.steRimol searches for density regions within a certain range of densities, which essentially depend on what we, as users, define the radius to be. 
+steRimol.cube searches for density regions within a certain range of densities, which essentially depend on what we, as users, define the radius to be. 
 >
 >Generally speaking, we found that a value of ~0.003 e^-^/bohr^3^ fits sterimol values using CPK radii, while a much higher value of ~0.035 e^-^/bohr^3^ fits with Pyykko's covalent radii. Users are incouraged to play around with isovalues, as we believe there is some chemical knowledge underlying these differences, which could be benefitial in the realm of mechanistic investigations and statistical analyses. 
 
-## Extract cube.steRimol values for a single cube file
+## Extract steRimol.cube values for a single cube file
 
 Using this functionality also allows the visualization of the chosen molecule and of the computed B1, B5 and L axes. 
 
 ```
 # For example, extracting sterimol values for the file Bn.cube, along the axis of 1-3:
-cube.steRimol(cubefile = 'Bn.cube',
+steRimol.cube(cubefile = 'Bn.cube',
               coordinates = '1 3')
 
 # Actually implies:
-cube.steRimol(cubefile = 'Bn.cube',
+steRimol.cube(cubefile = 'Bn.cube',
               coordinates = '1 3',
               only.sub = T, 
               drop = NULL,
@@ -116,12 +116,12 @@ Using `plot = T` also produces a 3D visualization of the molecule:
 
 * The rest of the arguments are used exactly as with the classic `steRimol.xyz` and `steRimol` families. 
 
-## Extracting cube.sterimol values for a set of cube files
+## Extracting steRimol.cube values for a set of cube files
 
-For example, using the cube files we have, producing cube.steRimol values along the axis of 1-2:
+For example, using the cube files we have, producing steRimol.cube values along the axis of 1-2:
 
 ```
-cube.steRimol.df('1 2')
+steRimol.cube.df('1 2')
 ```
 
 Gives:
@@ -137,7 +137,7 @@ Visualization is not available for multiple files. To add visualization, first u
 
 ## Generating an xyz from a cube file 
 
-A simple function, needed for different reasons. Existing xyz files will be removed by `cube.steRimol()` and `cube.steRimol.df()` once executed.
+A simple function, needed for different reasons. Existing xyz files will be removed by `steRimol.cube()` and `steRimol.cube.df()` once executed.
 
 ```
 xyz.from.cube(cube_file)
