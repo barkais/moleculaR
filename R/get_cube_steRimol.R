@@ -9,7 +9,6 @@
 #'
 #' @param cube_file path to cube file
 #' @return write an xyz file with the same name
-#' @aliases xyz.from.cube
 #' @export
 xyz.from.cube <- function(cube_file) {
   unlink(paste(stringr::str_remove(tools::file_path_sans_ext(cube_file),
@@ -58,7 +57,7 @@ xyz.from.cube <- function(cube_file) {
 #' @return sterimol values for a single molecule
 #' @aliases cube.sterimol
 #' @export
-cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot = T, degrees = 90,
+steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot = T, degrees = 90,
                           isovalue = 0.036) {
   B.scanner <- function(i) {
     rot.mat <- matrix(ncol = 2, nrow = 2)
@@ -340,7 +339,7 @@ cube.steRimol <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
 #' @param isovalue what minimal density isovalue should be considered, defaults to 0.003
 #' @return sterimol values for a single molecule
 #' @export
-cube.steRimol.df <- function(coor.atoms,
+steRimol.cube.df <- function(coor.atoms,
                              only.sub = T,
                              drop = NULL,
                              plot = F,
@@ -350,7 +349,7 @@ cube.steRimol.df <- function(coor.atoms,
   molecules <- list.files(pattern = '.cube')
   steri.list <- list()
   for (molecule in molecules) {
-    steri.list[[match(molecule, molecules)]] <- cube.steRimol(molecule,
+    steri.list[[match(molecule, molecules)]] <- steRimol.cube(molecule,
                                                               coor.atoms,
                                                               only.sub,
                                                               drop, plot,
