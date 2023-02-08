@@ -106,7 +106,7 @@ The plot also includes a prediction band, marked as dotted blue lines.
 
 The resulting plot:
 
-<center><img src="../../man/figures/model_plot_example.png" width="500" height="428"></center>
+<center><img src="figures/model_plot_example.png" width="500" height="428"></center>
 
 ### Model Report
 
@@ -200,7 +200,7 @@ Choose the model you would like to plot (line number): 1
 
 And the produced plot:
 
-<center><img src="../../man/figures/model_report_example.png" width="500" height="428"></center>
+<center><img src="figures/model_report_example.png" width="500" height="428"></center>
 
 ## Logistic Regressions
 
@@ -361,7 +361,7 @@ ct.plot(test.info)
 
 Which gives:
 
-<center><img src="../../man/figures/ct_plot.png" width="500" height="398"></center>
+<center><img src="figures/ct_plot.png" width="500" height="398"></center>
 
 **A color coded predictions and probabilities table. **
 
@@ -379,7 +379,7 @@ prob.heatmap(test, data)
 ```
 
 Which gives
-<center><img src="../../man/figures/HM_plot.png" width="583" height="634"></center>
+<center><img src="figures/HM_plot.png" width="583" height="634"></center>
 
 ### Model Report
 
@@ -471,9 +471,9 @@ Logistic_Dataset_Example
 
 As well as the plots in visualization, side by side (Now presented one below the other)
 
-<center><img src="../../man/figures/ct_2_plot.png" width="500" height="398"></center>
+<center><img src="figures/ct_2_plot.png" width="500" height="398"></center>
 
-<center><img src="../../man/figures/HM_2_plot.png" width="583" height="634"></center>
+<center><img src="figures/HM_2_plot.png" width="583" height="634"></center>
 
 ### Dealing with Unbalanced Data Sets
 
@@ -489,7 +489,7 @@ moleculaR also includes a cosine similarity based sampling function, that allows
 For example, in the following illustration, a sample of 6 representatives is taken from a set of observations. The similarity measurement can be either that of these data points with their own class, or with another class. The maximal and minimal similarity observations are always sampled, and the distance of all points from each divider (red lines) is measured, with the minimal value observations sampled (highlighted). 
 
 
-<center><img src="../../man/figures/simi_sampler.png" width="608" height="148"></center>
+<center><img src="figures/simi_sampler.png" width="608" height="148"></center>
 
 As an example, consider balancing the data set we have, such that we will end with 11 samples of each group (size of the smallest group, also the default setting) 
 
@@ -535,7 +535,7 @@ simi.sampler(data = data, class = 1, plot = T)
 [1]  1  7  8 12 13 15 18 19 20 21 22
 ```
 
-<center><img src="../../man/figures/simi_sampler_2.png" width="623" height="350"></center>
+<center><img src="figures/simi_sampler_2.png" width="623" height="350"></center>
 
 Note how group one is now down to 11 points, while still spread across the similarity measure range. 
 
