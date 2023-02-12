@@ -5,7 +5,7 @@
 \alias{moleculaR-package}
 \alias{_PACKAGE}
 \alias{imports-package}
-\alias{moleculaR}
+\alias{import_usethis}
 \title{moleculaR: moleculaR - Extract and Compute User Guided Quantum-Chemical Molecular Features}
 \description{
 A physical-organic chemistry toolset - designed for easy, chemical-intuition based molecular features extarction and statistical modeling.
