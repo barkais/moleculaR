@@ -175,11 +175,16 @@ model.plot <- function(model = models[1,1], data) {
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m_",'3-')
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"p_",'4-')
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o4-",'2,4-')
-  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m3-",'3,3-')
+  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m3-",'3,5-')
+  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o3-",'2,3-')
+  
 
   plot.dat <- dplyr::mutate(plot.dat, Position = rep(NA, nrow(plot.dat)))
   for (i in 1:nrow(plot.dat)) {
     if (grepl('3-',row.names(plot.dat)[i])) {
+      plot.dat[i,5] <- 'meta'
+    }
+    if (grepl('5-',row.names(plot.dat)[i])) {
       plot.dat[i,5] <- 'meta'
     }
     if (grepl('2-',row.names(plot.dat)[i])) {
@@ -259,8 +264,8 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   mod_data <- data.frame(cbind(scale(mod_data[,1:dim(mod_data)[2] - 1], T, T), mod_data$output))
   names(mod_data) <- CN
   row.names(mod_data) <- RN
-  pred.data <- mod_data[row.names(mod_data) == leave.out, ]
-  mod_data <- mod_data[row.names(mod_data) != leave.out, ]
+  pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
+  mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
   models <- model.subset(mod_data, min = min, max = max)
   tab <- knitr::kable(models)
   print(tab)
@@ -325,8 +330,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   equation[1] <- as.character(round(mod.sum[1,1], 2))
   equation <- paste(equation,  collapse = ' ')
 
-  annotations <- stringr::str_c(c(equation,
-                                  text1,
+  annotations <- stringr::str_c(c(text1,
                                   text2,
                                   text3,
                                   text4),
@@ -347,11 +351,15 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m_",'3-')
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"p_",'4-')
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o4-",'2,4-')
-  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m3-",'3,3-')
+  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m3-",'3,5-')
+  row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o3-",'2,3-')
 
   plot.dat <- dplyr::mutate(plot.dat, Position = rep(NA, nrow(plot.dat)))
   for (i in 1:nrow(plot.dat)) {
     if (grepl('3-',row.names(plot.dat)[i])) {
+      plot.dat[i,5] <- 'meta'
+    }
+    if (grepl('5-',row.names(plot.dat)[i])) {
       plot.dat[i,5] <- 'meta'
     }
     if (grepl('2-',row.names(plot.dat)[i])) {
@@ -399,11 +407,13 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                     force_pull = 0.02,
                     nudge_x = 0.022,
                     direction = 'y') +
-    ggplot2::theme(text = ggplot2::element_text(family = 'Arial')) +
+    ggplot2::theme(text = ggplot2::element_text(family = 'Arial'),
+                   plot.title = ggplot2::element_text(size = 12, face = "bold", hjust = -0.3)) +
     ggplot2::annotate('text',
              x = min(plot.dat[,3]),
              y = max(plot.dat[,2]), label = annotations,
              parse = F,
-             hjust = "left", vjust = "top")
+             hjust = "left", vjust = 0) +
+    ggplot2::ggtitle(equation)
   plot
 }

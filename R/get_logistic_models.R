@@ -465,8 +465,7 @@ kf.iter.log.ordinal <- function(formula, data, folds = NULL, out.col=which(colna
                                 rep("***",3),
                                 reshape2::dcast(data.frame(ct.list[which.min(iter.list)]),actual~pred)))
   names(tab)[5] <- ''
-  cts <- knitr::kable(tab,
-                      caption = "\n\nBest (left) and Worst (right) Classification Tables")
+  cts <- knitr::kable(tab)
   if (verbose == T) { 
     print(cts)
     print(Accuracies)
@@ -506,8 +505,7 @@ kf.iter.logistic <- function(formula, data, folds = NULL, out.col=which(colnames
                                 rep("***",3),
                                 reshape2::dcast(data.frame(ct.list[which.min(iter.list)]),actual~pred)))
   names(tab)[5] <- ''
-  cts <- knitr::kable(tab,
-                      caption = "\n\nBest (left) and Worst (right) Classification Tables")
+  cts <- knitr::kable(tab)
   if (verbose == T) { 
     print(cts)
     print(Accuracies)
@@ -987,11 +985,23 @@ model.report.log.ordinal <- function(dataset, min = 1,
                      data = test.data,
                      Hess = T, start = start)
   # LOOCV
+  
+  cat('
+  Leave-one-out Cross Validation - single iteration
+      ')
   kf.iter.log.ordinal(test.form, test.data, folds = nrow(test.data), iterations = 1, verbose = T)
   
   # size of smallest class-fold stratified CV
+  cat('
+  Smallest-group-fold Cross Validation (100 iterations)
+  
+  Classification tables for best (left) and worst (right) iterations. 
+      ')
   kf.iter.log.ordinal(test.form, test.data, stratify = T, iterations = 100, verbose = T)
   
+  cat('
+  Model Summary
+      ')
   ct <- mod.info.log.ordinal(test, test.data)
   
   CT <- ct.plot(ct)
@@ -1038,11 +1048,22 @@ model.report.logistic <- function(dataset, min = 1,
                          maxit = 2000, 
                          trace = F)
   # LOOCV
+  cat('
+  Leave-one-out Cross Validation - single iteration
+      ')
   kf.iter.logistic(test.form, test.data, folds = nrow(test.data), iterations = 1, verbose = T)
   
   # size of smallest class-fold stratified CV
+  cat('
+  Smallest-group-fold Cross Validation (100 iterations)
+  
+  Classification tables for best (left) and worst (right) iterations. 
+      ')
   kf.iter.logistic(test.form, test.data, stratify = T, iterations = 100, verbose = T)
   
+  cat('
+  Model Summary
+      ')
   ct <- mod.info.logistic(test, test.data)
   
   CT <- ct.plot(ct)
