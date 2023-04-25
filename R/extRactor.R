@@ -349,7 +349,7 @@ extRactoR.auto <- function() {
     df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
     df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
     feather::write_feather(df.result,
-                           paste0('extracted_info',
+                           paste0('Extracted_info',
                                   '/',
                                   tools::file_path_sans_ext(file),
                                   '.feather'))
