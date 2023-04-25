@@ -228,25 +228,25 @@ extRactoR <- function() {
   instruction.1 <- svDialogs::dlg_message('
          Please choose the .log files location.
         ', type = 'ok')
-
+  
   log.files.dir <- svDialogs::dlg_dir()$res
-
+  
   output.folder.name <- svDialogs::dlg_input('
          How would you like to call the output folder?'
-         )$res
-
+  )$res
+  
   output.folder.path.default <- svDialogs::dlg_message('
          Would you like to save the output folder in the same
          directory as that of the .log files? (Recommended).
         ', type = 'yesno')$res
-
+  
   if (output.folder.path.default == 'no') {
     instruction.2 <- svDialogs::dlg_message('
          Please choose a location.
         ', type = 'ok')
-
+    
     output.folder.path <- svDialogs::dlg_dir()$res
-
+    
     if (output.folder.name == '-') {
       output.folder.name <- paste0(output.folder.path,
                                    '/',
@@ -268,44 +268,49 @@ extRactoR <- function() {
                                    output.folder.name)
       dir.create(output.folder.name)
     }
-
+    
   }
-
+  
   setwd(log.files.dir)
-
+  
   for (file in list.files(pattern = '.log')) {
-    main.big <- data.table::fread(file, sep = "?", header = FALSE, quote="")[[1L]]
-    scf.dones <- grep('SCF Done', main.big)
-    sec.to.last <- scf.dones[length(scf.dones) - 1]
-    main <<- main.big[sec.to.last:length(main.big)]
-    raw_data <- (list(
-      extRact.xyz(),
-      extRact.Dipole(),
-      extRact.polarizability(),
-      extRact.NBO(),
-      extRact.spectrum(),
-      extRact.vectors()
-    ))
-    df.result <- data.frame(
-      matrix(
-        ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
-        nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
-    df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
-    df.result[1, 5:8] <- raw_data[[2]]
-    df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
-    df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
-    df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
-    df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
-    feather::write_feather(df.result,
-                   paste0(output.folder.name,
-                          '/',
-                          tools::file_path_sans_ext(file),
-                          '.feather'))
+    tryCatch(
+      {
+        main.big <- data.table::fread(file, sep = "?", header = FALSE, quote="")[[1L]]
+        scf.dones <- grep('SCF Done', main.big)
+        sec.to.last <- scf.dones[length(scf.dones) - 1]
+        main <<- main.big[sec.to.last:length(main.big)]
+        raw_data <- (list(
+          extRact.xyz(),
+          extRact.Dipole(),
+          extRact.polarizability(),
+          extRact.NBO(),
+          extRact.spectrum(),
+          extRact.vectors()
+        ))
+        df.result <- data.frame(
+          matrix(
+            ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
+            nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
+        df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
+        df.result[1, 5:8] <- raw_data[[2]]
+        df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
+        df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
+        df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
+        df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
+        feather::write_feather(df.result,
+                               paste0(output.folder.name,
+                                      '/',
+                                      tools::file_path_sans_ext(file),
+                                      '.feather'))
+      }, error = function(e){cat(paste0("Error while extracting from ", file, 
+                                        ' - check for errors in the log file.'))}
+    )
   }
   setwd(output.folder.name)
   cat('
 Done!
-      ')
+')
   cat(paste0('
 Current working directory is set to ',getwd()))
 }
@@ -323,36 +328,38 @@ extRactoR.auto <- function() {
   main <- character()
   dir.create('Extracted_info')
   for (file in list.files(pattern = '.log')) {
-    main.big <- data.table::fread(file,
-                                  sep = "?",
-                                  header = FALSE,
-                                  quote = "")[[1L]]
-    scf.dones <- grep('SCF Done', main.big)
-    sec.to.last <- scf.dones[length(scf.dones) - 1]
-    main <<- main.big[sec.to.last:length(main.big)]
-    raw_data <- (list(
-      extRact.xyz(),
-      extRact.Dipole(),
-      extRact.polarizability(),
-      extRact.NBO(),
-      extRact.spectrum(),
-      extRact.vectors()
-    ))
-    df.result <- data.frame(
-      matrix(
-        ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
-        nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
-    df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
-    df.result[1, 5:8] <- raw_data[[2]]
-    df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
-    df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
-    df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
-    df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
-    feather::write_feather(df.result,
-                           paste0('Extracted_info',
-                                  '/',
-                                  tools::file_path_sans_ext(file),
-                                  '.feather'))
+    tryCatch(
+      {
+        main.big <- data.table::fread(file, sep = "?", header = FALSE, quote="")[[1L]]
+        scf.dones <- grep('SCF Done', main.big)
+        sec.to.last <- scf.dones[length(scf.dones) - 1]
+        main <<- main.big[sec.to.last:length(main.big)]
+        raw_data <- (list(
+          extRact.xyz(),
+          extRact.Dipole(),
+          extRact.polarizability(),
+          extRact.NBO(),
+          extRact.spectrum(),
+          extRact.vectors()
+        ))
+        df.result <- data.frame(
+          matrix(
+            ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
+            nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
+        df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
+        df.result[1, 5:8] <- raw_data[[2]]
+        df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
+        df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
+        df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
+        df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
+        feather::write_feather(df.result,
+                               paste0('Extracted_info',
+                                      '/',
+                                      tools::file_path_sans_ext(file),
+                                      '.feather'))
+      }, error = function(e){cat(paste0("Error while extracting from ", file, 
+                                        ' - check for errors in the log file.'))}
+    )
   }
   cat('
 Done!
