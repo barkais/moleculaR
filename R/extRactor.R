@@ -310,4 +310,53 @@ Done!
 Current working directory is set to ',getwd()))
 }
 
+#' Extract and compress all needed information from Gaussian log files - no GUI
+#'
+#' This function acts on a set of Gaussian log files.
+#' No input is needed.
+#'
+#' No Parameters
+#' @return A .feather file for each log file
+#' @aliases extRactoR
+#' @export
+extRactoR.auto <- function() {
+  main <- character()
+  dir.create('Extracted_info')
+  for (file in list.files(pattern = '.log')) {
+    main.big <- data.table::fread(file,
+                                  sep = "?",
+                                  header = FALSE,
+                                  quote = "")[[1L]]
+    scf.dones <- grep('SCF Done', main.big)
+    sec.to.last <- scf.dones[length(scf.dones) - 1]
+    main <<- main.big[sec.to.last:length(main.big)]
+    raw_data <- (list(
+      extRact.xyz(),
+      extRact.Dipole(),
+      extRact.polarizability(),
+      extRact.NBO(),
+      extRact.spectrum(),
+      extRact.vectors()
+    ))
+    df.result <- data.frame(
+      matrix(
+        ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
+        nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
+    df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
+    df.result[1, 5:8] <- raw_data[[2]]
+    df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
+    df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
+    df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
+    df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
+    feather::write_feather(df.result,
+                           paste0('extracted_info',
+                                  '/',
+                                  tools::file_path_sans_ext(file),
+                                  '.feather'))
+  }
+  cat('
+Done!
+      ')
+}
+
 
