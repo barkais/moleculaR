@@ -470,7 +470,7 @@ moleculaR.input <- function(input_file = NULL) {
   ### steRimol
 
   if (!any(is.na(input_file$steRimol))) {
-    sterimol.result <- list(steRimol.xyz.multi(input_file$steRimol$input.vector,
+    sterimol.result <- list(steRimol.multi(input_file$steRimol$input.vector,
                                                input_file$steRimol$CPK,
                                                input_file$steRimol$only.sub))
     results <- c(results, sterimol.result)
