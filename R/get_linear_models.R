@@ -269,7 +269,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   models <- model.subset(mod_data, min = min, max = max)
   tab <- knitr::kable(models)
   print(tab)
-  if (!is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
+  if (is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
   if (is.character(what.model)) what.model <- as.numeric(what.model)
   mod.sum <- summary(lm(models[what.model, 1], mod_data))$coefficients
   cat('
