@@ -35,7 +35,7 @@ center.of.mass <- function(coor_atoms) {
   return(com)
 }
 
-# center.of.mass.substructure - calculates the center of mass of a substructure in the
+# center.of.substructure - calculates the center of mass of a substructure in the
 #   "basic" structure.
 #   used in context of choice to evaluate the dipole moment's components
 #   relative to it (com of basic).
@@ -46,7 +46,7 @@ center.of.mass <- function(coor_atoms) {
 #' @param sub_atoms atoms character (e.g. '4 5 6 7 8 9')
 #' @keywords internal
 #' @return center of mass of a substructure
-center.of.mass.substructure <- function(coor_atoms, sub_atoms) {
+center.of.substructure <- function(coor_atoms, sub_atoms) {
   atoms <- strsplit(sub_atoms, " ")
   unlisted.atoms <- unlist(atoms)
   numeric.atoms <- as.numeric(unlisted.atoms)
@@ -57,16 +57,9 @@ center.of.mass.substructure <- function(coor_atoms, sub_atoms) {
                                           "numeric",
                                           "numeric"),
                            stringsAsFactors = F)
-  suppressMessages(xyz$V1 <- plyr::mapvalues(xyz$V1,
-                                             from = atomic_masses$V1,
-                                             to = atomic_masses$V2
-  ))
-  xyz <- data.frame(transform(xyz, V1 = as.numeric(V1)))
-  xyz <- xyz[numeric.atoms,]
-  M <- sum(xyz[,1])
-  for (i in 1:dim(xyz)[1]) xyz[i,2:4] <- xyz[i,1] * xyz[i,2:4]
-  com <- c(sum(xyz[,2]), sum(xyz[,3]), sum(xyz[,4]))
-  com <- (1/M)*com
+  xyz <- xyz[numeric.atoms, -1]
+  com <- c(sum(xyz[,1]), sum(xyz[,2]), sum(xyz[,3]))
+  com <- (1/length(numeric.atoms))*com
   unlink(list.files(pattern = '_tc'))
   return(com)
 }
@@ -125,7 +118,7 @@ npa.dipole.subunit <- function(coor_atoms, subunit) {
 #   run the command with no arguments.
 #   center_of_mass - uses the center of mass of the "basic" structure. Expects
 #   coor_atoms at the same time, on order to have a y direction defined.
-#   center_of_mass_substructure - uses the center of mass of a common
+#   center_of_substructure - uses the center of mass of a common
 #   substructure (e.g. a ring that all molecules posses). Expects coor_atoms.
 #   sub_atoms- substructure atoms, as a character (e.g. '1 2 3 4 5 6').
 #   This is the single molecule function, usable but unusual.
@@ -133,18 +126,18 @@ npa.dipole.subunit <- function(coor_atoms, subunit) {
 #' Use Gaussain's dipole moment, and perform manipulations to it.
 #' @param coor_atoms 3 atoms character (e.g. '1 2 3')
 #' @param center_of_mass logical, should use center of mass of the
-#' basic structure as origin or not, if TRUE - center_of_mass_substructure
+#' basic structure as origin or not, if TRUE - center_of_substructure
 #' must be FALSE
-#' @param center_of_mass_substructure logical, should use center of mass of
+#' @param center_of_substructure logical, should use center of mass of
 #' a substructure as origin or not, if TRUE - center_of_mass must be FALSE
 #' @param sub_atoms
-#' ONLY if center_of_mass_substructure is TRUE - atoms character (e.g. '4 5 6 7 8 9')
+#' ONLY if center_of_substructure is TRUE - atoms character (e.g. '4 5 6 7 8 9')
 #' @keywords internal
 #' @return dipole moment
 dip.gaussian <- function(coor_atoms = '',
-                         center_of_mass = F,
-                         center_of_mass_substructure = F,
-                         sub_atoms = NULL) {
+                         center_of_substructure = F,
+                         sub_atoms = NULL,
+                         center_of_mass = F) {
   dipole <- data.frame(data.table::fread(list.files(pattern = "dipole")))
   mag <- function(vector) {
     sqrt(vector[[1]]^2 + vector[[2]]^2 + vector[[3]]^2)
@@ -178,15 +171,23 @@ dip.gaussian <- function(coor_atoms = '',
         coplane <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
                                 mag(xyz[numeric.atoms[[3]], ] - new_origin))
       }
-      if (center_of_mass_substructure) {
-        com <- center.of.mass.substructure(coor_atoms, sub_atoms)
-        new_origin <- com
-        new_y <- as.numeric((xyz[numeric.atoms[[2]], ] - new_origin) /
-                              mag(xyz[numeric.atoms[[2]], ] - new_origin))
-        coplane <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
-                                mag(xyz[numeric.atoms[[3]], ] - new_origin))
+      if (center_of_substructure) {
+        if (sub_atoms == 'NA') {
+          new_origin <- xyz[numeric.atoms[[1]], ]
+          new_y <- as.numeric((xyz[numeric.atoms[[2]], ] - new_origin) /
+                                mag(xyz[numeric.atoms[[2]], ] - new_origin))
+          coplane <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
+                                  mag(xyz[numeric.atoms[[3]], ] - new_origin))
+        } else {
+          com <- center.of.substructure(coor_atoms, sub_atoms)
+          new_origin <- com
+          new_y <- as.numeric((xyz[numeric.atoms[[2]], ] - new_origin) /
+                                mag(xyz[numeric.atoms[[2]], ] - new_origin))
+          coplane <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
+                                  mag(xyz[numeric.atoms[[3]], ] - new_origin))
+        }
       }
-      if (!center_of_mass_substructure & !center_of_mass) {
+      if (!center_of_substructure & !center_of_mass) {
         new_origin <- xyz[numeric.atoms[[1]], ]
         new_y <- as.numeric((xyz[numeric.atoms[[2]], ] - new_origin) /
                               mag(xyz[numeric.atoms[[2]], ] - new_origin))
@@ -275,33 +276,33 @@ npa.dipole.subunit.multi <- function(coor_atoms, subunits_inputs_vector) {
 #   run the command with no arguments.
 #   center_of_mass - uses the center of mass of the "basic" structure. Expects
 #   coor_atoms at the same time, on order to have a y direction defined.
-#   center_of_mass_substructure - uses the center of mass of a common
+#   center_of_substructure - uses the center of mass of a common
 #   substructure (e.g. a ring that all molecules posses). Expects coor_atoms.
 #   sub_atoms- substructure atoms, as a character (e.g. '1 2 3 4 5 6').
 
 #' Pulls and manipulates dipole moment vector.
 #' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
 #' @param center_of_mass logical, should use center of mass of the
-#' basic structure as origin or not, if TRUE - center_of_mass_substructure
+#' basic structure as origin or not, if TRUE - center_of_substructure
 #' must be FALSE
-#' @param center_of_mass_substructure logical, should use center of mass of
+#' @param center_of_substructure logical, should use center of mass of
 #' a substructure as origin or not, if TRUE - center_of_mass must be FALSE
 #' @param sub_atoms
-#' ONLY if center_of_mass_substructure is TRUE - atoms character (e.g. '4 5 6 7 8 9')
+#' ONLY if center_of_substructure is TRUE - atoms character (e.g. '4 5 6 7 8 9')
 #' @return dataframe with npa based DM
 #' @export
 dip.gaussian.df <- function(coor_atoms = '',
-                            center_of_mass = F,
-                            center_of_mass_substructure = F,
-                            sub_atoms = NULL) {
+                            center_of_substructure = F,
+                            sub_atoms = NULL,
+                            center_of_mass = F) {
   molecules <- list.files()
   dip.list <- list()
   for (molecule in molecules) {
     setwd(molecule)
     dip.list[[match(molecule, molecules)]] <- dip.gaussian(coor_atoms,
-                                                           center_of_mass,
-                                                           center_of_mass_substructure,
-                                                           sub_atoms)
+                                                           center_of_substructure,
+                                                           sub_atoms,
+                                                           center_of_mass)
     setwd('..')
   }
   dip.dafr <- data.frame(data.table::rbindlist(dip.list, fill = T))
@@ -319,33 +320,40 @@ dip.gaussian.df <- function(coor_atoms = '',
 #' Allows for use of several substructures.
 #' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
 #' @param center_of_mass logical, should use center of mass of the
-#' basic structure as origin or not, if TRUE - center_of_mass_substructure
+#' basic structure as origin or not, if TRUE - center_of_substructure
 #' must be FALSE
-#' @param center_of_mass_substructure logical, should use center of mass of
+#' @param center_of_substructure logical, should use center of mass of
 #' a substructure as origin or not, if TRUE - center_of_mass must be FALSE
 #' @param subunits_inputs_vector
-#' ONLY if center_of_mass_substructure is TRUE - vector of
+#' ONLY if center_of_substructure is TRUE - vector of
 #' atoms character (e.g. c('10 11 12 13', '4 5 6 7 8 9'))
 #' @return data frame with multiple or single DMs
 #' @export
-dip.gaussian.multi <- function(coor_atoms = '',
-                                  center_of_mass = F,
-                                  center_of_mass_substructure = F,
-                                  subunits_inputs_vector = NULL) {
-  if (!is.null(subunits_inputs_vector))  {
-    multi.df <- lapply(subunits_inputs_vector,
+dip.gaussian.multi <- function(coor_atoms_vector = c(''),
+                                  center_of_substructure = F,
+                                  subunits_inputs_vector = NULL,
+                                  center_of_mass = F) {
+  if (!is.null(subunits_inputs_vector) & !center_of_mass)  {
+    while (length(subunits_inputs_vector) < length(coor_atoms_vector)) {
+      subunits_inputs_vector <- c(subunits_inputs_vector, 'NA')
+    }
+    multi.df <- lapply(coor_atoms_vector,
                        function(x) {
-                         dip.gaussian.df(coor_atoms,
-                                         center_of_mass,
-                                         center_of_mass_substructure,
-                                         x)
+                         dip.gaussian.df(x,
+                                         center_of_substructure,
+                                         subunits_inputs_vector[match(x, coor_atoms_vector)],
+                                         center_of_mass)
                        }
                       )
   } else {
-    multi.df <- list(dip.gaussian.df(coor_atoms,
-                                center_of_mass,
-                                center_of_mass_substructure,
-                                subunits_inputs_vector))
+    multi.df <- lapply(coor_atoms_vector,
+                       function(x) {
+                         dip.gaussian.df(x,
+                                         center_of_substructure,
+                                         subunits_inputs_vector,
+                                         center_of_mass)
+                       }
+                      )
   }
 
   for (i in 1:length(multi.df)) {

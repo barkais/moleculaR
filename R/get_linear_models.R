@@ -253,7 +253,7 @@ model.plot <- function(model = models[1,1], data) {
 #' @return models list, CV results for k=3/5/LOO and a plot of choice. interactive.
 #' @export
 model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
-                          leave.out = '', predict = F) {
+                          leave.out = '', predict = F, what.model = NULL) {
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T,
                                            check.names = T))
@@ -269,8 +269,8 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   models <- model.subset(mod_data, min = min, max = max)
   tab <- knitr::kable(models)
   print(tab)
-  what.model <- readline('Choose the model you would like to plot (line number): ')
-  what.model <- as.numeric(what.model)
+  if (!is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
+  if (is.character(what.model)) what.model <- as.numeric(what.model)
   mod.sum <- summary(lm(models[what.model, 1], mod_data))$coefficients
   cat('
   Model Coefficients')

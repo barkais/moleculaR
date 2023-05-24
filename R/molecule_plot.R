@@ -40,7 +40,7 @@ plot_molecule <- function(xyz_file) {
   plot.edges <- unlist(lapply(1:length(edges), edge_extarct))
   rgl::segments3d(xyz[plot.edges,2:4], add = T, lwd = 3.5)
   rgl::text3d(xyz[,2:4], texts = 1:nrow(xyz),
-              fixedSize = FALSE, add = T, adj = -1.8)
+              fixedSize = FALSE, add = T, adj = -1.4)
   rgl::aspect3d('iso')
   rgl::rglwidget()
 }
