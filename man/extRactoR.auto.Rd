@@ -2,6 +2,7 @@
 % Please edit documentation in R/extRactor.R
 \name{extRactoR.auto}
 \alias{extRactoR.auto}
+\alias{extRactoR}
 \title{Extract and compress all needed information from Gaussian log files - no GUI}
 \usage{
 extRactoR.auto()

@@ -2,18 +2,20 @@
 % Please edit documentation in R/moleculaR_main.R
 \name{moleculaR}
 \alias{moleculaR}
-\title{User interface for the extraction of all possible features}
+\alias{moleculaR.input}
+\title{User function for the extraction of all possible features
+based on a ready input file}
 \usage{
-moleculaR()
+moleculaR(input_file = NULL)
+}
+\arguments{
+\item{input_file}{moleculaR's input file}
 }
 \value{
 csv file with all features and a input file for future
  use and documentation
 }
 \description{
-Calculate all features by answering questions, saving the final
-data set in a chosen location and retaining user inputs for future use.
-The output of inputs can be used directly with the moleculaR.input function.
-No input is needed. User is guided with questions and answers.
-See the full manual for rules of use and options.
+Calculate all features by applying to an input file, saving the final
+ data set in a chosen location.
 }

@@ -6,24 +6,24 @@
 Allows for use of several substructures.}
 \usage{
 dip.gaussian.multi(
-  coor_atoms = "",
-  center_of_mass = F,
-  center_of_mass_substructure = F,
-  subunits_inputs_vector = NULL
+  coor_atoms_vector = c(""),
+  center_of_substructure = F,
+  subunits_inputs_vector = NULL,
+  center_of_mass = F
 )
 }
 \arguments{
-\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3')}
-
-\item{center_of_mass}{logical, should use center of mass of the
-basic structure as origin or not, if TRUE - center_of_mass_substructure
-must be FALSE}
-
-\item{center_of_mass_substructure}{logical, should use center of mass of
+\item{center_of_substructure}{logical, should use center of mass of
 a substructure as origin or not, if TRUE - center_of_mass must be FALSE}
 
-\item{subunits_inputs_vector}{ONLY if center_of_mass_substructure is TRUE - vector of
+\item{subunits_inputs_vector}{ONLY if center_of_substructure is TRUE - vector of
 atoms character (e.g. c('10 11 12 13', '4 5 6 7 8 9'))}
+
+\item{center_of_mass}{logical, should use center of mass of the
+basic structure as origin or not, if TRUE - center_of_substructure
+must be FALSE}
+
+\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3')}
 }
 \value{
 data frame with multiple or single DMs

@@ -9,7 +9,8 @@ model.report(
   min = 2,
   max = floor(dim(mod_data)[1]/5),
   leave.out = "",
-  predict = F
+  predict = F,
+  what.model = NULL
 )
 }
 \arguments{
