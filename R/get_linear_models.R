@@ -266,7 +266,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   row.names(mod_data) <- RN
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
-  models <- model.subset(mod_data, min = min, max = max)
+  models <- model.subset(mod_data, min = min, max = max, iterations = 1, cutoff = 0.9)
   tab <- knitr::kable(models)
   print(tab)
   if (is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
@@ -277,14 +277,14 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 500)
+  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 1000)
+  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
