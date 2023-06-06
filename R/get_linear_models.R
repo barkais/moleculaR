@@ -89,7 +89,7 @@ model.subset <- function(data, out.col = dim(data)[2],
   if (cross.terms == T) {
     max <- max - 1
   }
-  for (i in min:max) {
+  for (i in 1:max) {
     comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
     comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
       paste,
@@ -130,10 +130,23 @@ model.subset <- function(data, out.col = dim(data)[2],
     forms <- data.frame(rbind(orig.forms, forms))
     colnames(forms) <- "formula"
   }
-  for (i in 1:dim(forms)[1]) {
-    forms$formula[i] <- stringr::str_c(output, " ~ ", forms$formula[i])
-    ols.list[[i]] <- summary(lm(forms[i, ], data = data))$r.squared
+  forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
+  if (max > 3) { # a work around for high dimension models
+    ols.low <- list()
+    forms.low <- forms[stringr::str_count(forms$formula, pattern = "\\+") <= 2, ]
+    forms.high <- forms[stringr::str_count(forms$formula, pattern = "\\+") >= (min - 1), ]
+    ols.low <- unlist(lapply(forms.low, function(x) summary(lm(x, data = data))$r.squared))
+    forms.low <- data.frame(forms.low, ols.low)
+    forms.low <- forms.low[order(forms.low$ols.low, decreasing = T),]
+    forms.low <- forms.low[1:10, ]
+    new.forms <- list()
+    for (i in 1:10) {
+      new.forms[[i]] <- forms.high[grepl(forms.low[i, 1], x = forms.high, fixed = T)]
+    }
+    forms <- data.frame(unlist(new.forms))
+    names(forms) <- 'formula'
   }
+  ols.list <- lapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
   forms[, 2] <- do.call(rbind, ols.list)
   names(forms)[2] <- "R.sq"
   forms.cut <- forms[forms$R.sq > cutoff, ]
@@ -141,15 +154,16 @@ model.subset <- function(data, out.col = dim(data)[2],
     cutoff <- cutoff - 0.1
     forms.cut <- forms[forms$R.sq > cutoff, ]
   }
+  if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
-    stts <- model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
+    stts <- moleculaR:::model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
     q2.list[[i]] <- stts[2]
     mae.list[[i]] <- stts[1]
   }
   forms.cut[, 3] <- data.table::transpose(do.call(rbind, q2.list))
   forms.cut[, 4] <- data.table::transpose(do.call(rbind, mae.list))
   names(forms.cut)[3:4] <- c("Q.sq", "MAE")
-  forms.cut <- head(dplyr::arrange(forms.cut, desc(forms.cut$Q.sq)), 50)
+  forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$Q.sq))
   forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
   return(forms.cut)
 }
@@ -277,14 +291,14 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
+  cv_3fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
+  cv_5fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
