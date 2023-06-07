@@ -139,9 +139,15 @@ model.subset <- function(data, out.col = dim(data)[2],
     forms.low <- data.frame(forms.low, ols.low)
     forms.low <- forms.low[order(forms.low$ols.low, decreasing = T),]
     forms.low <- forms.low[1:10, ]
+    forms.low$forms.low <- stringr::str_remove(forms.low$forms.low, '`output` ~ ')
+    broken.forms <- stringr::str_split(forms.low$forms.low, ' \\+ ')
     new.forms <- list()
     for (i in 1:10) {
-      new.forms[[i]] <- forms.high[grepl(forms.low[i, 1], x = forms.high, fixed = T)]
+      new.forms[[i]] <- forms.high[which(apply(sapply(X = broken.forms[[i]],
+                                                      FUN = grepl,
+                                                      forms.high),
+                                               1,
+                                               all))]
     }
     forms <- data.frame(unlist(new.forms))
     names(forms) <- 'formula'
