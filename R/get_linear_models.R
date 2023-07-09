@@ -289,6 +289,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   row.names(mod_data) <- RN
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
+  ifelse(ext.val == T, cutoff = 0.8, cutoff = 0.9)
   models <- model.subset(mod_data, min = min, max = max, iterations = 1, cutoff = 0.9)
   if (ext.val == T) {
     MAE.list <- vector(length = nrow(models))
