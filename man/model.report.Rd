@@ -10,6 +10,7 @@ model.report(
   max = floor(dim(mod_data)[1]/5),
   leave.out = "",
   predict = F,
+  ext.val = F,
   what.model = NULL
 )
 }
@@ -24,6 +25,10 @@ model.report(
 
 \item{predict}{if leave.out is not empty, should a prediction
 of it be computed?}
+
+\item{ext.val}{if leave.out is not empty, should this list be used as a test?}
+
+\item{what.model}{if not in an interactive session, what model should be used?}
 }
 \value{
 models list, CV results for k=3/5/LOO and a plot of choice. interactive.
