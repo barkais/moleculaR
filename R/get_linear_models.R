@@ -270,10 +270,13 @@ model.plot <- function(model = models[1,1], data) {
 #' @param leave.out name of observations to leave out (e.g. 'p_Br')
 #' @param predict if leave.out is not empty, should a prediction
 #' of it be computed?
+#' @param ext.val if leave.out is not empty, should this list be used as a test?
+#' @param what.model if not in an interactive session, what model should be used?
 #' @return models list, CV results for k=3/5/LOO and a plot of choice. interactive.
 #' @export
 model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
-                          leave.out = '', predict = F, what.model = NULL) {
+                          leave.out = '', predict = F, ext.val = F,
+                         what.model = NULL) {
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T,
                                            check.names = T))
@@ -287,6 +290,19 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
   models <- model.subset(mod_data, min = min, max = max, iterations = 1, cutoff = 0.9)
+  if (ext.val == T) {
+    MAE.list <- vector(length = nrow(models))
+    for (model in 1:nrow(models)) {
+      prediction <- predict(lm(models[model, 1], mod_data), pred.data)
+      real <- pred.data$output
+      MAE.list[model] <- mean(abs(prediction - real))
+    }
+    models$MAE <- MAE.list
+    models$Model <- rep(0, nrow(models))
+    models <- dplyr::arrange(models, models$MAE)
+    models$Model <- 1:nrow(models)
+    names(models)[4] <- 'Pred.MAE'
+  }
   tab <- knitr::kable(models)
   print(tab)
   if (is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
@@ -357,8 +373,8 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                                 collapse = "\n")
 
   model = models[what.model, 1]
-  data = mod_data
-  best.mod <- lm(model, data = data)
+  data = data.frame(rbind(mod_data, pred.data))
+  best.mod <- lm(model, data = mod_data)
   pred_interval <- predict(best.mod,
                            newdata = data,
                            interval = 'pre',
@@ -366,6 +382,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   plot.dat <- data.frame(cbind(data$output, pred_interval))
   colnames(plot.dat) <- c('Measured', 'Predicted', 'lwr', 'upr')
   rownames(plot.dat) <- row.names(data)
+  lo.names <- which((row.names(plot.dat) %in% leave.out))
 
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o_",'2-')
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"m_",'3-')
@@ -375,7 +392,8 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   row.names(plot.dat) <- stringr::str_replace(row.names(plot.dat),"o3-",'2,3-')
 
   plot.dat <- dplyr::mutate(plot.dat, Position = rep(NA, nrow(plot.dat)))
-  for (i in 1:nrow(plot.dat)) {
+  plot.dat$Position[lo.names] <- 'external'
+  for (i in 1:nrow(mod_data)) {
     if (grepl('3-',row.names(plot.dat)[i])) {
       plot.dat[i,5] <- 'meta'
     }
@@ -392,10 +410,12 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
       plot.dat[i,5] <- 'para'
     }
   }
-
   plot.dat <- dplyr::mutate(plot.dat, label = row.names(plot.dat))
+  plot.dat <- dplyr::mutate(plot.dat, 
+                            shapes = c(rep(18, nrow(mod_data)),
+                                       rep(19, nrow(pred.data))))
   plot <- ggplot2::ggplot(plot.dat, ggplot2::aes(x = Measured, y = Predicted)) +
-    ggplot2::geom_point(size = 2, shape = 18, ggplot2::aes(color = Position)) +
+    ggplot2::geom_point(size = 2, shape = plot.dat$shapes, ggplot2::aes(color = Position)) +
     ggplot2::stat_smooth(ggplot2::aes(y = lwr), color = "cadetblue", linetype = "dashed",
                 se = F, method = 'lm', fullrange = T, size = 0.8) +
     ggplot2::stat_smooth(ggplot2::aes(y = upr), color = "cadetblue", linetype = "dashed",
@@ -413,8 +433,8 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
           panel.grid.minor = ggplot2::element_blank(),
           panel.border = ggplot2::element_blank(), panel.background = ggplot2::element_blank(),
           legend.position = c(2,2)) +
-    ggplot2::scale_color_manual(values = c(Ph = "black", meta = 'tan1',
-                                  para = '#66a182',ortho = '#d1495b')) +
+    ggplot2::scale_color_manual('', values = c(Ph = "black", meta = 'tan1',
+                                  para = '#66a182',ortho = '#d1495b', external = 'steelblue4')) +
     ggplot2::xlim(min(plot.dat[,3]), max(plot.dat[,4])) +
     ggplot2::ylim(min(plot.dat[,3]), max(plot.dat[,4])) +
     ggplot2::coord_fixed(ratio = 1) +
@@ -437,3 +457,4 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
     ggplot2::ggtitle(equation)
   plot
 }
+
