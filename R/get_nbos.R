@@ -56,6 +56,8 @@ nbo.df <- function(atom_indices, difference_indices = NA) {
       unlisted.pvec,
       ceiling(seq_along(unlisted.pvec) / 2)
     )
+    pairs.vec.atoms <- strsplit(atom_indices, " ")
+    unlisted.pvec.atoms <- unlist(pairs.vec.atoms)
     clean.names <- stringr::str_remove_all(names(nbo.dafr), 'NPA_')
     nbo.df.diff <- data.frame(matrix(ncol = length(paired), nrow = nrow(nbo.dafr)))
     diff_names <- vector(length = length(paired))
@@ -65,9 +67,9 @@ nbo.df <- function(atom_indices, difference_indices = NA) {
     }
     names(nbo.df.diff) <- diff_names
     for (i in 1:ncol(nbo.df.diff)) {
-      mean.paired.1 <- mean(nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][1])]])
-      mean.paired.2 <- mean(nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][2])]])
-      nbo.df.diff[, i] <- mean.paired.1 - mean.paired.2
+      paired.1 <- nbo.dafr[[which(unique(unlisted.pvec.atoms) == paired[[i]][1])]]
+      paired.2 <- nbo.dafr[[which(unique(unlisted.pvec.atoms) == paired[[i]][2])]]
+      nbo.df.diff[, i] <- paired.1 - paired.2
     }
     nbo.dafr <- data.frame(cbind(nbo.dafr, nbo.df.diff))
   } else {
