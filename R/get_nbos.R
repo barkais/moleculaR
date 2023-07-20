@@ -14,7 +14,7 @@
 #' @return A data frame with NBO charges
 nbo.info <- function(atom_index) {
   atom_index <- as.numeric(unlist(strsplit(atom_index, " ")))
-  nbos.info <- list.files(pattern = "nbo_")
+  nbos.info <- list.files(pattern = "nbo")
   nbos <- data.frame(data.table::fread(nbos.info))
   nbo.mol <- data.table::transpose(data.frame(nbos[atom_index, ]))
   colnames(nbo.mol) <- paste0('NPA_', as.character(atom_index))
@@ -67,10 +67,7 @@ nbo.df <- function(atom_indices, difference_indices = NA) {
     for (i in 1:ncol(nbo.df.diff)) {
       mean.paired.1 <- mean(nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][1])]])
       mean.paired.2 <- mean(nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][2])]])
-      max.col <- which.max(c(mean.paired.1, mean.paired.2))
-      min.col <- which.min(c(mean.paired.1, mean.paired.2))
-      nbo.df.diff[, i] <- nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][max.col])]] -
-        nbo.dafr[[which(unique(unlisted.pvec) == paired[[i]][min.col])]]
+      nbo.df.diff[, i] <- mean.paired.1 - mean.paired.2
     }
     nbo.dafr <- data.frame(cbind(nbo.dafr, nbo.df.diff))
   } else {

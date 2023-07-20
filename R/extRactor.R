@@ -146,12 +146,12 @@ extRact.polarizability <- function() {
   line.aniso <- grep('aniso', text, value = T)
   tokens.an <- strsplit(line.aniso, "\\s+")[[1]]
   tokens.an <- stringr::str_replace_all(tokens.an, 'D', 'E')
-  numerics.an <- as.numeric(tokens.an[3],
+  numerics.an <- as.numeric(tokens.an[2],
                          scientific = T)
   line.iso <- grep('iso', text, value = T)
   tokens.iso <- strsplit(line.iso, "\\s+")[[1]]
   tokens.iso <- stringr::str_replace_all(tokens.iso, 'D', 'E')
-  numerics.iso <- as.numeric(tokens.iso[3],
+  numerics.iso <- as.numeric(tokens.iso[2],
                             scientific = T)
   result <- data.frame(t(c(numerics.iso, numerics.an)))
   return(result)

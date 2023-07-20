@@ -38,22 +38,22 @@ unwRapper.single <- function(feather_file) {
                           align = "l")
   new_xyz <- new_xyz[-1]
   new_xyz <- new_xyz[-length(new_xyz)]
-  write(new_xyz, paste0(name, '/', name, ".xyz"))
+  write(new_xyz, paste0(name, "/opt_structure.xyz"))
 
   # write dipole csv
-  write.csv(dipole, paste0(name, '/dipole_', name,'.csv'),
+  write.csv(dipole, paste0(name, '/dipole.csv'),
             row.names = FALSE)
 
   # write polarizability csv
-  write.csv(polar, paste0(name, '/polar_', name,'.csv'),
+  write.csv(polar, paste0(name, '/polar.csv'),
             row.names = FALSE)
 
   # write NBO csv
-  write.csv(nbo, paste0(name, '/nbo_', name,'.csv'),
+  write.csv(nbo, paste0(name, '/nbo.csv'),
             row.names = FALSE)
 
   # write IR spectrum csv
-  write.csv(ir.spectrum, paste0(name, '/IR_', name,'.csv'),
+  write.csv(ir.spectrum, paste0(name, '/IR.csv'),
             row.names = FALSE)
 
   # write each atom's movement vectors to a separate csv
