@@ -109,17 +109,24 @@ unwRapper <- function() {
 
   for (file in list.files(pattern = '.feather')) {
     name <- tools::file_path_sans_ext(file)
-    unwRapper.single(file)
+    moleculaR:::unwRapper.single(file)
     file.rename(name, paste0('moleculaR_csv_files',
                              '/',
                              name))
   }
-  invisible(file.copy(list.files(list.dirs('moleculaR_csv_files/',
-                                 recursive = F),
-                       pattern = '.xyz',
-                       full.names = T),
-            'Optimized_structures_xyz/', overwrite = T
-  ))
+  xyz_files <- list.files(list.dirs('moleculaR_csv_files/',
+                                    recursive = T),
+                          pattern = '.xyz',
+                          full.names = T)
+  names <- basename(list.dirs('moleculaR_csv_files/',
+                              recursive = F))
+  for (file in xyz_files) {
+    invisible(file.copy(file,
+              paste0('Optimized_structures_xyz/', 
+                     names[[match(file, xyz_files)]], '.xyz'),
+              overwrite = T
+    ))
+  }
 
   svDialogs::dlg_message(
   "
