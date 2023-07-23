@@ -109,7 +109,7 @@ unwRapper <- function() {
 
   for (file in list.files(pattern = '.feather')) {
     name <- tools::file_path_sans_ext(file)
-    moleculaR:::unwRapper.single(file)
+    unwRapper.single(file)
     file.rename(name, paste0('moleculaR_csv_files',
                              '/',
                              name))
