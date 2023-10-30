@@ -46,12 +46,11 @@ center.of.mass <- function(coor_atoms) {
 #' @param sub_atoms atoms character (e.g. '4 5 6 7 8 9')
 #' @keywords internal
 #' @return center of mass of a substructure
-center.of.substructure <- function(coor_atoms, sub_atoms) {
+center.of.substructure <- function(sub_atoms) {
   atoms <- strsplit(sub_atoms, " ")
   unlisted.atoms <- unlist(atoms)
   numeric.atoms <- as.numeric(unlisted.atoms)
-  coor.trans(coor_atoms)
-  xyz <- data.table::fread(list.files(pattern = "tc.xyz"), header = F,
+  xyz <- data.table::fread(list.files(pattern = ".xyz"), header = F,
                            colClasses = c("character",
                                           "numeric",
                                           "numeric",
@@ -60,7 +59,6 @@ center.of.substructure <- function(coor_atoms, sub_atoms) {
   xyz <- xyz[numeric.atoms, -1]
   com <- c(sum(xyz[,1]), sum(xyz[,2]), sum(xyz[,3]))
   com <- (1/length(numeric.atoms))*com
-  unlink(list.files(pattern = '_tc'))
   return(com)
 }
 
@@ -179,7 +177,7 @@ dip.gaussian <- function(coor_atoms = '',
           coplane <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
                                   mag(xyz[numeric.atoms[[3]], ] - new_origin))
         } else {
-          com <- center.of.substructure(coor_atoms, sub_atoms)
+          com <- center.of.substructure(sub_atoms)
           new_origin <- com
           new_y <- as.numeric((xyz[numeric.atoms[[2]], ] - new_origin) /
                                 mag(xyz[numeric.atoms[[2]], ] - new_origin))
