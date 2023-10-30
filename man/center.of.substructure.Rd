@@ -4,13 +4,10 @@
 \alias{center.of.substructure}
 \title{Compute molecule's substructure center of mass}
 \usage{
-center.of.substructure(coor_atoms, sub_atoms)
+center.of.substructure(sub_atoms)
 }
 \arguments{
-\item{coor_atoms}{3 atoms character (e.g. '1 2 3')}
-
 \item{sub_atoms}{atoms character (e.g. '4 5 6 7 8 9')}
-}
 \value{
 center of mass of a substructure
 }
