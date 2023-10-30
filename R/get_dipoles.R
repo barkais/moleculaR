@@ -42,7 +42,6 @@ center.of.mass <- function(coor_atoms) {
 
 #' Compute molecule's substructure center of mass
 #'
-#' @param coor_atoms 3 atoms character (e.g. '1 2 3')
 #' @param sub_atoms atoms character (e.g. '4 5 6 7 8 9')
 #' @keywords internal
 #' @return center of mass of a substructure
