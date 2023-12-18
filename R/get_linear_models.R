@@ -131,27 +131,6 @@ model.subset <- function(data, out.col = dim(data)[2],
     colnames(forms) <- "formula"
   }
   forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
-  # if (max > 3) { # a work around for high dimension models
-  #   ols.low <- list()
-  #   forms.low <- forms[stringr::str_count(forms$formula, pattern = "\\+") <= 2, ]
-  #   forms.high <- forms[stringr::str_count(forms$formula, pattern = "\\+") >= (min - 1), ]
-  #   ols.low <- unlist(lapply(forms.low, function(x) summary(lm(x, data = data))$r.squared))
-  #   forms.low <- data.frame(forms.low, ols.low)
-  #   forms.low <- forms.low[order(forms.low$ols.low, decreasing = T),]
-  #   forms.low <- forms.low[1:10, ]
-  #   forms.low$forms.low <- stringr::str_remove(forms.low$forms.low, '`output` ~ ')
-  #   broken.forms <- stringr::str_split(forms.low$forms.low, ' \\+ ')
-  #   new.forms <- list()
-  #   for (i in 1:10) {
-  #     new.forms[[i]] <- forms.high[which(apply(sapply(X = broken.forms[[i]],
-  #                                                     FUN = grepl,
-  #                                                     forms.high),
-  #                                              1,
-  #                                              all))]
-  #   }
-  #   forms <- data.frame(unlist(new.forms))
-  #   names(forms) <- 'formula'
-  # }
   ols.list <- lapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
   forms[, 2] <- do.call(rbind, ols.list)
   names(forms)[2] <- "R.sq"
