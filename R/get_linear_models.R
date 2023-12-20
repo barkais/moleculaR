@@ -138,6 +138,7 @@ model.subset <- function(data, out.col = dim(data)[2],
   while (nrow(forms.cut) == 0) {
     cutoff <- cutoff - 0.1
     forms.cut <- forms[forms$R.sq > cutoff, ]
+    forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
   }
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
@@ -258,7 +259,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                          what.model = NULL) {
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T,
-                                           check.names = T))
+                                           check.names = F))
   RN <- mod_data[,1]
   mod_data <- mod_data[,-1]
   mod_data <- mod_data[complete.cases(mod_data), ]
