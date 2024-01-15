@@ -184,7 +184,7 @@ steRimol <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
     if (!is.na(remove.direction[remove.direction$V1 == origin, ][1, 2])) {
       coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V1 == origin, ][1, 2]), sep = " ")
     } else {
-      coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V1 == origin, ][1, 2]), sep = " ")
+      coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V2 == origin, ][1, 1]), sep = " ")
     }
   }
   coor.trans(coordinates)
