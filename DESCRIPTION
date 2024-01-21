@@ -11,14 +11,18 @@ Description: A physical-organic chemistry toolset - designed for easy,
 Depends: 
     R (>= 2.10)
 Imports:
+    arrow,
     caret,
     data.table,
     dplyr,
     feather,
     ggplot2,
     ggrepel,
+    gridExtra,
     igraph,
     knitr,
+    MASS,
+    nnet,
     plyr,
     pracma,
     reshape2,
