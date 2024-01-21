@@ -13,6 +13,11 @@
 #' @return folder with optimized structures as xyz, and information needed for moleculaR.
 unwRapper.single <- function(feather_file) {
   data <- arrow::read_feather(feather_file)
+  if (any(data == 'nan')) { # feather files from Py version
+    data[data == 'nan'] <- NA
+    data[1, 2:3] <- ""
+    data[2, 1:3] <- ""
+    }
   xyz <- data[complete.cases(data[, 1:4]), 1:4]
   dipole <- data[complete.cases(data[, 5:8]), 5:8]
   polar <- data.frame(data[complete.cases(data[, 9:10]), 9:10])
