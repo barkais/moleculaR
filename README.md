@@ -54,7 +54,7 @@ Expect the following message, indicating everything worked fine.
 ` `      
 `Current working directory is set to path/to/example_log_files/Name_Chosen_By_User`
 
-**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs.** **As it is reasonable to assume that most users will prefer working on local machines, it is still recommended** **avoiding thransferring heavy log files to locals, and it is best practice to install `moleculaR` on both the remote and the** **local, and to transfer only the resulting .feather files to the local. **
+**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs. As it is reasonable to assume that most users will prefer working on local machines, it is still recommendedavoiding thransferring heavy log files to locals, and it is best practice to install `moleculaR` on both the remote and the local, and to transfer only the resulting .feather files to the local.**
 
 #### Step 2 - Unwrap feather files (either locally or remotely)
 
