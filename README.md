@@ -45,12 +45,9 @@ Make sure the common substructure is numbered correctly, **and that there is a c
 Make sure all the log files you want to analyze are in one location. 
 
 ```
-# Run extRactoR (no need to change working directory - extRactoR does it for you)
+# Run extRactoR.auto (while in the .log files' directory)
 extRactoR()
 ```
-Running `extRactoR()` initiates a user interface, which allows for the selection of the log files directory, 
-naming the resulting directory (created by the function) and sets the working directory to that. 
-
 Expect the following message, indicating everything worked fine. 
 
 `Done!`
