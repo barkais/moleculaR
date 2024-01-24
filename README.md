@@ -84,7 +84,7 @@ moleculaR()
 ###### This step results in the creation of two files:
 ######  1. The output csv file - containing all wanted features.
 ######  2. An inputs file in .RData format - containing all user inputs to `moleculaR()` - for future uses and documentation.
-#####  3. In cases where the exact same instructions should be passed to `moleculaR()`, you can use `moleculaR.input()` instead. 
+######  3. In case the exact same instructions should be passed to `moleculaR()`, you can use `moleculaR.input()` instead. 
 
 ```
 # To use an input file resulting from moleculaR(), do one of the following:
