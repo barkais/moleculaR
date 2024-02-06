@@ -105,6 +105,7 @@ NOB.Atype <- function(row, substi, bonds) { # number of bonds for an atom of the
   nob <- nrow(bonds[bonds$`Atom 1` == index | bonds$`Atom 2` == index, ])
   if (symbol == 'H') result <- 'H'
   if (symbol == 'P') result <- 'P'
+  if (symbol == 'F') result <- 'F'
   if (symbol == 'Cl') result <- 'Cl'
   if (symbol == 'Br') result <- 'Br'
   if (symbol == 'I') result <- 'I'
@@ -127,7 +128,7 @@ NOB.Atype <- function(row, substi, bonds) { # number of bonds for an atom of the
     if (nob > 3.5) result <- 'C'
   }
   if (!symbol %in% c('H', 'P', 'Cl', 'Br',
-                     'I', 'O', 'S', 'N', 'C')) result <- 'X'
+                     'I', 'O', 'S', 'N', 'C', 'F')) result <- 'X'
   return(result)
 }
 
