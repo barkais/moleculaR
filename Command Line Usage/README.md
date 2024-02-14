@@ -25,7 +25,7 @@ plot_molecule(xyz_file)
 
 **Throughout the text, command-line usage will be regarded as CLU**
 
-**Generally - CLU functions have suffixes .df and .multi:**
+**Generally - moleculaR's CLU functions have suffixes .df and .multi:**
   
   **.df functions return data frames with wanted information**
   
