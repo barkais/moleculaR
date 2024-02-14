@@ -1,4 +1,4 @@
-# Command Line Usgae - Guide
+# Command Line Usage - Guide
 
 **This guide will demonstrate the use of moleculaR's stand-alone functionalities.**
 
