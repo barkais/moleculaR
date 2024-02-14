@@ -77,7 +77,7 @@ steRimol.xyz.multi(c('1 2', '1 3')) # for a set of xyz files
 
 The structure of `steRimol.multi()` is presented, but is identical to that of `steRimol.xyz.multi()`
 ```
-sterimol.multi(coordinates_vector,
+steRimol.multi(coordinates_vector,
                 CPK = F,
                 only_sub = T,
                 drop = NULL)
@@ -104,10 +104,10 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   
   ```
   # explicitly 
-  sterimol.multi(coordinates_vector = '1 2')
+  steRimol.multi(coordinates_vector = '1 2')
   
   # implicitly 
-  sterimol.multi('1 2')
+  steRimol.multi('1 2')
   ```
 
     
@@ -115,10 +115,10 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   
   ```
   # explicitly 
-  sterimol.multi(coordinates_vector = c('1 2', '1 3'))
+  steRimol.multi(coordinates_vector = c('1 2', '1 3'))
   
   # implicitly 
-  sterimol.multi(c('1 2', '1 3'))
+  steRimol.multi(c('1 2', '1 3'))
   ```
 
   **CPK:**
@@ -132,10 +132,10 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   
   ```
   # explicitly 
-  sterimol.multi(coordinates_vector = c('1 2', '1 3'), CPK = T)
+  steRimol.multi(coordinates_vector = c('1 2', '1 3'), CPK = T)
   
   # implicitly 
-  sterimol.multi(c('1 2', '1 3'), T)
+  steRimol.multi(c('1 2', '1 3'), T)
   ```
   
   **only_sub:**
@@ -151,10 +151,10 @@ Users can avoid this step by setting `only_sub = F`
   # CPK is either T or F
   
   # explicitly 
-  sterimol.multi(coordinates_vector = c('1 2', '1 3'), CPK, only_sub = F)
+  steRimol.multi(coordinates_vector = c('1 2', '1 3'), CPK, only_sub = F)
   
   # implicitly 
-  sterimol.multi(c('1 2', '1 3'), CPK, F)
+  steRimol.multi(c('1 2', '1 3'), CPK, F)
   ```
 
   **drop:**
@@ -170,10 +170,10 @@ In the example above, drop was set to 15. Note that for `drop`, user input is an
   # only_sub is set to T, but can be F as well
   
   # explicitly 
-  sterimol.multi(coordinates_vector = '3 1', CPK, only_sub = T, drop = 15)
+  steRimol.multi(coordinates_vector = '3 1', CPK, only_sub = T, drop = 15)
   
   # implicitly 
-  sterimol.multi('3 1', CPK, T, 15)
+  steRimol.multi('3 1', CPK, T, 15)
   ```
   
 ## NBO
