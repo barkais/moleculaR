@@ -105,7 +105,6 @@ NOB.Atype <- function(row, substi, bonds) { # number of bonds for an atom of the
   nob <- nrow(bonds[bonds$`Atom 1` == index | bonds$`Atom 2` == index, ])
   if (symbol == 'H') result <- 'H'
   if (symbol == 'P') result <- 'P'
-  if (symbol == 'F') result <- 'F'
   if (symbol == 'Cl') result <- 'Cl'
   if (symbol == 'Br') result <- 'Br'
   if (symbol == 'I') result <- 'I'
@@ -128,8 +127,53 @@ NOB.Atype <- function(row, substi, bonds) { # number of bonds for an atom of the
     if (nob > 3.5) result <- 'C'
   }
   if (!symbol %in% c('H', 'P', 'Cl', 'Br',
-                     'I', 'O', 'S', 'N', 'C', 'F')) result <- 'X'
+                     'I', 'O', 'S', 'N', 'C')) result <- 'X'
   return(result)
+}
+
+# find_paths_with_nodes - find all simple paths that include the 
+# primaru steRimol axis. Used in the process of steRimol computation 
+#' when only.sub is TRUE.
+#' @param bonds bonds dataframe
+#' @param node1 primary steRimol atom
+#' @param bonds secondary steRimol atom
+#' @keywords internal
+#' @return all simple paths that include the two atoms
+find_paths_with_nodes <- function(bonds, node1, node2) {
+  
+  # Convert the dataframe to an adjacency matrix
+  graph <- matrix(0, nrow = max(max(bonds)), ncol = max(max(bonds)))
+  for (i in 1:nrow(bonds)) {
+    graph[bonds[i, 1], bonds[i, 2]] <- 1
+    graph[bonds[i, 2], bonds[i, 1]] <- 1
+  }
+  
+  all_paths <- list()
+  
+  # Depth-first search function
+  dfs <- function(current_node, current_path) {
+    current_path <- c(current_path, current_node)
+    
+    # If the current path includes both nodes, add it to the list of paths
+    if (node1 %in% current_path & node2 %in% current_path) {
+      all_paths <<- c(all_paths, list(current_path))
+    }
+    
+    # Recursive DFS for all neighbors
+    neighbors <- which(graph[current_node, ] == 1)
+    for (neighbor in neighbors) {
+      if (!(neighbor %in% current_path)) {
+        dfs(neighbor, current_path)
+      }
+    }
+  }
+  
+  # Start DFS from each node
+  for (start_node in node1:node1) {
+    dfs(start_node, numeric(0))
+  }
+  
+  return(all_paths)
 }
 
 # steRimol.xyz - compute sterimol values for a given primary axis (so called
@@ -196,32 +240,14 @@ steRimol <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
   unlink(list.files(pattern = "_tc"))
   substi <- tibble::rownames_to_column(substi)
   if (only_sub == T) {
-    G <- igraph::graph.data.frame(bonds, directed = T)
-    C <- igraph::all_simple_paths(G, as.character(origin), mode = "all")
-    rlev <- vector()
-    for (i in 1:length(C)) {
-      if (length(C[[i]]) > 2) {
-        rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-      }
-      if (length(C[[i]]) == 2) {
-        two_atoms <- stringr::str_extract_all(as.character(C[i]), "[0-9]{1,3}")[[1]][1:4]
-        if (as.character(origin) %in% two_atoms && as.character(direction) %in% two_atoms) {
-          rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-        }
-      }
-    }
-    remove.vec <- vector()
+    all_paths <- find_paths_with_nodes(bonds,
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[1],
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[2])
+    rlev <- unique(unlist(all_paths))
     if (!is.null(drop)) {
-      for (i in 1:length(rlev)) {
-        if (any(as.character(paste('`', drop, '`', sep = '')) %in% rlev[[i]][[1]])) {
-          remove.vec <- append(remove.vec, i)
-        }
-      }
-      rlev <- rlev[-remove.vec]
+      rlev <- rlev[!rlev %in% drop]
     }
-    rlev <- rlev[grep(paste("`", direction, "`", sep = ""), rlev)]
-    rlev_atoms <- as.numeric(stringr::str_extract_all(unique(unlist(rlev)), "[0-9]{1,3}"))
-    substi <- substi[substi$rowname %in% rlev_atoms, ]
+    substi <- substi[substi$rowname %in% rlev, ]
   }
   substi <- plyr::mutate(substi, Radius = rep(0, nrow(substi)))
   if (CPK == T) {
@@ -311,32 +337,14 @@ steRimol.xyz <- function(mol, coordinates, CPK = F, only_sub = T, drop = NULL) {
   unlink(list.files(pattern = "_tc"))
   substi <- tibble::rownames_to_column(substi)
   if (only_sub == T) {
-    G <- igraph::graph.data.frame(bonds, directed = T)
-    C <- igraph::all_simple_paths(G, as.character(origin), mode = "all")
-    rlev <- vector()
-    for (i in 1:length(C)) {
-      if (length(C[[i]]) > 2) {
-        rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-      }
-      if (length(C[[i]]) == 2) {
-        two_atoms <- stringr::str_extract_all(as.character(C[i]), "[0-9]{1,3}")[[1]][1:4]
-        if (as.character(origin) %in% two_atoms && as.character(direction) %in% two_atoms) {
-          rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-        }
-      }
-    }
-    remove.vec <- vector()
+    all_paths <- find_paths_with_nodes(bonds,
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[1],
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[2])
+    rlev <- unique(unlist(all_paths))
     if (!is.null(drop)) {
-      for (i in 1:length(rlev)) {
-        if (any(as.character(paste('`', drop, '`', sep = '')) %in% rlev[[i]][[1]])) {
-          remove.vec <- append(remove.vec, i)
-        }
-      }
-      rlev <- rlev[-remove.vec]
+      rlev <- rlev[!rlev %in% drop]
     }
-    rlev <- rlev[grep(paste("`", direction, "`", sep = ""), rlev)]
-    rlev_atoms <- as.numeric(stringr::str_extract_all(unique(unlist(rlev)), "[0-9]{1,3}"))
-    substi <- substi[substi$rowname %in% rlev_atoms, ]
+    substi <- substi[substi$rowname %in% rlev, ]
   }
   substi <- plyr::mutate(substi, Radius = rep(0, nrow(substi)))
   if (CPK == T) {

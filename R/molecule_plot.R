@@ -29,15 +29,8 @@ plot_molecule <- function(xyz_file) {
               type = 's',
               axes = F,
               box = F)
-  bonds <- extract.connectivity(xyz_file, threshold_distance = 1.82)
-  G <- igraph::graph.data.frame(bonds, directed = T)
-  edge_extarct <- function(x) {
-    as.numeric(stringr::str_extract_all(
-      igraph::as_ids(igraph::E(G))[x],
-                 "\\(?[0-9,.]+\\)?")[[1]])
-  }
-  edges <- igraph::as_ids(igraph::E(G))
-  plot.edges <- unlist(lapply(1:length(edges), edge_extarct))
+  bonds <- extract.connectivity(xyz_file, threshold_distance = 2.12)
+  plot.edges <- unlist(lapply(1:nrow(bonds), function(i) as.list(bonds[i,])))
   rgl::segments3d(xyz[plot.edges,2:4], add = T, lwd = 3.5)
   rgl::text3d(xyz[,2:4], texts = 1:nrow(xyz),
               fixedSize = FALSE, add = T, adj = -1.4)

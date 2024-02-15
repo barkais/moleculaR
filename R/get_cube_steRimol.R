@@ -147,35 +147,19 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
     }
   }
   
-  if (only.sub == T) {
-    G <- igraph::graph.data.frame(bonds, directed = T)
-    C <- igraph::all_simple_paths(G, as.character(origin), mode = "all")
-    rlev <- vector()
-    for (i in 1:length(C)) {
-      if (length(C[[i]]) > 2) {
-        rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-      }
-      if (length(C[[i]]) == 2) {
-        two_atoms <- stringr::str_extract_all(as.character(C[i]), "[0-9]{1,3}")[[1]][1:4]
-        if (as.character(origin) %in% two_atoms && as.character(direction) %in% two_atoms) {
-          rlev[[i]] <- stringr::str_extract_all(as.character(C[i]), "`[0-9]{1,3}`")
-        }
-      }
-    }
-    remove.vec <- vector()
+  if (only_sub == T) {
+    all_paths <- find_paths_with_nodes(bonds,
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[1],
+                                       as.numeric(unlist(stringr::str_split(coordinates, ' ')))[2])
+    rlev <- unique(unlist(all_paths))
     if (!is.null(drop)) {
-      for (i in 1:length(rlev)) {
-        if (any(as.character(paste('`', drop, '`', sep = '')) %in% rlev[[i]][[1]])) {
-          remove.vec <- append(remove.vec, i)
-        }
-      }
-      rlev <- rlev[-remove.vec]
+      rlev <- rlev[!rlev %in% drop]
     }
-    rlev <- rlev[grep(paste("`", direction, "`", sep = ""), rlev)]
-    rlev_atoms <- as.numeric(stringr::str_extract_all(unique(unlist(rlev)), "[0-9]{1,3}"))
   } else {
-    G <- igraph::graph.data.frame(bonds, directed = T)
-    rlev_atoms <- 1:length(unique(c(bonds[, 1], bonds[, 2])))
+    all_paths <- find_paths_with_nodes(bonds,
+                                       min(bonds),
+                                       max(bonds))
+    rlev <- unique(unlist(all_paths))
   }
   
   full.cube <- data.frame(data.table::fread(cubefile,
@@ -276,16 +260,14 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
                                                                         function(x) close.atom(x))))
   
   trans.co <- data.frame(round(trans.co, 6))
-  tcs <- trans.co[trans.co$X4 %in% rlev_atoms,1:3]
-  tcs.rest.of.mol <- trans.co[-(trans.co$X4 %in% rlev_atoms),1:3]
+  tcs <- trans.co[trans.co$X4 %in% rlev,1:3]
+  tcs.rest.of.mol <- trans.co[-(trans.co$X4 %in% rlev),1:3]
   
   if (plot == T) rgl::plot3d(tcs, col = 'black', axes = F) # Plot for maintenance
   if (plot == T) rgl::plot3d(tcs.rest.of.mol, col = 'grey', add = T)
   if (plot == T) rgl::plot3d(trans.co[1:n.atoms,1:3], col = col_and_size$V2[atomic.numbers],
                              size = col_and_size$V3[atomic.numbers], type = 's', add = T)
-  edge_extarct <- function(x) as.numeric(stringr::str_extract_all(igraph::as_ids(igraph::E(G))[x],"\\(?[0-9,.]+\\)?")[[1]])
-  edges <- igraph::as_ids(igraph::E(G))
-  plot.edges <- unlist(lapply(1:length(edges), edge_extarct))
+  plot.edges <- unlist(lapply(1:nrow(bonds), function(i) as.list(bonds[i,])))
   if (plot == T) rgl::segments3d(trans.co[plot.edges,1:3], add = T, lwd = 3.5)
   if (plot == T) rgl::aspect3d('iso')
   mag <- function(vector) {
