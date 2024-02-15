@@ -188,7 +188,7 @@ steRimol <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
       coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V2 == origin, ][1, 1]), sep = " ")
     }
   }
-  coor.trans(coordinates)
+  coor.trans.file(coordinates, mol)
   mag <- function(vector) {
     sqrt(vector[[1]]^2 + vector[[2]]^2)
   }
