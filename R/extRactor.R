@@ -27,22 +27,95 @@
 #' @keywords internal
 #' @return A single column data frame with nbo charges
 extRact.NBO <- function() {
-  pattern1 <- 'Summary of'
-  pattern2 <- '====='
-  text <- main
-  first_index <- max(grep(pattern1, text))
-  last_index <- first_index + min(grep(pattern2,
-             text[(first_index + 1):length(text)]))
-  text <- text[(first_index + 6):(last_index - 1)]
-  extract_nbo_values <- function(string) {
-    tokens <- strsplit(string, "\\s+")[[1]]
-    numerics <- as.numeric(grep("^-?[0-9]+([.][0-9]+)?$", tokens, value = TRUE))
-    return(numerics[2])
-  }
-  result <- data.frame(do.call(rbind, lapply(text, extract_nbo_values)))
-  names(result) <- 'NPA'
-  return(result)
+  tryCatch({
+    pattern1 <- 'Summary of'
+    pattern2 <- '====='
+    text <- main
+    first_index <- max(grep(pattern1, text))
+    last_index <- first_index + min(grep(pattern2,
+                                         text[(first_index + 1):length(text)]))
+    text <- text[(first_index + 6):(last_index - 1)]
+    extract_nbo_values <- function(string) {
+      tokens <- strsplit(string, "\\s+")[[1]]
+      numerics <- as.numeric(grep("^-?[0-9]+([.][0-9]+)?$", tokens, value = TRUE))
+      return(numerics[2])
+    }
+    result <- data.frame(do.call(rbind, lapply(text, extract_nbo_values)))
+    names(result) <- 'NPA'
+    return(result)
+  }, error = function(e) {
+    result <- data.frame(NA)
+    names(result) <- 'NPA'
+    return(result)
+  })
 }
+
+
+#' Pull Hirshfeld charges from Gaussian log files
+#'
+#' This function acts on a read Gaussian log file.
+#' No input is needed.
+#'
+#' No Parameters
+#' @keywords internal
+#' @return A single column data frame with Hirshfeld charges
+extRact.Hirsh <- function() {
+  tryCatch({
+    pattern1 <- 'Hirshfeld'
+    pattern2 <- 'Tot'
+    text <- main
+    first_index <- grep(pattern1, text)[length(grep(pattern1, text)) - 1]
+    last_index <- first_index + min(grep(pattern2,
+                                         text[(first_index + 1):length(text)]))
+    text <- text[(first_index + 2):(last_index - 1)]
+    extract_hirsh_values <- function(string) {
+      tokens <- strsplit(string, "\\s+")[[1]]
+      numerics <- as.numeric(grep("^-?[0-9]+([.][0-9]+)?$", tokens, value = TRUE))
+      return(numerics[2])
+    }
+    result <- data.frame(do.call(rbind, lapply(text, extract_hirsh_values)))
+    names(result) <- 'Hirshfeld'
+    return(result)
+  }, error = function(e) {
+    result <- data.frame(NA)
+    names(result) <- 'Hirshfeld'
+    return(result)
+  })
+}
+
+
+#' Pull CM5 charges from Gaussian log files
+#'
+#' This function acts on a read Gaussian log file.
+#' No input is needed.
+#'
+#' No Parameters
+#' @keywords internal
+#' @return A single column data frame with CM5 charges
+extRact.CM5 <- function() {
+  tryCatch({
+    pattern1 <- 'Hirshfeld'
+    pattern2 <- 'Tot'
+    text <- main
+    first_index <- grep(pattern1, text)[length(grep(pattern1, text)) - 1]
+    last_index <- first_index + min(grep(pattern2,
+                                         text[(first_index + 1):length(text)]))
+    text <- text[(first_index + 2):(last_index - 1)]
+    extract_cm5_values <- function(string) {
+      tokens <- strsplit(string, "\\s+")[[1]]
+      numerics <- as.numeric(grep("^-?[0-9]+([.][0-9]+)?$", tokens, value = TRUE))
+      return(numerics[7])
+    }
+    result <- data.frame(do.call(rbind, lapply(text, extract_cm5_values)))
+    names(result) <- 'CM5'
+    return(result)
+  }, error = function(e) {
+    result <- data.frame(NA)
+    names(result) <- 'CM5'
+    return(result)
+  })
+}
+
 
 #' Pull the dipole moment vector from Gaussian log files
 #'
@@ -285,21 +358,26 @@ extRactoR <- function() {
           extRact.Dipole(),
           extRact.polarizability(),
           extRact.NBO(),
+          extRact.Hirsh(),
+          extRact.CM5(),
           extRact.spectrum(),
           extRact.vectors()
         ))
         df.result <- data.frame(
           matrix(
-            ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
-            nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
+            ncol = sum(unlist(lapply(1:8, function(x) ncol(raw_data[[x]])))),
+            nrow = max(unlist(lapply(1:8, function(x) nrow(raw_data[[x]]))))))
         df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
         df.result[1, 5:8] <- raw_data[[2]]
         df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
         df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
-        df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
-        df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
+        df.result[1:nrow(raw_data[[5]]), 12] <- raw_data[[5]]
+        df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
+        df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
+        df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
+        df.result <- Filter(function(x)!all(is.na(x)), df.result)
         feather::write_feather(df.result,
-                               paste0(output.folder.name,
+                               paste0('Extracted_info',
                                       '/',
                                       tools::file_path_sans_ext(file),
                                       '.feather'))
@@ -307,7 +385,6 @@ extRactoR <- function() {
                                         ' - check for errors in the log file.'))}
     )
   }
-  setwd(output.folder.name)
   cat('
 Done!
 ')
@@ -339,19 +416,24 @@ extRactoR.auto <- function() {
           extRact.Dipole(),
           extRact.polarizability(),
           extRact.NBO(),
+          extRact.Hirsh(),
+          extRact.CM5(),
           extRact.spectrum(),
           extRact.vectors()
         ))
         df.result <- data.frame(
           matrix(
-            ncol = sum(unlist(lapply(1:6, function(x) ncol(raw_data[[x]])))),
-            nrow = max(unlist(lapply(1:6, function(x) nrow(raw_data[[x]]))))))
+            ncol = sum(unlist(lapply(1:8, function(x) ncol(raw_data[[x]])))),
+            nrow = max(unlist(lapply(1:8, function(x) nrow(raw_data[[x]]))))))
         df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
         df.result[1, 5:8] <- raw_data[[2]]
         df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
         df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
-        df.result[1:nrow(raw_data[[5]]), 12:13] <- raw_data[[5]]
-        df.result[1:nrow(raw_data[[6]]), 14:ncol(df.result)] <-  raw_data[[6]]
+        df.result[1:nrow(raw_data[[5]]), 12] <- raw_data[[5]]
+        df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
+        df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
+        df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
+        df.result <- Filter(function(x)!all(is.na(x)), df.result)
         feather::write_feather(df.result,
                                paste0('Extracted_info',
                                       '/',
