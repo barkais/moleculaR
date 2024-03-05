@@ -194,7 +194,7 @@ coor.trans.file <- function(coor_atoms, molecule) {
 #' @aliases extract.connectivity
 #' @export
 extract.connectivity <- function(xyz_file = list.files(pattern = '.xyz'),
-                                 threshold_distance = 2.02) {
+                                 threshold_distance = 2.12) {
   # Read in the XYZ file as a data frame
   xyz_data <- read.table(xyz_file, sep = "", header = FALSE, skip = 2)
   xyz_data <- tibble::rowid_to_column(xyz_data)

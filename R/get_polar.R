@@ -7,7 +7,7 @@
 #' @keywords internal
 #' @return A data frame with polarizabilities
 polar.single <- function() {
-  polar <- data.table::fread(list.files(pattern = 'polar'))
+  polar <- data.table::fread(list.files(pattern = 'Dipole polaraziability'))
   names(polar) <- c('Iso.Polar', 'Aniso.Polar')
   return(polar)
 }

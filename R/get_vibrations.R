@@ -96,7 +96,7 @@ find.bend.freq <- function(atom_pair, threshold = 1350) {
     }
     freq.num <- which.max(lapply(as.vector(which(vib.info[, 1] > threshold)),
                                  cp.mag))
-    freq.max <- as.vector(which(vib.info[, 1] > 1350))[freq.num]
+    freq.max <- as.vector(which(vib.info[, 1] > 1350 && vib.info[, 1] < 3000))[freq.num]
     return(vib.info[freq.max, 1])
   }
 }
