@@ -227,6 +227,7 @@ extRact.polarizability <- function() {
   numerics.iso <- as.numeric(tokens.iso[2],
                             scientific = T)
   result <- data.frame(t(c(numerics.iso, numerics.an)))
+  names(result) <- c('Isotropic_Polar', 'Anisotropic_Polar')
   return(result)
 }
 
@@ -375,7 +376,6 @@ extRactoR <- function() {
         df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
         df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
         df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
-        df.result <- Filter(function(x)!all(is.na(x)), df.result)
         feather::write_feather(df.result,
                                paste0('Extracted_info',
                                       '/',
@@ -399,7 +399,7 @@ Current working directory is set to ',getwd()))
 #'
 #' No Parameters
 #' @return A .feather file for each log file
-#' @aliases extRactoR
+#' @aliases extRactoR.auto
 #' @export
 extRactoR.auto <- function() {
   main <- character()
@@ -433,7 +433,6 @@ extRactoR.auto <- function() {
         df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
         df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
         df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
-        df.result <- Filter(function(x)!all(is.na(x)), df.result)
         feather::write_feather(df.result,
                                paste0('Extracted_info',
                                       '/',

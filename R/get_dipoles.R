@@ -315,7 +315,7 @@ dip.gaussian.df <- function(coor_atoms = '',
 
 #' Pulls and manipulates dipole moment vector.
 #' Allows for use of several substructures.
-#' @param coor_atoms 3 or 4 atoms character (e.g. '1 2 3')
+#' @param coor_atoms_vector vector of sets of 3 or 4 atoms character (e.g. c('1 2 3', '4 5 6'))
 #' @param center_of_mass logical, should use center of mass of the
 #' basic structure as origin or not, if TRUE - center_of_substructure
 #' must be FALSE

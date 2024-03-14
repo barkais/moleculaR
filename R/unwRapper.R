@@ -12,13 +12,15 @@
 #' @keywords internal
 #' @return folder with optimized structures as xyz, and information needed for moleculaR.
 unwRapper.single <- function(feather_file) {
-  data <- arrow::read_feather(feather_file)
+  data <- feather::read_feather(feather_file)
   xyz <- data[complete.cases(data[, 1:4]), 1:4]
   dipole <- data[complete.cases(data[, 5:8]), 5:8]
   polar <- data.frame(data[complete.cases(data[, 9:10]), 9:10])
   nbo <- data.frame(data[complete.cases(data[, 11]), 11])
-  ir.spectrum <- data[complete.cases(data[, 12:13]), 12:13]
-  vectors <- data[complete.cases(data[, 14:ncol(data)]), 14:ncol(data)]
+  Hirsh <- data.frame(data[complete.cases(data[, 12]), 12])
+  cm5 <- data.frame(data[complete.cases(data[, 13]), 13])
+  ir.spectrum <- data[complete.cases(data[, 14:15]), 14:15]
+  vectors <- data[complete.cases(data[, 16:ncol(data)]), 16:ncol(data)]
 
   # Define naming for all files
   name <- tools::file_path_sans_ext(feather_file)
@@ -49,9 +51,17 @@ unwRapper.single <- function(feather_file) {
             row.names = FALSE)
 
   # write NBO csv
-  write.csv(nbo, paste0(name, '/nbo.csv'),
+  if (nrow(nbo) > 0) write.csv(nbo, paste0(name, '/nbo.csv'),
             row.names = FALSE)
-
+  
+  # write Hirshfeld csv
+  if (nrow(Hirsh) > 0) write.csv(Hirsh, paste0(name, '/Hirshfeld.csv'),
+            row.names = FALSE)
+  
+  # write cm5 csv
+  if (nrow(cm5) > 0) write.csv(cm5, paste0(name, '/CM5.csv'),
+            row.names = FALSE)
+  
   # write IR spectrum csv
   write.csv(ir.spectrum, paste0(name, '/IR.csv'),
             row.names = FALSE)

@@ -147,7 +147,7 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
     }
   }
   
-  if (only_sub == T) {
+  if (only.sub == T) {
     all_paths <- find_paths_with_nodes(bonds,
                                        as.numeric(unlist(stringr::str_split(coordinates, ' ')))[1],
                                        as.numeric(unlist(stringr::str_split(coordinates, ' ')))[2])

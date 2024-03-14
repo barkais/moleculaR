@@ -90,10 +90,10 @@ Note: Directionality matters. 1,2 and 2,1 are different."
     sterimol.inputs <- NA
   }
   
-  ### NBO
+  ### Charges
   
   nbo.answer <- svDialogs::dlg_message(
-    "Would you like to use NBO charges?",
+    "Would you like to use include atomic partial charges?",
     type = 'yesno')$res
   if (nbo.answer == 'yes') {
     
@@ -104,7 +104,7 @@ Note: Directionality matters. 1,2 and 2,1 are different."
     atom_indices <- gsub(',', ' ', atom_indices)
     
     diff.answer <- svDialogs::dlg_message(
-      "Would you like to use NBO charge differences?",
+      "Would you like to use partial charge differences (delta)?",
       type = 'yesno')$res
     
     if (diff.answer == 'yes') {
@@ -803,12 +803,30 @@ moleculaR <- function(input_file = NULL) {
     results <- c(results, sterimol.result)
   }
 
-  ### NBO
+  ### Charges
 
   if (!any(is.na(input_file$NBO))) {
-    nbo.result <- list(nbo.df(input_file$NBO$atom_indices,
-                                   input_file$NBO$difference_indices))
-    results <- c(results, nbo.result)
+    
+    if (length(list.files(pattern = 'nbo.csv',
+                          list.dirs(recursive = F))) > 0){
+      nbo.result <- list(nbo.df(input_file$NBO$atom_indices,
+                                input_file$NBO$difference_indices))
+      results <- c(results, nbo.result)
+    }
+
+    if (length(list.files(pattern = 'Hirshfeld.csv',
+                          list.dirs(recursive = F))) > 0){
+      hirsh.result <- list(hirsh.df(input_file$NBO$atom_indices,
+                                    input_file$NBO$difference_indices))
+      results <- c(results, hirsh.result)
+    }
+    
+    if (length(list.files(pattern = 'CM5.csv',
+                          list.dirs(recursive = F))) > 0){
+      cm5.result <- list(cm5.df(input_file$NBO$atom_indices,
+                                input_file$NBO$difference_indices))
+      results <- c(results, cm5.result)
+    }
   }
 
   ### Dipole
