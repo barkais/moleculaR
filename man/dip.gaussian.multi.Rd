@@ -13,6 +13,8 @@ dip.gaussian.multi(
 )
 }
 \arguments{
+\item{coor_atoms_vector}{vector of sets of 3 or 4 atoms character (e.g. c('1 2 3', '4 5 6'))}
+
 \item{center_of_substructure}{logical, should use center of mass of
 a substructure as origin or not, if TRUE - center_of_mass must be FALSE}
 
@@ -22,8 +24,6 @@ atoms character (e.g. c('10 11 12 13', '4 5 6 7 8 9'))}
 \item{center_of_mass}{logical, should use center of mass of the
 basic structure as origin or not, if TRUE - center_of_substructure
 must be FALSE}
-
-\item{coor_atoms}{3 or 4 atoms character (e.g. '1 2 3')}
 }
 \value{
 data frame with multiple or single DMs

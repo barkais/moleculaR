@@ -3,7 +3,6 @@
 \docType{package}
 \name{moleculaR-package}
 \alias{moleculaR-package}
-\alias{_PACKAGE}
 \alias{imports-package}
 \alias{import_usethis}
 \title{moleculaR: moleculaR - Extract and Compute User Guided Quantum-Chemical Molecular Features}
