@@ -3,14 +3,11 @@
 ####### ----------------------------------------------------#####
 
 #' Support funcion - iterator for CV
-#'
+#' 
 #' @param i iteration number
 #' @keywords internal
 #' @return iteration MAE and Q2
-model.single.cv.iterator <- function(i) {
-  tool <- model.single.cv(formula, data, out.col, folds)
-  return(data.frame(tool[[1]], tool[[2]]))
-}
+
 
 #' Cross validate (k-fold) a single model using parallel computation
 #'
@@ -23,6 +20,10 @@ model.single.cv.iterator <- function(i) {
 #'
 #' @return averaged MAE and Q2
 model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
+  model.single.cv.iterator <- function(i) {
+    tool <- model.single.cv(formula, data, out.col, folds)
+    return(data.frame(tool[[1]], tool[[2]]))
+  }
   results <- do.call(rbind, parallel::mclapply(1:iterations, model.single.cv.iterator))
   MAE.validation <- Reduce(`+`, results$tool..1..) / iterations
   q2.validation <- Reduce(`+`, results$tool..2..) / iterations
@@ -114,7 +115,11 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   }
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
-    stts <- model.cv.parallel(forms.cut[i, 1], data, out.col, folds, iterations)
+    stts <- model.cv.parallel(formula = forms.cut[i, 1],
+                              data = data,
+                              out.col = out.col,
+                              folds = folds,
+                              iterations = iterations)
     q2.list[[i]] <- stts[2]
     mae.list[[i]] <- stts[1]
   }
@@ -159,7 +164,11 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
   cutoff <- ifelse(ext.val == T, 0.8, 0.9)
-  models <- model.subset.parallel(mod_data, min = min, max = max, iterations = 1, cutoff = cutoff)
+  models <- model.subset.parallel(mod_data,
+                                  min = min,
+                                  max = max,
+                                  iterations = 1,
+                                  cutoff = cutoff)
   if (ext.val == T) {
     MAE.list <- vector(length = nrow(models))
     for (model in 1:nrow(models)) {
