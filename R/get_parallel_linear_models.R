@@ -23,9 +23,7 @@ model.single.cv.iterator <- function(i) {
 #'
 #' @return averaged MAE and Q2
 model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
-  mae.list <- list()
-  q2.list <- list()
-  results <- do.call(rbind, parallel::parSapply(1:iterations, model.single.cv.iterator))
+  results <- do.call(rbind, parallel::mclapply(1:iterations, model.single.cv.iterator))
   MAE.validation <- Reduce(`+`, results$tool..1..) / iterations
   q2.validation <- Reduce(`+`, results$tool..2..) / iterations
   return(list(MAE.validation, q2.validation))
