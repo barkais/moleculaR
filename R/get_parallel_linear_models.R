@@ -2,6 +2,16 @@
 ####### -----------------Utility Functions------------------#####
 ####### ----------------------------------------------------#####
 
+#' Support funcion - iterator for CV
+#'
+#' @param i iteration number
+#' @keywords internal
+#' @return iteration MAE and Q2
+model.single.cv.iterator <- function(i) {
+  tool <- model.single.cv(formula, data, out.col, folds)
+  return(data.frame(tool[[1]], tool[[2]]))
+}
+
 #' Cross validate (k-fold) a single model using parallel computation
 #'
 #' An iterative version of model.single.cv
@@ -15,10 +25,6 @@
 model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
   mae.list <- list()
   q2.list <- list()
-  model.single.cv.iterator <- function(i) {
-    tool <- model.single.cv(formula, data, out.col, folds)
-    return(data.frame(tool[[1]], tool[[2]]))
-  }
   results <- do.call(rbind, parallel::parSapply(1:iterations, model.single.cv.iterator))
   MAE.validation <- Reduce(`+`, results$tool..1..) / iterations
   q2.validation <- Reduce(`+`, results$tool..2..) / iterations
