@@ -257,6 +257,7 @@ model.plot <- function(model = models[1,1], data) {
 model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                           leave.out = '', predict = F, ext.val = F,
                          what.model = NULL) {
+  default::default(data.frame) <- list(check.names = FALSE)
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T,
                                            check.names = F))

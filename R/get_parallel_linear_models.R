@@ -2,13 +2,6 @@
 ####### -----------------Utility Functions------------------#####
 ####### ----------------------------------------------------#####
 
-#' Support funcion - iterator for CV
-#' 
-#' @param i iteration number
-#' @keywords internal
-#' @return iteration MAE and Q2
-
-
 #' Cross validate (k-fold) a single model using parallel computation
 #'
 #' An iterative version of model.single.cv
@@ -135,6 +128,46 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 ####### -------------------User Functions-------------------#####
 ####### ----------------------------------------------------#####
 
+#'  Generate a .csv file with top 10 linear models resulting from a parallel 
+#'  model.subset search. 
+#'
+#' Screen for models and cross validate them.
+#' @param dataset a dataframe with outcome column (must be named 'output')
+#' @param min minimum # of features (default = 2)
+#' @param max max # of features (defaults = # of observations / 5)
+#' @param leave.out name of observations to leave out (e.g. 'p_Br')
+#' @return models list, CV results for k=3/5/LOO.
+#' @export
+models.list.parallel <- function(dataset,
+                                  min = 2,
+                                  max = floor(dim(mod_data)[1] / 5),
+                                  leave.out = '',
+                                  folds = nrow(mod_data), 
+                                  iterations = 1) {
+  default::default(data.frame) <- list(check.names = FALSE)
+  cat(tools::file_path_sans_ext(basename(dataset)))
+  mod_data <- data.frame(data.table::fread(dataset, header = T),
+                         check.names = F)
+  RN <- mod_data[,1]
+  mod_data <- mod_data[,-1]
+  mod_data <- mod_data[complete.cases(mod_data), ]
+  CN <- names(mod_data)
+  mod_data <- data.frame(cbind(scale(mod_data[,1:dim(mod_data)[2] - 1], T, T), mod_data$output))
+  names(mod_data) <- CN
+  row.names(mod_data) <- RN
+  pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
+  mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
+  models <- model.subset.parallel(mod_data,
+                                  min = min,
+                                  max = max,
+                                  folds = folds, 
+                                  iterations = iterations)
+  tab <- knitr::kable(models)
+  print(tab)
+  write.csv(models, paste0(tools::file_path_sans_ext(basename(dataset)),
+                        '_models.list.csv'))
+}
+
 #'  Generate models and a plot. A parallel computation version.
 #'
 #' Screen for models, cross validate them and plot. Designed for interactive work.
@@ -151,9 +184,9 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                          leave.out = '', predict = F, ext.val = F,
                          what.model = NULL) {
+  default(data.frame) <- list(check.names = FALSE)
   cat(tools::file_path_sans_ext(basename(dataset)))
-  mod_data <- data.frame(data.table::fread(dataset, header = T,
-                                           check.names = F))
+  mod_data <- data.frame(data.table::fread(dataset, header = T))
   RN <- mod_data[,1]
   mod_data <- mod_data[,-1]
   mod_data <- mod_data[complete.cases(mod_data), ]
