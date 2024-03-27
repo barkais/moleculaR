@@ -159,6 +159,31 @@ dip.gaussian <- function(coor_atoms = '',
                             mag(xyz[numeric.atoms[[3]], ] - new_origin))
       coplane <- as.numeric((xyz[numeric.atoms[[4]], ] - new_origin) /
                               mag(xyz[numeric.atoms[[4]], ] - new_origin))
+      
+      if (center_of_mass) {
+        com <- center.of.mass(coor_atoms)
+        new_origin <- com
+        new_y <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
+                              mag(xyz[numeric.atoms[[3]], ] - new_origin))
+        coplane <- as.numeric((xyz[numeric.atoms[[4]], ] - new_origin) /
+                                mag(xyz[numeric.atoms[[4]], ] - new_origin))
+      }
+      if (center_of_substructure) {
+        if (sub_atoms == 'NA') {
+          new_origin <- xyz[numeric.atoms[[1]], ]
+          new_y <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
+                                mag(xyz[numeric.atoms[[3]], ] - new_origin))
+          coplane <- as.numeric((xyz[numeric.atoms[[4]], ] - new_origin) /
+                                  mag(xyz[numeric.atoms[[4]], ] - new_origin))
+        } else {
+          com <- center.of.substructure(sub_atoms)
+          new_origin <- com
+          new_y <- as.numeric((xyz[numeric.atoms[[3]], ] - new_origin) /
+                                mag(xyz[numeric.atoms[[3]], ] - new_origin))
+          coplane <- as.numeric((xyz[numeric.atoms[[4]], ] - new_origin) /
+                                  mag(xyz[numeric.atoms[[4]], ] - new_origin))
+        }
+      }
     } else {
       if (center_of_mass) {
         com <- center.of.mass(coor_atoms)
