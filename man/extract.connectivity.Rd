@@ -4,7 +4,10 @@
 \alias{extract.connectivity}
 \title{Create a bonding data frame}
 \usage{
-\method{extract}{connectivity}(xyz_file = list.files(pattern = ".xyz"), threshold_distance = 2.02)
+extract.connectivity(
+  xyz_file = list.files(pattern = ".xyz"),
+  threshold_distance = 2.12
+)
 }
 \arguments{
 \item{xyz_file}{An xyz file, automatic for cases in which there's only one.

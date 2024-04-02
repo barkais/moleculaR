@@ -22,6 +22,10 @@ models.list.parallel(
 \item{max}{max # of features (defaults = # of observations / 5)}
 
 \item{leave.out}{name of observations to leave out (e.g. 'p_Br')}
+
+\item{folds}{number of folds for CV}
+
+\item{iterations}{number of iterations for CV}
 }
 \value{
 models list, CV results for k=3/5/LOO.
