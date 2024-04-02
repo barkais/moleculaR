@@ -136,7 +136,10 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 #' @param min minimum # of features (default = 2)
 #' @param max max # of features (defaults = # of observations / 5)
 #' @param leave.out name of observations to leave out (e.g. 'p_Br')
+#' @param folds number of folds for CV
+#' @param iterations number of iterations for CV
 #' @return models list, CV results for k=3/5/LOO.
+#' @aliases models.list.parallel
 #' @export
 models.list.parallel <- function(dataset,
                                   min = 2,
