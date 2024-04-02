@@ -187,7 +187,7 @@ models.list.parallel <- function(dataset,
 model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                          leave.out = '', predict = F, ext.val = F,
                          what.model = NULL) {
-  default(data.frame) <- list(check.names = FALSE)
+  default::default(data.frame) <- list(check.names = FALSE)
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T))
   RN <- mod_data[,1]
@@ -235,7 +235,7 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
+  cv_5fold <- model.cv.parallel(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
