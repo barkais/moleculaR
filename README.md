@@ -34,7 +34,7 @@ library('moleculaR')
 NOTE:
 
 With the current version - it is only possible to analyze correctly indexed Gaussian .log files.
-Make sure the common substructure is numbered correctly, **and that there is a copy of the simplest molecule (i.e. the molecule with the smallest substituent) named basic.log**
+Make sure the common substructure is numbered correctly.
 
 ### Featurization
 
@@ -42,59 +42,58 @@ Make sure the common substructure is numbered correctly, **and that there is a c
 
 #### Step 1 - Pull information from Gaussain log files
 
-Make sure all the log files you want to analyze are in one location. 
+Make sure all log files you want to analyze are in one location. 
 
 ```
 # Run extRactoR.auto (while in the .log files' directory)
-extRactoR()
+extRactoR.auto()
 ```
 Expect the following message, indicating everything worked fine. 
 
 `Done!`
-` `      
-`Current working directory is set to path/to/example_log_files/Name_Chosen_By_User`
 
-**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs. As it is reasonable to assume that most users will prefer working on local machines, it is still recommendedavoiding thransferring heavy log files to locals, and it is best practice to install `moleculaR` on both the remote and the local, and to transfer only the resulting .feather files to the local.**
+**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs. As it is reasonable to assume that most users will prefer working on local machines, it is still recommended to avoid transferring heavy log files to a local machine, and it is best practice to install `moleculaR` on both the remote and the local, and to transfer only the resulting .feather files to the local.**
 
 #### Step 2 - Unwrap feather files (either locally or remotely)
 
 ```
-# Run unwRapper (no need to change working directory - unwRapper does it for you)
+# Change working directory to folder containing the feather files resulted from running `extRactoR.auto()`
+# Run unwRapper
 unwRapper()
 ```
 
 This command unwraps the feather files (compressed information from log files) and results in two new directories:
 
-  1. Optimized_structures_xyz - containing xyz files extracted from optimization.
+  1. Optimized_structures_xyz - containing xyz files extracted from the optimization.
   
-  2. moleculaR_csv_files - A master directory that holds a sub directory for each of the molecules in the     set. The sub directories contain csv files with all the information moleculaR needs, in human            readable format. 
+  2. moleculaR_csv_files - A master directory that holds a sub directory for each of the molecules in the set. The sub directories contain csv files with all the information moleculaR needs, in human            readable format. 
 
 Once finished, the function suggests to change your working directory. It is recommended to allow. 
 
-#### Step 3 - Get molecular features
+#### Step 3 - Create moleculaR's input file
 
 ```
-# Run moleuclaR (assuming you allowed unwRapper to change your working directory)
-moleculaR()
+# Run moleuclaR input maker
+moleculaR.input.maker()
 ```
 
-**In case you opt to quit and generate a 3D visualization, it is best practice to use one of the molecules found in the** **`Optimized_structures_xyz`. After the visualization was generated, leave it open and run** 
-**`moleculaR()` again.**
+**In case you opt to generate a 3D visualization, it is best practice to use one of the molecules found in the `Optimized_structures_xyz`.**
 
-###### This step results in the creation of two files:
-######  1. The output csv file - containing all wanted features.
-######  2. An inputs file in .RData format - containing all user inputs to `moleculaR()` - for future uses and documentation.
-######  3. In case the exact same instructions should be passed to `moleculaR()`, you can use `moleculaR.input()` instead. 
+**Make sure to you do not save the input file in the moleculaR_csv_files folder. There should not be anything else in the moleculaR_csv_files folder.**
 
+#### This step results in creating an input file in .RData format - containing the arguments for feature generation in `moleculaR()` - for future uses and documentation.
+
+#### The resulting input file can now be passed to the main function `moleculaR()` as an argument. 
+
+#### Step 4 - Get molecular features
 ```
-# To use an input file resulting from moleculaR(), do one of the following:
-#   1. Explicitly indicate the path to the input file as an argument
-moleculaR.input('path/to/input/file.RData')
-#   2. Run the function with no arguments and choose the file
-moleculaR.input()
+# Use an input file generated with moleculaR.input.maker().
+# Pass the input file location to moleculaR's main function `moleculaR()`.
+# Indicate the path to the input file as an argument.
+moleculaR('path/to/input/file.RData')
 ```
 
-#### Command Line Usage
+### Command Line Usage
 
 It is possible to compute and extract all features directly from the command line in an interactive R session or as a part of a workflow. 
 
