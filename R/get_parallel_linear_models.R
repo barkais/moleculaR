@@ -18,8 +18,8 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
     return(data.frame(tool[[1]], tool[[2]]))
   }
   results <- do.call(rbind, parallel::mclapply(1:iterations, model.single.cv.iterator))
-  MAE.validation <- Reduce(`+`, results$tool..1..) / iterations
-  q2.validation <- Reduce(`+`, results$tool..2..) / iterations
+  MAE.validation <- Reduce(`+`, results[, 1]) / iterations
+  q2.validation <- Reduce(`+`, results[, 2]) / iterations
   return(list(MAE.validation, q2.validation))
 }
 
@@ -35,14 +35,13 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
 #' @param folds  defaults to nrow(data)
 #' @param iterations defaults to 1 (LOOCV)
 #' @param cutoff search for Q2 above 0.85 (if there isn't will look for lower)
-#' @param cross.terms if TRUE includes feature interactions (explosive - try avoiding)
 #'
 #' @return table with 10 best models (at max)
 #' @export
 model.subset.parallel <- function(data, out.col = dim(data)[2],
-                         min = 2, max = floor(dim(data)[1] / 5),
-                         folds = nrow(data), iterations = 1,
-                         cutoff = 0.85, cross.terms = F) {
+                                  min = 2, max = floor(dim(data)[1] / 5),
+                                  folds = nrow(data), iterations = 1,
+                                  cutoff = 0.85) {
   output <- stringr::str_c("`", names(data[out.col]), "`")
   vars <- names(data[, -out.col])
   for (i in 1:length(vars)) {
@@ -52,10 +51,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   ols.list <- list()
   q2.list <- list()
   mae.list <- list()
-  if (cross.terms == T) {
-    max <- max - 1
-  }
-  for (i in 1:max) {
+  for (i in min:max) {
     comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
     comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
       paste,
@@ -70,36 +66,41 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   }
   comb.list <- plyr::compact(comb.list)
   forms <- do.call(rbind, comb.list)
-  if (cross.terms == T) {
-    cross.list <- list()
-    cross.list[[1]] <- data.frame(aperm(combn(vars, 2)), stringsAsFactors = F)
-    cross.list[[2]] <- do.call(paste,
-                               c(cross.list[[1]][names(cross.list[[1]])],
-                                 sep = " : "))
-    repli_single <- do.call(rbind,
-                            replicate(length(cross.list[[2]]),
-                                      forms, simplify = F))
-    repli_single <- repli_single[order(repli_single), ]
-    repli_cross <- do.call(c, replicate(nrow(forms),
-                                        cross.list[[2]],
-                                        simplify = F))
-    new_comb <- list()
-    for (i in 1:length(repli_cross)) {
-      new_comb[[i]] <- paste(repli_single[[i]],
-                             repli_cross[[i]], sep = " + ")
-    }
-    orig.forms <- forms
-    forms <- data.frame(do.call(rbind,
-                                plyr::compact(new_comb)),
-                        stringsAsFactors = F)
-    names(forms) <- "formula"
-    forms <- data.frame(rbind(orig.forms, forms))
-    colnames(forms) <- "formula"
-  }
   forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
-  ols.list <- parallel::mclapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
-  forms[, 2] <- do.call(rbind, ols.list)
-  names(forms)[2] <- "R.sq"
+  
+  if (max <= 3) {
+    ols.list <- parallel::mclapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
+    forms[, 2] <- do.call(rbind, ols.list)
+    names(forms)[2] <- "R.sq"
+  } else {
+    split_list <- function(input_list, max_size) {
+      num_sublists <- ceiling(length(input_list) / max_size)
+      sublists <- vector("list", length = num_sublists)
+      for (i in seq_len(num_sublists)) {
+        start <- (i - 1) * max_size + 1
+        end <- min(i * max_size, length(input_list))
+        sublists[[i]] <- input_list[start:end]
+      }
+      return(sublists)
+    }
+    
+    sublists <- split_list(forms$formula, 100000)
+    
+    # Apply the function to each sublist and store the resulting lists in separate variables
+    for (i in seq_along(sublists)) {
+      x.list <- parallel::mclapply(sublists[[i]], function(x) data.frame(x, summary(lm(x, data = data))$r.squared))
+      x.list <- do.call(rbind, x.list)
+      assign(paste0("result_df_", i),
+             x.list[x.list[, 2] > 0.5, ])
+    }
+    
+    # Combine all the resulting lists into a single list
+    ols.list <- data.table::rbindlist(mget(ls(pattern = "result_df_")))
+    ols.list <- data.frame(ols.list)
+    names(ols.list) <- c('formula', 'R.sq')
+    forms <- ols.list
+  }
+  
   forms.cut <- forms[forms$R.sq > cutoff, ]
   while (nrow(forms.cut) == 0) {
     cutoff <- cutoff - 0.1

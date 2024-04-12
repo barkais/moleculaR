@@ -29,7 +29,7 @@ model.single.cv <- function(formula, data, out.col, folds) {
   pred <- dplyr::bind_rows(predictions)
   pred <- pred[match(rownames(cvdat), rownames(pred)), ]
   sq.dis.cv <- data.frame(abs(pred - data[, out.col]))
-  MAE.3cv <- mean(sq.dis.cv$abs.pred...data...out.col..)
+  MAE.3cv <- mean(sq.dis.cv[, 1])
   q2.3cv <- caret::R2(pred, data[, out.col])
   return(list(MAE.3cv, q2.3cv))
 }
@@ -69,14 +69,13 @@ model.cv <- function(formula, data, out.col, folds, iterations) {
 #' @param folds  defaults to nrow(data)
 #' @param iterations defaults to 1 (LOOCV)
 #' @param cutoff search for Q2 above 0.85 (if there isn't will look for lower)
-#' @param cross.terms if TRUE includes feature interactions (explosive - try avoiding)
 #'
 #' @return table with 10 best models (at max)
 #' @export
 model.subset <- function(data, out.col = dim(data)[2],
                       min = 2, max = floor(dim(data)[1] / 5),
                       folds = nrow(data), iterations = 1,
-                      cutoff = 0.85, cross.terms = F) {
+                      cutoff = 0.85) {
   output <- stringr::str_c("`", names(data[out.col]), "`")
   vars <- names(data[, -out.col])
   for (i in 1:length(vars)) {
@@ -86,9 +85,6 @@ model.subset <- function(data, out.col = dim(data)[2],
   ols.list <- list()
   q2.list <- list()
   mae.list <- list()
-  if (cross.terms == T) {
-    max <- max - 1
-  }
   for (i in 1:max) {
     comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
     comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
@@ -104,32 +100,6 @@ model.subset <- function(data, out.col = dim(data)[2],
   }
   comb.list <- plyr::compact(comb.list)
   forms <- do.call(rbind, comb.list)
-  if (cross.terms == T) {
-    cross.list <- list()
-    cross.list[[1]] <- data.frame(aperm(combn(vars, 2)), stringsAsFactors = F)
-    cross.list[[2]] <- do.call(paste,
-                               c(cross.list[[1]][names(cross.list[[1]])],
-                                 sep = " : "))
-    repli_single <- do.call(rbind,
-                            replicate(length(cross.list[[2]]),
-                                      forms, simplify = F))
-    repli_single <- repli_single[order(repli_single), ]
-    repli_cross <- do.call(c, replicate(nrow(forms),
-                                        cross.list[[2]],
-                                        simplify = F))
-    new_comb <- list()
-    for (i in 1:length(repli_cross)) {
-      new_comb[[i]] <- paste(repli_single[[i]],
-                             repli_cross[[i]], sep = " + ")
-    }
-    orig.forms <- forms
-    forms <- data.frame(do.call(rbind,
-                                plyr::compact(new_comb)),
-                        stringsAsFactors = F)
-    names(forms) <- "formula"
-    forms <- data.frame(rbind(orig.forms, forms))
-    colnames(forms) <- "formula"
-  }
   forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
   ols.list <- lapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
   forms[, 2] <- do.call(rbind, ols.list)
