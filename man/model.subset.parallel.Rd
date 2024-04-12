@@ -12,8 +12,7 @@ model.subset.parallel(
   max = floor(dim(data)[1]/5),
   folds = nrow(data),
   iterations = 1,
-  cutoff = 0.85,
-  cross.terms = F
+  cutoff = 0.85
 )
 }
 \arguments{
@@ -30,8 +29,6 @@ model.subset.parallel(
 \item{iterations}{defaults to 1 (LOOCV)}
 
 \item{cutoff}{search for Q2 above 0.85 (if there isn't will look for lower)}
-
-\item{cross.terms}{if TRUE includes feature interactions (explosive - try avoiding)}
 }
 \value{
 table with 10 best models (at max)
