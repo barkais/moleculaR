@@ -84,29 +84,29 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
       return(sublists)
     }
     
-    sublists <- split_list(forms$formula, 100000)
+    sublists <- split_list(forms$formula, 10000)
     
     # Apply the function to each sublist and store the resulting lists in separate variables
     for (i in seq_along(sublists)) {
       x.list <- parallel::mclapply(sublists[[i]], function(x) data.frame(x, summary(lm(x, data = data))$r.squared))
       x.list <- do.call(rbind, x.list)
-      assign(paste0("result_df_", i),
-             x.list[x.list[, 2] > 0.5, ])
+      names(x.list) <- c('formula', 'R.sq')
+      x.list.cut <- x.list[x.list$R.sq > cutoff, ]
+      while (nrow(x.list.cut) == 0) {
+        cutoff <- cutoff - 0.1
+        x.list.cut <- x.list[x.list$R.sq > cutoff, ]
+        x.list.cut <- dplyr::arrange(x.list.cut, desc(x.list.cut$R.sq))
+      }
+      assign(paste0("result_df_", i), x.list.cut)
     }
     
     # Combine all the resulting lists into a single list
     ols.list <- data.table::rbindlist(mget(ls(pattern = "result_df_")))
     ols.list <- data.frame(ols.list)
     names(ols.list) <- c('formula', 'R.sq')
-    forms <- ols.list
+    forms.cut <- ols.list
   }
   
-  forms.cut <- forms[forms$R.sq > cutoff, ]
-  while (nrow(forms.cut) == 0) {
-    cutoff <- cutoff - 0.1
-    forms.cut <- forms[forms$R.sq > cutoff, ]
-    forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
-  }
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
     stts <- model.cv.parallel(formula = forms.cut[i, 1],
