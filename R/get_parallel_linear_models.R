@@ -104,7 +104,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     ols.list <- data.table::rbindlist(mget(ls(pattern = "result_df_")))
     ols.list <- data.frame(ols.list)
     names(ols.list) <- c('formula', 'R.sq')
-    forms.cut <- ols.list
+    forms.cut <- dplyr::arrange(ols.list, desc(ols.list$R.sq))
   }
   
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
