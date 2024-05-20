@@ -66,6 +66,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   }
   comb.list <- plyr::compact(comb.list)
   forms <- do.call(rbind, comb.list)
+  rm(list = 'comb.list')
   forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
   
   if (max <= 3) {
@@ -86,23 +87,32 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     
     sublists <- split_list(forms$formula, 10000)
     
+    rm(list = 'forms')
+    
     # Apply the function to each sublist and store the resulting lists in separate variables
     for (i in seq_along(sublists)) {
       x.list <- parallel::mclapply(sublists[[i]], function(x) data.frame(x, summary(lm(x, data = data))$r.squared))
       x.list <- do.call(rbind, x.list)
       names(x.list) <- c('formula', 'R.sq')
       x.list.cut <- x.list[x.list$R.sq > cutoff, ]
+      x.list.cut <- dplyr::arrange(x.list.cut, desc(x.list.cut$R.sq))
       while (nrow(x.list.cut) == 0) {
         cutoff <- cutoff - 0.1
         x.list.cut <- x.list[x.list$R.sq > cutoff, ]
         x.list.cut <- dplyr::arrange(x.list.cut, desc(x.list.cut$R.sq))
       }
-      assign(paste0("result_df_", i), x.list.cut)
+      if (nrow(x.list.cut) > 10) {
+        x.list.cut <- x.list.cut[1:10, ]
+      } 
+      write.table(x.list.cut, file = 'results_df.csv',
+                  append = TRUE, col.names = F) 
     }
     
+    num_of_sublists <- seq_along(sublists)
+    rm(list = 'sublists')
+   
     # Combine all the resulting lists into a single list
-    ols.list <- data.table::rbindlist(mget(ls(pattern = "result_df_")))
-    ols.list <- data.frame(ols.list)
+    ols.list <- data.frame(data.table::fread('results_df.csv'))[, 2:3]
     names(ols.list) <- c('formula', 'R.sq')
     forms.cut <- dplyr::arrange(ols.list, desc(ols.list$R.sq))
   }
