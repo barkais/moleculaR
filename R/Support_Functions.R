@@ -237,15 +237,15 @@ extract.connectivity <- function(xyz_file = list.files(pattern = '.xyz'),
     }
   }
   if (length(remove) > 0) df.distances <- df.distances[-remove, ]
-
+  row.names(df.distances) <- 1:nrow(df.distances)
   # Extract the atom pairs that are within a certain distance of each other
   # (i.e. the atoms that are bonded to each other)
   bonded_pairs <- which(df.distances$value <= threshold_distance &
-                          df.distances$value > 0  , arr.ind = TRUE)
-  doubles <- !duplicated(df.distances$value[bonded_pairs])
-  leave.in <- bonded_pairs[doubles]
-  # Return the bonded pairs as a data frame
-  bonded_pairs_df <- df.distances[leave.in, c(2, 1)]
+                          df.distances$value > 0, arr.ind = T)
+  bonded_pairs_df <- unique(as.data.frame(t(apply(df.distances[bonded_pairs,
+                                                               1:2],
+                                                  1,
+                                                  sort))))
   colnames(bonded_pairs_df) <- c("Atom 1", "Atom 2")
   return(bonded_pairs_df)
 }
