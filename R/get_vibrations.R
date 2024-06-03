@@ -218,8 +218,9 @@ stretch.vib <- function(atom_pairs, threshold = 1350) {
     }
     return(uni)
   } else {
-    getwd()
+    cat(getwd())
     cat('
+Error in stretch vibration extraction. 
 One or more bonds do not exist, please validate your choice')
   }
 }
