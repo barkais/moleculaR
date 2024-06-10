@@ -287,7 +287,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
     k.prd.tab <- knitr::kable(prd.tab)
     print(k.prd.tab)
   }
-  mod_data_unn <- data.frame(data.table::fread(dataset, header = T, check.names = T))
+  mod_data_unn <- data.frame(data.table::fread(dataset, header = T))
   mod.sum.unnormalized <- summary(lm(models[what.model, 1], mod_data_unn))$coefficients
   cat('
   Unnormalized Data Model Coefficients')
