@@ -218,9 +218,8 @@ stretch.vib <- function(atom_pairs, threshold = 1350) {
     }
     return(uni)
   } else {
-    cat(getwd())
+    getwd()
     cat('
-Error in stretch vibration extraction. 
 One or more bonds do not exist, please validate your choice')
   }
 }
@@ -304,13 +303,13 @@ ring.vib <- function(ordered_ring_atoms) { # single molecule, single ring
   for (i in 1:dim(prod.vec.sums)[1]) {
     prod.vec.sums[i, 3] <- abs(sin(angle(vec.sum.2.4.6[i, ], pa)))
   }
-  pvec.filter <- dplyr::filter(prod.vec.sums, prod.vec.sums$do.call.rbind..prods. != 0)
+  pvec.filter <- dplyr::filter(prod.vec.sums, prod.vec.sums[, 1] != 0)
   vec.prod.filtered <- dplyr::filter(pvec.filter, pvec.filter$V2 > 1550 &
-                                       abs(pvec.filter$do.call.rbind..prods.) > 0.1)
+                                       abs(pvec.filter[, 1]) > 0.1)
   dupli.check <- duplicated(vec.prod.filtered$V3) |
     duplicated(vec.prod.filtered$V3, fromLast = T)
   if (any(dupli.check)) {
-    right.one <- which.max(abs(vec.prod.filtered[dupli.check,]$do.call.rbind..prods.))
+    right.one <- which.max(abs(vec.prod.filtered[dupli.check,][, 1]))
     unduplicated <- vec.prod.filtered[dupli.check,][right.one,]
     vec.prod.filtered <- rbind(unduplicated, vec.prod.filtered[!dupli.check,])
   }
@@ -332,7 +331,7 @@ ring.vib <- function(ordered_ring_atoms) { # single molecule, single ring
     )
     colnames(result) <- c("cross",'cross.angle', "para", 'para.angle')
     print(basename(getwd()))
-    print('Dot products are lower than 0.1 - returning the default 1750 - 1550 1/cm')
+    print('Dot products are lower than 0.1 - returning vibrations in the 1750 - 1550 1/cm region')
   }
   return(result)
 }
