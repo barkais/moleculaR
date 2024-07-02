@@ -88,9 +88,9 @@ find.bend.freq <- function(atom_pair, threshold = 1350) {
                                                            'Intensity'),
                                              colClasses = rep('numeric', 2)))
     atom.1.vecs <- atom.vectors(
-      list.files(pattern = paste0('_', as.character(atom_pair[1]))))
+      list.files(pattern = paste0('_', as.character(atom_pair[1]), '\\.csv$')))
     atom.2.vecs <- atom.vectors(
-      list.files(pattern = paste0('_', as.character(atom_pair[2]))))
+      list.files(pattern = paste0('_', as.character(atom_pair[2]), '\\.csv$')))
     cp.mag <- function(row) {
       mag(t(cross_product(atom.1.vecs[row,], atom.2.vecs[row,])))
     }
