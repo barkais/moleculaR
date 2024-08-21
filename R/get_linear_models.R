@@ -123,7 +123,7 @@ model.subset <- function(data, out.col = dim(data)[2],
   forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
   return(forms.cut)
 }
-
+                     
 #' ggplot2 plot of a linear model for QSAR
 #'
 #' @param model model formula (not designed for direct use)
