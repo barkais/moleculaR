@@ -105,11 +105,11 @@ model.subset <- function(data, out.col = dim(data)[2],
   forms[, 2] <- do.call(rbind, ols.list)
   names(forms)[2] <- "R.sq"
   forms.cut <- forms[forms$R.sq > cutoff, ]
-  while (nrow(forms.cut) == 0) {
+  while (nrow(forms.cut) <= 10) {
     cutoff <- cutoff - 0.1
     forms.cut <- forms[forms$R.sq > cutoff, ]
-    forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
   }
+  forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
     stts <- moleculaR:::model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
@@ -123,7 +123,7 @@ model.subset <- function(data, out.col = dim(data)[2],
   forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
   return(forms.cut)
 }
-                     
+
 #' ggplot2 plot of a linear model for QSAR
 #'
 #' @param model model formula (not designed for direct use)
