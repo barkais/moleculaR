@@ -958,8 +958,8 @@ model.report.log.ordinal <- function(dataset, min = 1,
                                      max = (min + 1), model.number = 1) {
   
   cat(tools::file_path_sans_ext(basename(dataset)))
-  data <- data.frame(data.table::fread(dataset, header = T,
-                                       check.names = T))
+  data <- data.frame(data.table::fread(dataset))
+  data <- dplyr::mutate(data, flag = 1:nrow(data))
   RN <- data[,1]
   data <- data[,-1]
   data <- data[complete.cases(data), ]
@@ -970,8 +970,6 @@ model.report.log.ordinal <- function(dataset, min = 1,
   data$class <- as.factor(data$class)
   
   models <-  model.subset.log.ordinal(data, min = min, max = max)
-  
-  knitr::kable(models)
   
   print(knitr::kable(models))
   
@@ -1009,6 +1007,8 @@ model.report.log.ordinal <- function(dataset, min = 1,
   HM <- prob.heatmap(test, data)
   
   gridExtra::grid.arrange(CT, HM, ncol = 2)
+  
+  return(models)
 }
 
 #' Generate a model report - logistic regression
@@ -1024,8 +1024,8 @@ model.report.log.ordinal <- function(dataset, min = 1,
 model.report.logistic <- function(dataset, min = 1,
                                   max = (min + 1), model.number = 1) {
   cat(tools::file_path_sans_ext(basename(dataset)))
-  data <- data.frame(data.table::fread(dataset, header = T,
-                                           check.names = T))
+  data <- data.frame(data.table::fread(dataset))
+  data <- dplyr::mutate(data, flag = 1:nrow(data))
   RN <- data[,1]
   data <- data[,-1]
   data <- data[complete.cases(data), ]

@@ -196,13 +196,13 @@ find_paths_with_nodes <- function(bonds, node1, node2) {
 #'
 #' @param coordinates primary axis, a two atom character
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @keywords internal
 #' @return sterimol values for a single molecule
-steRimol <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
+steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
   mol <- list.files(pattern = '.xyz')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
@@ -294,13 +294,13 @@ steRimol <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
 #'
 #' @param coordinates primary axis, a two atom character
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @keywords internal
 #' @return sterimol values for a single molecule
-steRimol.xyz <- function(mol, coordinates, CPK = F, only_sub = T, drop = NULL) {
+steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL) {
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
   bonds <- extract.connectivity(mol)
@@ -408,13 +408,13 @@ steRimol.xyz <- function(mol, coordinates, CPK = F, only_sub = T, drop = NULL) {
 #'
 #' @param coordinates primary axis, a two atom character
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @return sterimol values for a set of molecules
 #' @export
-steRimol.df <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
+steRimol.df <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
   molecules <- list.dirs(full.names = F, recursive = F)
   steri.list <- list()
   for (molecule in molecules) {
@@ -433,13 +433,13 @@ steRimol.df <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
 #'
 #' @param coordinates primary axis, a two atom character
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @return sterimol values for a set of molecules
 #' @export
-steRimol.xyz.df <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
+steRimol.xyz.df <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
   molecules <- list.files(pattern = '.xyz')
   steri.list <- list()
   for (molecule in molecules) {
@@ -460,13 +460,13 @@ steRimol.xyz.df <- function(coordinates, CPK = F, only_sub = T, drop = NULL) {
 #'
 #' @param coordinates_vector primary axes, a vector of two atom characters
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @return sterimol values (multiple)
 #' @export
-steRimol.multi <- function(coordinates_vector, CPK = F, only_sub = T, drop = NULL) {
+steRimol.multi <- function(coordinates_vector, CPK = T, only_sub = T, drop = NULL) {
   multi.df <- lapply(coordinates_vector,
                      function(x) {
                        steRimol.df(x,
@@ -489,13 +489,13 @@ steRimol.multi <- function(coordinates_vector, CPK = F, only_sub = T, drop = NUL
 #'
 #' @param coordinates_vector primary axes, a vector of two atom characters
 #' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE (default) will use Pyykko's covalent radii
+#' if FALSE will use Pyykko's covalent radii
 #' @param only_sub if TRUE (default) will account only for atoms directly bonded
 #' from the primary axis onward
 #' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
 #' @return sterimol values (multiple)
 #' @export
-steRimol.xyz.multi <- function(coordinates_vector, CPK = F, only_sub = T, drop = NULL) {
+steRimol.xyz.multi <- function(coordinates_vector, CPK = T, only_sub = T, drop = NULL) {
   multi.df <- lapply(coordinates_vector,
                      function(x) {
                        steRimol.xyz.df(x,

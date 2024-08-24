@@ -3,6 +3,69 @@
 ####### -----------------Utility Functions------------------#####
 ####### ----------------------------------------------------#####
 
+# find_circular_paths - finds 6 membered rings for ring vibrations
+#' find_circular_paths - find 6 membered circular paths that include the 
+#' primary ring_vib atom. Used in the process of ring vibrations calculation
+#' @param bonds bonds dataframe
+#' @param node primary ring_vib atom
+#' @keywords internal
+#' @return 6-membered circular paths that include the primary atom
+find_circular_paths <- function(bonds, node) {
+  
+  # Convert the dataframe to an adjacency matrix
+  graph <- matrix(0, nrow = max(bonds), ncol = max(bonds))
+  for (i in 1:nrow(bonds)) {
+    graph[bonds[i, 1], bonds[i, 2]] <- 1
+    graph[bonds[i, 2], bonds[i, 1]] <- 1
+  }
+  
+  first_cycle <- NULL
+  
+  # Depth-first search function to find cycles
+  dfs <- function(start_node, current_node, current_path) {
+    current_path <- c(current_path, current_node)
+    
+    # If the current path forms a cycle of length 7, save it and stop searching
+    if (length(current_path) == 7 && current_node == start_node) { # Length 8 because it includes the start node twice
+      first_cycle <<- current_path
+      return(TRUE)
+    }
+    
+    # Recursive DFS for all neighbors
+    neighbors <- which(graph[current_node, ] == 1)
+    for (neighbor in neighbors) {
+      if (!(neighbor %in% current_path[-1])) {  # Avoid revisiting nodes except the start node
+        if (dfs(start_node, neighbor, current_path)) {
+          return(TRUE)
+        }
+      }
+    }
+    
+    return(FALSE)
+  }
+  
+  # Start DFS from the specified node
+  dfs(node, node, numeric(0))
+  
+  if (!is.null(first_cycle)) {
+    # Reorder the nodes in the specified order
+    reordered_cycle <- c(
+      first_cycle[4],   # Fourth node first
+      first_cycle[1],   # First node second
+      first_cycle[2],   # Second node remains in place
+      first_cycle[6],   # Sixth node third
+      first_cycle[3],   # Third node fifth
+      first_cycle[5]    # Fifth node sixth
+    )
+    
+    # Convert to a character vector with space-separated nodes
+    result <- paste(reordered_cycle, collapse = " ")
+    return(result)
+  } else {
+    return(NULL)
+  }
+}
+
 # cross_product - well... returns the CP result vector
 #' compute the cross product of two vetors
 #' @param v1 vector 1
@@ -260,13 +323,14 @@ stretch.vib.df <- function(atom.pairs, threshold = 1350) {
 
 #' Get a ring's characteristic vibrations frequencies
 #'
-#' @param ordered_ring_atoms a character of 6 atoms, ordered as follows:
-#' para (opposite of primary - doesn't matter, but must be consistent),
-#' two ortho atoms to primary and two meta atoms to primary.
-#'  See full manual for a detailed explanation.
+#' @param primary_atom The atom index of the first ring atom bonded to the basic
+#' strcuture.
 #' @keywords internal
 #' @return A data frame with stretching frequencies
-ring.vib <- function(ordered_ring_atoms) { # single molecule, single ring
+ring.vib <- function(primary_atom) { # single molecule, single ring
+  if (is.character(primary_atom)) primary_atom <- as.numeric(primary_atom)
+  bonds <- extract.connectivity(list.files(pattern = '.xyz'))
+  ordered_ring_atoms <- find_circular_paths(bonds, primary_atom)
   freq <- data.frame(data.table::fread(list.files(pattern = 'IR'),
                                                col.names = c('Frquency',
                                                              'Intensity'),
@@ -338,10 +402,8 @@ ring.vib <- function(ordered_ring_atoms) { # single molecule, single ring
 
 #' Get a ring's characteristic vibrations frequencies, for a set of molecules
 #'
-#' @param input a character of 6 atoms, ordered as follows:
-#' para (opposite of primary - doesn't matter, but must be consistent),
-#' two ortho atoms to primary and two meta atoms to primary.
-#'  See full manual for a detailed explanation.
+#' @param input The atom index of the first ring atom bonded to the basic
+#' strcuture.
 #' @return A data frame with stretching frequencies
 #' @export
 ring.vib.df <- function(input = NA) {
@@ -362,9 +424,8 @@ ring.vib.df <- function(input = NA) {
 #'
 #' used on a set of molecules, applicable for as many rings wanted
 #'
-#' @param inputs_vector vector of characters of 6 atoms, ordered as follows: 
-#' para (opposite of primary - doesn't matter, but must be consistent), primary,
-#' two ortho atoms to primary, and two meta atoms to primary.
+#' @param inputs_vector vector of atom indices of the first ring atom bonded to the basic
+#' strcuture, for each ring. 
 #' 
 #' @return A data frame with stretching frequencies
 #' @export
