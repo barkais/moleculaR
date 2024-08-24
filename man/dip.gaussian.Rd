@@ -4,24 +4,14 @@
 \alias{dip.gaussian}
 \title{Use Gaussain's dipole moment, and perform manipulations to it.}
 \usage{
-dip.gaussian(
-  coor_atoms = "",
-  center_of_substructure = F,
-  sub_atoms = NULL,
-  center_of_mass = F
-)
+dip.gaussian(coor_atoms = "")
 }
 \arguments{
-\item{coor_atoms}{3 atoms character (e.g. '1 2 3')}
-
-\item{center_of_substructure}{logical, should use center of mass of
-a substructure as origin or not, if TRUE - center_of_mass must be FALSE}
-
-\item{sub_atoms}{ONLY if center_of_substructure is TRUE - atoms character (e.g. '4 5 6 7 8 9')}
-
-\item{center_of_mass}{logical, should use center of mass of the
-basic structure as origin or not, if TRUE - center_of_substructure
-must be FALSE}
+\item{coor_atoms}{a character of atom indices. The last two will define 
+the y axis and the xy plane, respecteviley. All indices before those will
+define the origin. In cases where a single atom defines the origin, the input
+should be 3 indices, in any other case, the centroid of these indices will 
+define the origin.}
 }
 \value{
 dipole moment

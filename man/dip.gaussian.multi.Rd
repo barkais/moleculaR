@@ -3,32 +3,17 @@
 \name{dip.gaussian.multi}
 \alias{dip.gaussian.multi}
 \title{Pulls and manipulates dipole moment vector.
-Allows for use of several substructures.}
+Allows for use of several corrdinate systems.}
 \usage{
-dip.gaussian.multi(
-  coor_atoms_vector = c(""),
-  center_of_substructure = F,
-  subunits_inputs_vector = NULL,
-  center_of_mass = F
-)
+dip.gaussian.multi(coor_atoms_vector = c(""))
 }
 \arguments{
 \item{coor_atoms_vector}{vector of sets of 3 or 4 atoms character (e.g. c('1 2 3', '4 5 6'))}
-
-\item{center_of_substructure}{logical, should use center of mass of
-a substructure as origin or not, if TRUE - center_of_mass must be FALSE}
-
-\item{subunits_inputs_vector}{ONLY if center_of_substructure is TRUE - vector of
-atoms character (e.g. c('10 11 12 13', '4 5 6 7 8 9'))}
-
-\item{center_of_mass}{logical, should use center of mass of the
-basic structure as origin or not, if TRUE - center_of_substructure
-must be FALSE}
 }
 \value{
 data frame with multiple or single DMs
 }
 \description{
 Pulls and manipulates dipole moment vector.
-Allows for use of several substructures.
+Allows for use of several corrdinate systems.
 }

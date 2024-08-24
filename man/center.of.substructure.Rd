@@ -7,7 +7,7 @@
 center.of.substructure(sub_atoms)
 }
 \arguments{
-\item{sub_atoms}{atoms character (e.g. '4 5 6 7 8 9')}
+\item{sub_atoms}{atoms vector}
 }
 \value{
 center of mass of a substructure

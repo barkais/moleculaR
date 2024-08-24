@@ -7,10 +7,8 @@
 ring.vib.df(input = NA)
 }
 \arguments{
-\item{input}{a character of 6 atoms, ordered as follows:
-para (opposite of primary - doesn't matter, but must be consistent),
-two ortho atoms to primary and two meta atoms to primary.
- See full manual for a detailed explanation.}
+\item{input}{The atom index of the first ring atom bonded to the basic
+strcuture.}
 }
 \value{
 A data frame with stretching frequencies

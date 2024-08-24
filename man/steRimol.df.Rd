@@ -4,13 +4,13 @@
 \alias{steRimol.df}
 \title{Verloop's sterimol values from moleculaR's csv files}
 \usage{
-steRimol.df(coordinates, CPK = F, only_sub = T, drop = NULL)
+steRimol.df(coordinates, CPK = T, only_sub = T, drop = NULL)
 }
 \arguments{
 \item{coordinates}{primary axis, a two atom character}
 
 \item{CPK}{logical, if TRUE will use CPK radii based on Verloop's atom type,
-if FALSE (default) will use Pyykko's covalent radii}
+if FALSE will use Pyykko's covalent radii}
 
 \item{only_sub}{if TRUE (default) will account only for atoms directly bonded
 from the primary axis onward}

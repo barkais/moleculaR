@@ -7,9 +7,8 @@
 ring.vib.multi(inputs_vector)
 }
 \arguments{
-\item{inputs_vector}{vector of characters of 6 atoms, ordered as follows: 
-para (opposite of primary - doesn't matter, but must be consistent), primary,
-two ortho atoms to primary, and two meta atoms to primary.}
+\item{inputs_vector}{vector of atom indices of the first ring atom bonded to the basic
+strcuture, for each ring.}
 }
 \value{
 A data frame with stretching frequencies

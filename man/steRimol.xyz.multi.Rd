@@ -4,13 +4,13 @@
 \alias{steRimol.xyz.multi}
 \title{Verloop's sterimol values from xyz files}
 \usage{
-steRimol.xyz.multi(coordinates_vector, CPK = F, only_sub = T, drop = NULL)
+steRimol.xyz.multi(coordinates_vector, CPK = T, only_sub = T, drop = NULL)
 }
 \arguments{
 \item{coordinates_vector}{primary axes, a vector of two atom characters}
 
 \item{CPK}{logical, if TRUE will use CPK radii based on Verloop's atom type,
-if FALSE (default) will use Pyykko's covalent radii}
+if FALSE will use Pyykko's covalent radii}
 
 \item{only_sub}{if TRUE (default) will account only for atoms directly bonded
 from the primary axis onward}
