@@ -433,7 +433,7 @@ minimal wave number value (above fingerprint region). A numeric value.
 
 Ring vibrations are defined with one of the ring's six atoms, that defines the "Primary" atom of the ring.
 
-<center><img src="../../man/figures/rings.png" width="600" height="382"/></center>
+<center><img src="figures/rings.png" width="600" height="382"/></center>
 
 Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure, though it really doesn't matter.
 
