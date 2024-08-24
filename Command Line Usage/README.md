@@ -123,19 +123,19 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
 
   **CPK:**
   
-  Users can avoid default use of Pyykko's covalent radii and apply CPK values by setting `CPK = T`.
+  Users can avoid default use of CPK radii and apply Pyykko's covalent radii values by setting `CPK = F`.
   
   
   For example:
   
-  say a user wants to compute sterimol values for axes 1-2 and 1-3, with CPK values
+  say a user wants to compute sterimol values for axes 1-2 and 1-3, with Pyykko's covalent radii values
   
   ```
   # explicitly 
-  steRimol.multi(coordinates_vector = c('1 2', '1 3'), CPK = T)
+  steRimol.multi(coordinates_vector = c('1 2', '1 3'), CPK = F)
   
   # implicitly 
-  steRimol.multi(c('1 2', '1 3'), T)
+  steRimol.multi(c('1 2', '1 3'), F)
   ```
   
   **only_sub:**
@@ -176,9 +176,9 @@ In the example above, drop was set to 15. Note that for `drop`, user input is an
   steRimol.multi('3 1', CPK, T, 15)
   ```
   
-## NBO
- 
-Users can extract NBO charges, and differences between those extracted with the use of `nbo.df()`
+## Charges
+
+Users can extract NBO, Hirshfeld, and CM5 charges, and differences between those extracted with the use of `nbo.df()`, `hirsh.df()`, and `cm5.df()`. The funcions work the same way as `nbo.df()` explained below. 
 
 #### TL;DR
 
@@ -235,22 +235,21 @@ See `Features - Definitions and Practice` for a detailed definition of the dipol
  
 ### Gaussian's Dipole Moment
 
-Users can extract dipole moment (components and magnitude) as it is given by Gaussian, or they may apply algebraic manipulations to it with chemical rationale in mind. 
+Users can extract dipole moment (components and magnitude) as it is given by Gaussian, or they may apply algebraic manipulations to it with chemical rationale in mind.
 
-Possible manipulations include:
+Change of coordinate system - the dipole's vector components with respect to a coordinate system of choice allows the use of the these components as chemical descriptors. [independent features](%22https://www.nature.com/articles/s41557-019-0258-1%22)
 
-  1. Change of coordinate system - dipole's vector components with respect to a coordinate system of choice allows the use of the dipole's components as [independent features]("https://www.nature.com/articles/s41557-019-0258-1")
-  
-  2. Given that the coordinate system was changed - should the origin of the coordinate system be the center of mass of the "basic" structure? This classifies as an esoteric use, and is recommended to use with attention to definitions.
+To change the coordinate system, users must define the new coordinate system with the following:
 
-  3. Given that the coordinate system was changed, and that option 2 wasn't used - should the origin be the center of mass of a subset of atoms (user defined)? This classifies as an esoteric use, and is recommended to use with attention to definitions.
-  
-  
-  In most cases - the coordinate system will be changed, but options 2 and 3 will be left out.
+1)  A new origin - can be an atom or the centeroid of several atoms.
+2)  A new y axis direction - an atom that defines the direction at which the y axis points.
+3)  A new xy plane - an atom that defines the plane on which the x-axis lies. This atom does not determine the x-axis. Instead, it defines, together with the y-axis, the xy plane.
+
+Users can extract the dipole moment for multiple coordinate systems.
 
 #### TL;DR
 
-```
+```         
 # Dipole Moment = DM
 # Coordinate System = CS
 
@@ -267,38 +266,24 @@ dip.gaussian.multi(coor_atoms = '1 2 3')
 # implicitly 
 dip.gaussina.multi('1 2 3')
 
-# To use the center of mass of the 'basic' structure, using the CS '1 2 3', use:
+# To use the centeroid of a substructure (e.g. the center of atoms 3-8) 
+# as the origin, with atom 1 defining the y direction and atom 4 defining the
+# xy plane, use: 
 
 # explicitly
-dip.gaussian.multi(coor_atoms = '1 2 3', center_of_mass = T)
+dip.gaussian.multi(coor_atoms = '3 4 5 6 7 8 1 4')
 
 # implicitly 
-dip.gaussina.multi('1 2 3', T)
+dip.gaussina.multi('3 4 5 6 7 8 1 4')
 
-# To use the center of mass of a substructure, 
-# using the CS '3 1 8', and the center of mass of atoms 3-8, use:
+# To extract the DM using multiple CSs, input a vector of arguments.
+# The '' input will provide the default Gaussian vector. 
 
 # explicitly
-dip.gaussian.multi(coor_atoms = '1 2 3',
-                center_of_mass = F, 
-                center_of_mass_substructure = T,
-                sub_atoms = '3 4 5 6 7 8')
+dip.gaussian.multi(coor_atoms = c('3 1 4', '3 4 5 6 7 8 1 4', ''))
 
 # implicitly 
-dip.gaussina.multi('1 2 3', F, T, '3 4 5 6 7 8')
-
-# To use the center of mass of several substructures, 
-# using the CS '3 1 8', and the center of mass of atoms 3-8, 
-# and that of atoms 1-3, use:
-
-# explicitly
-dip.gaussian.multi(coor_atoms = '1 2 3',
-                center_of_mass = F, 
-                center_of_mass_substructure = T,
-                sub_atoms = c('3 4 5 6 7 8', '1 2 3'))
-
-# implicitly 
-dip.gaussina.multi('1 2 3', F, T, c('3 4 5 6 7 8', '1 2 3'))
+dip.gaussian.multi(c('3 1 4', '3 4 5 6 7 8 1 4', ''))
 
 # See documentation - in R console:
 ?dip.gaussian.df()
@@ -307,60 +292,25 @@ dip.gaussina.multi('1 2 3', F, T, c('3 4 5 6 7 8', '1 2 3'))
 
 #### Function Structure
 
-```
+```         
 dip.gaussian.multi(
-  coor_atoms = "",
-  center_of_mass = F,
-  center_of_mass_substructure = F,
-  subunits_inputs_vector = NULL
+  coor_atoms = c("")
 )
 ```
 
 ##### Arguments:
 
-  **coor_atoms:**
-  
-  Defaults to "", with no change of coordinates. 
-  
-  To change CS, user inputs indices of 3 or 4 atoms:
-  
-  1. 3 atoms, separated by a comma - define: 
-          
-        i) atom 1 - the origin 
-        ii) atom 2 - the y direction
-        iii) atom 3 - the xy plane
-        
-  For example the input `'1 2 3'` will transform the coordinate system such that 1 is the origin, 2 is the y direction and 3 defines the xy plane.
-          
-  2. 4 atoms, separated by a comma - define:
-  
-        i) atoms 1 and 2  - center point between the two is the origin 
-        ii) atom 3 - the y direction
-        iii) atom 4 - the xy plane
-        
-  For example the input `'1 2 3 4'` will transform the coordinate system such that the center point between 1 and 2 is the origin, 3 is the y direction and 4 defines the xy plane.
+**coor_atoms:**
 
-  **center_of_mass:**
-  
-  logical, should use center of mass of the basic structure as origin or not.
-  
-  > if TRUE - center_of_mass_substructure must be FALSE
-  
-  **center_of_mass_substructure:**
-  
-  logical, should use center of mass of a substructure as origin or not.
-  
-  > if TRUE - center_of_mass must be FALSE
-  
-  **subunits_inputs_vector:**
-  
-  ONLY if center_of_mass_substructure is TRUE - vector of atoms characters. 
-  
-  For example: `c('10 11 12 13', '4 5 6 7 8 9')`
-  
-  Users have to define the coordinate system as starting point. The coordinate system will not change, so it makes sense to use more than one substructure ONLY when the same coordinate system will be meaningful (as in the figure of the following part). 
-  
-  > See explanation of the following part, which has a similar rationale, only with isolated structures
+Defaults to "", with no change of coordinates.
+
+To change CS, user inputs indices of 3 or more atoms:
+
+Atom indices, separated by a space - define:
+
+i)  atom 1-3rd last - define the origin (the centroid of one or more atoms)
+ii) atom 2nd last  - the y direction
+iii) last atom - the xy plane
   
   
 ### Substructure isolated Dipole Moment (NPA Based)
@@ -481,43 +431,38 @@ minimal wave number value (above fingerprint region). A numeric value.
 
 ### Ring Vibrations
 
-Ring vibrations are defined with the ring's six atoms, in an ordered fashion. 
+Ring vibrations are defined with one of the ring's six atoms, that defines the "Primary" atom of the ring.
 
-<center><img src="figures/rings.png" width="600" height="382"></center>
+<center><img src="../../man/figures/rings.png" width="600" height="382"/></center>
 
-Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure, though it really doesn't matter. Once this atom is defined, the rest are relative to it, the one directly opposite to it is the "para" atom, the two next to is are the "ortho" atoms, and the rest are the "meta" atoms. 
-
-> **Be patient and make sure you do this correctly, as series that break this rule will work, but will produce wrong results. **
+Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure, though it really doesn't matter.
 
 Note that it is possible to extract vibrations for as many rings wanted.
 
-In this instance, our input would be `c('6 3 4 8 5 7', '18 15 16 20 17 19')` with `'6 3 4 8 5 7'` for the ring on the right, and `'18 15 16 20 17 19'` for the ring on the left.
-
-
+In this instance, our input would be `c(3, 15)` with `3` being the primary for the ring on the right, and `15` for the ring on the left.
 
 #### TL;DR
 
-```
+```         
 # To extract ring vibrations for two rings, indexed 3-8 and 15-20
 # (having the structures in the figure above as reference). Define, for instance,
 # atoms 3 and 15 as primaries -> get the following inputs:
 
-# Ring 1: primary = 3, para = 6, ortho = 4 & 8, meta = 5 & 7
-# Ring 2: primary = 15, para = 18, ortho = 16 & 20, meta = 17 & 19
+# Ring 1: primary = 3
+# Ring 2: primary = 15
 
 # The command will be:
 
 # explicitly 
-ring.vib.multi(inputs_vector = c('6 3 4 8 5 12', '18 15 16 20 17 19'))
+ring.vib.multi(inputs_vector = c(3, 15))
 
 # implicitly
-ring.vib.multi(c('6 3 4 8 5 12', '18 15 16 20 17 19'))
-
+ring.vib.multi(c(3, 15))
 ```
 
 #### Function Structure
 
-```
+```         
 ring.vib.multi(inputs_vector)
 ```
 
@@ -525,7 +470,7 @@ ring.vib.multi(inputs_vector)
 
 **inputs_vector:**
 
-vector of characters of 6 atoms, ordered as follows: para (opposite of primary - doesn't matter, but must be consistent), primary, two ortho atoms to primary, and two meta atoms to primary.
+vector of characters of single atom indices.
 
 
 ### Bending Vibrations
