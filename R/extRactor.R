@@ -219,13 +219,13 @@ extRact.polarizability <- function() {
   line.aniso <- grep('aniso', text, value = T)
   tokens.an <- strsplit(line.aniso, "\\s+")[[1]]
   tokens.an <- stringr::str_replace_all(tokens.an, 'D', 'E')
-  numerics.an <- as.numeric(tokens.an[2],
-                         scientific = T)
+  numerics.an <- as.numeric(tokens.an[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
+                            scientific = T)[1]
   line.iso <- grep('iso', text, value = T)
   tokens.iso <- strsplit(line.iso, "\\s+")[[1]]
   tokens.iso <- stringr::str_replace_all(tokens.iso, 'D', 'E')
-  numerics.iso <- as.numeric(tokens.iso[2],
-                            scientific = T)
+  numerics.iso <- as.numeric(tokens.iso[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
+                             scientific = T)[1]
   result <- data.frame(t(c(numerics.iso, numerics.an)))
   names(result) <- c('Isotropic_Polar', 'Anisotropic_Polar')
   return(result)
@@ -288,111 +288,7 @@ extRact.vectors <- function() {
   return(data.frame(lapply(1:n.atoms, turn_numeric)))
 }
 
-#' Extract and compress all needed information from Gaussian log files.
-#'
-#' This function acts on a set of Gaussian log files.
-#' No input is needed.
-#'
-#' No Parameters
-#' @return A .feather file for each log file
-#' @aliases extRactoR
-#' @export
-extRactoR <- function() {
-  main <- character()
-  instruction.1 <- svDialogs::dlg_message('
-         Please choose the .log files location.
-        ', type = 'ok')
-  
-  log.files.dir <- svDialogs::dlg_dir()$res
-  
-  output.folder.name <- svDialogs::dlg_input('
-         How would you like to call the output folder?'
-  )$res
-  
-  output.folder.path.default <- svDialogs::dlg_message('
-         Would you like to save the output folder in the same
-         directory as that of the .log files? (Recommended).
-        ', type = 'yesno')$res
-  
-  if (output.folder.path.default == 'no') {
-    instruction.2 <- svDialogs::dlg_message('
-         Please choose a location.
-        ', type = 'ok')
-    
-    output.folder.path <- svDialogs::dlg_dir()$res
-    
-    if (output.folder.name == '-') {
-      output.folder.name <- paste0(output.folder.path,
-                                   '/',
-                                   'moleculaR_Files')
-      dir.create(output.folder.name)
-    } else {
-      output.folder.name <- paste0(output.folder.path,
-                                   '/',
-                                   output.folder.name)
-      dir.create(output.folder.name)
-    }
-  } else {
-    if (output.folder.name == '-') {
-      output.folder.name <- 'moleculaR_Files'
-      dir.create(output.folder.name)
-    } else {
-      output.folder.name <- paste0(log.files.dir,
-                                   '/',
-                                   output.folder.name)
-      dir.create(output.folder.name)
-    }
-    
-  }
-  
-  setwd(log.files.dir)
-  
-  for (file in list.files(pattern = '.log')) {
-    tryCatch(
-      {
-        main.big <- data.table::fread(file, sep = "?", header = FALSE, quote="")[[1L]]
-        scf.dones <- grep('SCF Done', main.big)
-        sec.to.last <- scf.dones[length(scf.dones) - 1]
-        main <<- main.big[sec.to.last:length(main.big)]
-        raw_data <- (list(
-          extRact.xyz(),
-          extRact.Dipole(),
-          extRact.polarizability(),
-          extRact.NBO(),
-          extRact.Hirsh(),
-          extRact.CM5(),
-          extRact.spectrum(),
-          extRact.vectors()
-        ))
-        df.result <- data.frame(
-          matrix(
-            ncol = sum(unlist(lapply(1:8, function(x) ncol(raw_data[[x]])))),
-            nrow = max(unlist(lapply(1:8, function(x) nrow(raw_data[[x]]))))))
-        df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
-        df.result[1, 5:8] <- raw_data[[2]]
-        df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
-        df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
-        df.result[1:nrow(raw_data[[5]]), 12] <- raw_data[[5]]
-        df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
-        df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
-        df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
-        feather::write_feather(df.result,
-                               paste0('Extracted_info',
-                                      '/',
-                                      tools::file_path_sans_ext(file),
-                                      '.feather'))
-      }, error = function(e){cat(paste0("Error while extracting from ", file, 
-                                        ' - check for errors in the log file.'))}
-    )
-  }
-  cat('
-Done!
-')
-  cat(paste0('
-Current working directory is set to ',getwd()))
-}
-
-#' Extract and compress all needed information from Gaussian log files - no GUI
+#' Extract and compress all needed information from Gaussian log files
 #'
 #' This function acts on a set of Gaussian log files.
 #' No input is needed.
@@ -401,10 +297,11 @@ Current working directory is set to ',getwd()))
 #' @return A .feather file for each log file
 #' @aliases extRactoR.auto
 #' @export
-extRactoR.auto <- function() {
+extractoR <- function() {
   main <- character()
-  dir.create('Extracted_info')
+  dir.create('Feather_Files')
   for (file in list.files(pattern = '.log')) {
+    message("Processing ", file)
     tryCatch(
       {
         main.big <- data.table::fread(file, sep = "?", header = FALSE, quote="")[[1L]]
@@ -434,7 +331,7 @@ extRactoR.auto <- function() {
         df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
         df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
         feather::write_feather(df.result,
-                               paste0('Extracted_info',
+                               paste0('Feather_Files',
                                       '/',
                                       tools::file_path_sans_ext(file),
                                       '.feather'))
@@ -442,7 +339,7 @@ extRactoR.auto <- function() {
                                         ' - check for errors in the log file.'))}
     )
   }
-  cat('
+  message('
 Done!
       ')
 }

@@ -13,758 +13,435 @@
 #' See the full manual for rules of use and options.
 #' @return csv file with all features and a input file for future
 #'  use and documentation
-#' @aliases moleculaR.input.maker
 #' @export
-moleculaR.input.maker <- function() {
-  
-  svDialogs::dlg_message(
-    "
-Welcome to moleculaR's input file maker.
-
-Please answer and follow the instructions.",
-type = 'ok')
-  
-  run.plot <- svDialogs::dlg_message("
-It is best if you have a molecular viewer showing one of the
-molecules of the set in 3D.  
-
-Answer 'Yes' to open moleculaR's 3D viewer with a chosen molecule.
-
-Answer 'No' if you already have an open viewer",
-type = 'yesno'
-  )$res
-  
-  if (run.plot == 'yes') {
-    plot_molecule(svDialogs::dlg_open(getwd())$res)
-    return(moleculaR.input.maker.rerun())
-  }
-  
-  ### steRimol
-  
-  sterimol.answer <- svDialogs::dlg_message(
-    "Would you like to use steRimol?",
-    type = 'yesno')$res
-  if (sterimol.answer == 'yes') {
-    radii.system <- svDialogs::dlg_list(choices = list(
-      'CPK','Pyykko'
-    ), preselect = 'Pyykko',
-    title = 'Please select the raddi system you wish to use.'
-    )$res
+moleculaR.Input.Maker <- function() {
+  # UI
+  ui <- fluidPage(
+    theme = shinytheme("cosmo"),  # Apply a modern theme
     
-    if (radii.system == 'CPK') CPK <- T else CPK <- F
+    tags$head(
+      tags$script(HTML("
+        $(document).on('click', '[id$=InfoBtn]', function() {
+          var infoBoxId = $(this).attr('id').replace('Btn', 'Box');
+          $('#' + infoBoxId).toggle();
+        });
+      ")),
+      tags$style(HTML("
+        .info-box {
+          display: none;
+          background-color: #f9f9f9;
+          border-left: 4px solid #5bc0de;
+          padding: 10px;
+          margin-top: 10px;
+        }
+        .section-title {
+          margin-top: 20px;
+          font-weight: bold;
+          color: #337ab7;
+        }
+        .section-container {
+          padding: 15px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          background-color: #ffffff;
+          margin-bottom: 20px;
+        }
+        .info-btn {
+          font-size: 14px;
+          color: #5bc0de;
+          margin-left: 5px;
+          cursor: pointer;
+        }
+        .section-divider {
+          margin-top: 30px;
+          margin-bottom: 30px;
+          height: 2px;
+          background-color: #eee;
+        }
+      "))
+    ),
     
-    only.sub <- svDialogs::dlg_message(
-      "Only account for substituent?",
-      type = 'yesno'
-    )$res
+    titlePanel("moleculaR - Input Maker"),
     
-    if (only.sub == 'yes') only.sub <- T else only.sub <- F
-    
-    # drop is not accounted for, as it is a non standard use of steRimol.
-    # See documentation and use steRimol directly to apply it.
-    
-    input.vector <- svDialogs::dlg_input(
-      "Please enter atom pairs (min of one pair).
-Separate atom pair by a single comma.
-
-If you choose to enter more than one pair,
-separate your answers with a space.
-
-example: to use atom pairs 1,2 and 3,4
-as primary axes, our answer should be - 1,2 3,4,
-
-Note: Directionality matters. 1,2 and 2,1 are different."
-    )$res
-    
-    input.vector <- stringr::str_split(input.vector, ' ')
-    input.vector <- lapply(input.vector,
-                           function(x) gsub(',', ' ', x))[[1]]
-    
-    sterimol.inputs <- list(input.vector,
-                            CPK,
-                            only.sub)
-    names(sterimol.inputs) <- c('input.vector',
-                                'CPK',
-                                'only.sub')
-  } else {
-    sterimol.inputs <- NA
-  }
-  
-  ### Charges
-  
-  nbo.answer <- svDialogs::dlg_message(
-    "Would you like to use include atomic partial charges?",
-    type = 'yesno')$res
-  if (nbo.answer == 'yes') {
-    
-    atom_indices <- svDialogs::dlg_input(
-      "Please enter atoms, separated by a comma"
-    )$res
-    
-    atom_indices <- gsub(',', ' ', atom_indices)
-    
-    diff.answer <- svDialogs::dlg_message(
-      "Would you like to use partial charge differences (delta)?",
-      type = 'yesno')$res
-    
-    if (diff.answer == 'yes') {
-      
-      difference_indices <- svDialogs::dlg_input(
-        "Please enter atom pairs, atoms separated by a comma
-and pairs by a space"
-      )$res
-      
-      difference_indices <- gsub(',', ' ', difference_indices)
-    } else {
-      difference_indices <- '-'
-    }
-    
-    nbo.inputs <- list(atom_indices,
-                       difference_indices)
-    names(nbo.inputs) <- c('atom_indices',
-                           'difference_indices')
-  } else {
-    nbo.inputs <- NA
-  }
-  
-  
-  ### Dipole
-  
-  dipole.answer <- svDialogs::dlg_message(
-    "Would you like to use dipole moment(s)?",
-    type = 'yesno')$res
-  
-  if (dipole.answer == 'yes') {
-    change.coor.sys <- svDialogs::dlg_message(
-      "Would you like to perform any change of coordinates system?
-
-This is a must if you wish to use any dipole manipulation.",
-type = 'yesno'
-    )$res
-    
-    if (change.coor.sys == 'yes') {
-      coor_atoms <- svDialogs::dlg_input(
-        "
-  Please enter three atom indices.
-  The first being the origin atom,
-  the y direction atom, and the xy plane atom.
-  The answer should be 3 numbers, separated by a comma (e.g. 1,2,3).
-  
-  If you choose to enter more than one triad,
-  separate your answers with a space.
-        "
-      )$res
-      
-      coor_atoms <- stringr::str_split(coor_atoms, ' ')
-      coor_atoms <- lapply(coor_atoms,
-                           function(x) gsub(',', ' ', x))[[1]]
-      
-      center_of_substructure <- svDialogs::dlg_message(
-        "Would you like to use the centeroid
-of a substructure as the origin of the dipole components?",
-type = 'yesno'
-      )$res
-      
-      if (center_of_substructure == 'no') {
-        center_of_substructure <- F
-        subunits_input_vector <- NULL
-        center_of_mass <- F
-      } else {
-        center_of_mass <- F
-        center_of_substructure <- T
-        subunits_input_vector <- svDialogs::dlg_input(
-          "Please enter the subunit's atoms (min of one subunit).
-Separate atom pair by a single comma.
-
-If you choose to enter more than one subunit,
-separate your answers with a space.
-
-example: if we wish to use atom pairs 1,2,3,4 and 5,6,7,8
-as primary axes, our answer should be - 1,2,3,4 and 5,6,7,8"
-        )$res
-        
-        subunits_input_vector <- stringr::str_split(subunits_input_vector, ' ')
-        subunits_input_vector <- lapply(subunits_input_vector,
-                                        function(x) gsub(',', ' ', x))[[1]]
-      }
-    } else {
-      coor_atoms <- ''
-      center_of_mass <- F
-      center_of_substructure <- F
-      subunits_input_vector <- NULL
-    }
-    
-    dipole.inputs <- list(coor_atoms,
-                          center_of_substructure,
-                          subunits_input_vector,
-                          center_of_mass)
-    names(dipole.inputs) <- c('coor_atoms',
-                              'center_of_substructure',
-                              'subunits_input_vector',
-                              'center_of_mass')
-  } else {
-    dipole.inputs <- NA
-  }
-  
-  
-  ###### Vibrations
-  
-  ### Bond Vibrations
-  
-  bond.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use bond vibrations?",
-    type = 'yesno')$res
-  
-  if (bond.vibrations.answer == 'yes') {
-    atom_pairs <- svDialogs::dlg_input(
-      "
-Please enter atom pairs. 
-
-Each pair should be separated by a comma
-and different pairs should be separated by a space (e.g. 1,2 3,4). 
-
-Note: there must be a bond between the requested atoms.
-"
-    )$res
-    atom_pairs <- stringr::str_split(atom_pairs, ' ')
-    atom_pairs <- paste(lapply(atom_pairs,
-                               function(x) gsub(',', ' ', x))[[1]],
-                        collapse =  ' ')
-    stretch.inputs <- list(atom_pairs)
-    names(stretch.inputs) <- 'atom_pairs'
-  } else {
-    stretch.inputs <- NA
-  }
-  
-  ### Ring Vibrations
-  
-  ring.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use ring vibrations?",
-    type = 'yesno')$res
-  
-  if (ring.vibrations.answer == 'yes') {
-    inputs_vector <- svDialogs::dlg_input(
-      "
-
-Please enter sets of ring atoms by order (para, primary, o, o, m, m).
-
-You may input more than one set. All atoms in a set are to be separated
-by a comma, and different sets by a space.
-
-
-")$res
-    
-    inputs_vector <- stringr::str_split(inputs_vector, ' ')
-    inputs_vector <- lapply(inputs_vector,
-                            function(x) gsub(',', ' ', x))[[1]]
-    ring.inputs <- list(inputs_vector)
-    names(ring.inputs) <- 'inputs_vector'
-  } else {
-    ring.inputs <- NA
-  }
-  
-  ### Bending Vibrations
-  
-  bending.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use bending vibrations?",
-    type = 'yesno')$res
-  
-  if (bending.vibrations.answer == 'yes') {
-    atom_pairs <- svDialogs::dlg_input(
-      "
-Please enter atom pairs. 
-
-The pair should be pf the atoms that move, and not their center atom. 
-
-Each pair should be separated by a comma
-and different pairs should be separated by a space (e.g. 1,2 3,4)
-
-
-"
-    )$res
-    atom_pairs <- stringr::str_split(atom_pairs, ' ')
-    atom_pairs <- paste(lapply(atom_pairs,
-                               function(x) gsub(',', ' ', x))[[1]],
-                        collapse =  ' ')
-    bend.inputs <- list(atom_pairs)
-    names(bend.inputs) <- 'atom_pairs'
-  } else {
-    bend.inputs <- NA
-  }
-  
-  ### Angles
-  
-  angles.answer <- svDialogs::dlg_message(
-    "Would you like to use angles and/or dihedrals?",
-    type = 'yesno')$res
-  
-  if (angles.answer == 'yes') {
-    atom_sets <- svDialogs::dlg_input(
-      "
-Please enter atom triads for angles or quartets for dihedrals.
-Each atom in the triad/quartet should be separated by a comma,
-and different sets should be separated by a space (e.g. 1,2,3 1,2,3,4).
-
-
-"
-    )$res
-    
-    inputs_vector <- stringr::str_split(atom_sets, ' ')
-    inputs_vector <- lapply(inputs_vector,
-                            function(x) gsub(',', ' ', x))[[1]]
-    mol.angle.inputs <- list(inputs_vector)
-    names(mol.angle.inputs) <- 'inputs_vector'
-  } else {
-    mol.angle.inputs <- NA
-  }
-  
-  ### Distances
-  
-  distance.answer <- svDialogs::dlg_message(
-    "Would you like to use atom distances?",
-    type = 'yesno')$res
-  
-  if (distance.answer == 'yes') {
-    atom_sets <- svDialogs::dlg_input(
-      "
-Please enter atom pairs for which you wish to the distance between.
-Each atom should be separated by a comma,
-and different pairs should be separated by a space (e.g. 1,2,3 1,2,3,4).
-
-
-"
-    )$res
-    
-    inputs_vector <- stringr::str_split(atom_sets, ' ')
-    inputs_vector <- paste(lapply(inputs_vector,
-                                  function(x) gsub(',', ' ', x))[[1]],
-                           collapse =  ' ')
-    distances.inputs <- list(inputs_vector)
-    names(distances.inputs) <- 'inputs_vector'
-  } else {
-    distances.inputs <- NA
-  }
-  
-  ### Polarizability
-  
-  ### Polarizability
-  
-  polariz.answer <- svDialogs::dlg_message(
-    "Would you like to use iso an anisotropic polarizabilty?",
-    type = 'yesno')$res
-  
-  polar.inputs <- list(polariz.answer)
-  names(polar.inputs) <- 'polariz.answer'
-  
-  
-  
-  #####################################################################
-  ###################   Output File Preparation   #####################
-  #####################################################################
-  
-  inputs.list <- list(sterimol.inputs,
-                      nbo.inputs,
-                      dipole.inputs,
-                      stretch.inputs,
-                      ring.inputs,
-                      bend.inputs,
-                      mol.angle.inputs,
-                      distances.inputs,
-                      polar.inputs)
-  names(inputs.list) <- c('steRimol',
-                          'NBO',
-                          'Dipole',
-                          'Bond Vibs',
-                          'Ring Vibs',
-                          'Bend Vibs',
-                          'Angles',
-                          'Distances',
-                          'Polarizability')
-  
-  name.of.file <- svDialogs::dlg_input(
-    "
-How do you want to call the input file?
-
-Do not add a file extension."
-  )$res
-  
-  svDialogs::dlg_message(
-    "
-Please choose where to save the input file.",
-type = 'ok'
+    fluidRow(
+      column(4, 
+             div(class = "section-container",
+                 h3("Sterimol", span("\\u2139\\ufe0f", id = "sterimolInfoBtn", class = "info-btn")),
+                 div(id = "sterimolInfoBox", class = "info-box", style = "white-space: pre-wrap;",
+                     "Enter pairs of integers separated by a space,
+  '_', tab, ':', or ';'
+  For example:
+  '1,2 3,4' or '1,2_3,4' or '1,2;3,4'"),
+  checkboxInput("sterimol", "Sterimol", value = FALSE),
+  conditionalPanel(
+    condition = "input.sterimol == true",
+    textInput("axes", "Axis (or axes):", ""),
+    selectInput("radii", "Radii:", choices = c("CPK", "Pyykko")),
+    checkboxInput("onlySubstituent", "Only substituent?", value = TRUE),
+    checkboxInput("dropAtoms", "Drop any atoms?", value = FALSE),
+    conditionalPanel(
+      condition = "input.dropAtoms == true",
+      textInput("atoms", "Enter atoms to drop:", "")
+    )
   )
-  where.to.save <- svDialogs::dlg_dir()$res
-  saveRDS(inputs.list,paste0(where.to.save,
-                             '/',
-                             name.of.file,
-                             '.RData'))
+             )
+      ),
+  
+  column(4, 
+         div(class = "section-container",
+             h3("Dipole Moment", span("\\u2139\\ufe0f", id = "dipoleInfoBtn", class = "info-btn")),
+             div(id = "dipoleInfoBox", class = "info-box", style = "white-space: pre-wrap;",
+                 "Enter vectors of integers separated by a space,
+  '_', tab, ':', or ';'
+  For example:
+  '1,2,3,4 5,6,7' or '1,2,3,4_5,6,7'"),
+  checkboxInput("dipoleMoment", "Dipole Moment", value = FALSE),
+  conditionalPanel(
+    condition = "input.dipoleMoment == true",
+    textInput("dipoleInput", "Enter vectors of atom indices:", "")
+  )
+         )
+  ),
+  
+  column(4, 
+         div(class = "section-container",
+             h3("Charges", span("\\u2139\\ufe0f", id = "chargesInfoBtn", class = "info-btn")),
+             div(id = "chargesInfoBox", class = "info-box", style = "white-space: pre-wrap;",
+                 "Atom indices input line:
+  Enter a vector of integers. Separate indices with commas.
+  For example:
+  '1,2,3,4'
+  
+  Differences input line: 
+  Enter pairs of integers that all appear in the first input line. 
+  Pairs should be separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1,2 3,4' or '1,2_3,4' or '1,2;3,4'"),
+  checkboxInput("charges", "Charges", value = FALSE),
+  conditionalPanel(
+    condition = "input.charges == true",
+    textInput("atomIndices", "Atom indices:", ""),
+    textInput("differences", "Differences:", ""),
+    checkboxGroupInput("chargeMethods", "Select charge methods:", 
+                       choices = list("NPA" = "NPA", "Hirshfeld" = "Hirshfeld", "CM5" = "CM5"))
+  )
+         )
+  )
+    ),
+  
+  div(class = "section-divider"),  # Divider for clarity
+  
+  fluidRow(
+    column(4, 
+           div(class = "section-container",
+               h3("Vibrations", span("\\u2139\\ufe0f", id = "vibrationsInfoBtn", class = "info-btn")),
+               div(id = "vibrationsInfoBox", class = "info-box", style = "white-space: pre-wrap;",
+                   "Bond vibrations input line: 
+  Enter pairs of integers separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1,2 3,4' or '1,2_3,4' or '1,2;3,4'.
+  
+  Ring vibrations input line: 
+  Enter integers separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1 2 3' or '1_2_3' or '1;2;3'.
+  
+  Bending vibrations input line: 
+  Enter pairs of integers separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1,2 3,4' or '1,2_3,4' or '1,2;3,4'."),
+  checkboxInput("vibrations", "Vibrations", value = FALSE),
+  conditionalPanel(
+    condition = "input.vibrations == true",
+    checkboxInput("bondVibrations", "Bond Vibrations", value = FALSE),
+    conditionalPanel(
+      condition = "input.bondVibrations == true",
+      textInput("bondVibInput", "Enter bonded atom pairs:", "")
+    ),
+    checkboxInput("ringVibrations", "Ring Vibrations", value = FALSE),
+    conditionalPanel(
+      condition = "input.ringVibrations == true",
+      textInput("ringVibInput", "Enter the primary atom(s) index:", "")
+    ),
+    checkboxInput("bendVibrations", "Bend Vibrations", value = FALSE),
+    conditionalPanel(
+      condition = "input.bendVibrations == true",
+      textInput("bendVibInput", "Enter pairs of atoms (terminal, moving atoms):", "")
+    )
+  )
+           )
+    ),
+  
+  column(4, 
+         div(class = "section-container",
+             h3("Geometric Measurements", span("\\u2139\\ufe0f", id = "additionalInfoBtn", class = "info-btn")),
+             div(id = "additionalInfoBox", class = "info-box", style = "white-space: pre-wrap;",
+                 "Angles input line: 
+  Enter vectors of 3 or 4 integers separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1,2,3 4,5,6,7' or '1,2,3_4,5,6,7' or '1,2,3;4,5,6,7'.
+  
+  Distances input line: 
+  Enter pairs of integers separated by space, '_', tab, ':', or ';'. 
+  For example:
+  '1,2 3,4' or '1,2_3,4' or '1,2;3,4'."),
+  checkboxInput("angles", "Angles (dihedral and between bonds)", value = FALSE),
+  conditionalPanel(
+    condition = "input.angles == true",
+    textInput("anglesInput", "Enter vectors of indices(3 for angle and 4 for dihedrals):", "")
+  ),
+  checkboxInput("distances", "Distances (and bond lengths)", value = FALSE),
+  conditionalPanel(
+    condition = "input.distances == true",
+    textInput("distancesInput", "Enter pairs of atoms:", "")
+  )
+         )
+  )
+  ),
+  
+  div(class = "section-divider"),  # Divider for clarity
+  
+  fluidRow(
+    column(12, 
+           div(class = "section-container",
+               h3("Molecule Visualization", span("\\u2139\\ufe0f", id = "molVizInfoBtn", class = "info-btn")),
+               div(id = "molVizInfoBox", class = "info-box", "Molecule Visualization Information: This section handles molecule visualization."),
+               checkboxInput("molViz", "Molecule Visualization", value = FALSE),
+               conditionalPanel(
+                 condition = "input.molViz == true",
+                 fileInput("xyzFile", "Choose an XYZ file", accept = c(".xyz")),
+                 rglwidgetOutput("molPlot")
+               )
+           )
+    )
+  ),
+  
+  fluidRow(
+    column(12,
+           div(class = "section-container",
+               downloadButton("downloadFile", "Download Output"),
+               textOutput("outputText")
+           )
+    )
+  )
+  )
+  
+  # Server
+  server <- function(input, output) {
+    output$outputText <- renderText({
+      # Initialize an empty output string
+      output_data <- ""
+      
+      if (input$sterimol) {
+        # Gather Sterimol input values
+        axes <- input$axes
+        radii <- input$radii
+        only_substituent <- ifelse(input$onlySubstituent, "Yes", "No")
+        drop_atoms <- ifelse(input$dropAtoms, input$atoms, "No")
+        
+        # Append Sterimol data to output
+        output_data <- paste0(
+          output_data,
+          "Sterimol:\n",
+          "Axis (or axes): ", axes, "\n",
+          "Radii: ", radii, "\n",
+          "Only substituent?: ", only_substituent, "\n",
+          "Drop any atoms?: ", drop_atoms, "\n"
+        )
+      }
+      
+      if (input$dipoleMoment) {
+        # Gather Dipole Moment input value
+        dipole_value <- input$dipoleInput
+        
+        # Append Dipole Moment data to output
+        output_data <- paste0(
+          output_data,
+          "Dipole Moment: ", dipole_value, "\n"
+        )
+      }
+      
+      if (input$charges) {
+        # Gather Charges input values
+        atom_indices <- input$atomIndices
+        differences <- input$differences
+        charge_methods <- paste(input$chargeMethods, collapse = ", ")
+        
+        # Append Charges data to output
+        output_data <- paste0(
+          output_data,
+          "Charges:\n",
+          "Atom indices: ", atom_indices, "\n",
+          "Differences: ", differences, "\n",
+          "Charge Methods: ", charge_methods, "\n"
+        )
+      }
+      
+      if (input$vibrations) {
+        # Gather Vibrations input values
+        bond_vib <- ifelse(input$bondVibrations, input$bondVibInput, "No")
+        ring_vib <- ifelse(input$ringVibrations, input$ringVibInput, "No")
+        bend_vib <- ifelse(input$bendVibrations, input$bendVibInput, "No")
+        
+        # Append Vibrations data to output
+        output_data <- paste0(
+          output_data,
+          "Vibrations:\n",
+          "Bond Vibrations: ", bond_vib, "\n",
+          "Ring Vibrations: ", ring_vib, "\n",
+          "Bend Vibrations: ", bend_vib, "\n"
+        )
+      }
+      
+      if (input$angles) {
+        angles_data <- input$anglesInput
+        output_data <- paste0(output_data, "Angles: ", angles_data, "\n")
+      }
+      
+      if (input$distances) {
+        distances_data <- input$distancesInput
+        output_data <- paste0(output_data, "Distances: ", distances_data, "\n")
+      }
+      
+      # Save the output to a file
+      writeLines(output_data, "output.txt")
+      
+      # Return output data to display in the app (optional)
+      return(output_data)
+    })
+    
+    output$downloadFile <- downloadHandler(
+      filename = function() {
+        "moleculaR_inputs.txt"
+      },
+      content = function(file) {
+        file.copy("output.txt", file)
+        
+        # Delete the "output.txt" file after copying
+        file.remove("output.txt")
+      }
+    )
+    
+    observeEvent(input$xyzFile, {
+      req(input$xyzFile)
+      
+      # Use the plot_molecule function to plot the molecule from the selected file
+      plot_molecule(input$xyzFile$datapath)
+      
+      # Convert the RGL plot to a widget for Shiny
+      output$molPlot <- renderRglwidget({
+        rglwidget()
+      })
+    })
+  }
+  
+  # Run the application 
+  shinyApp(ui = ui, server = server)
 }
 
-#' User interface for the extraction of all possible features - looper
+##### Input.file.Parser - translates text form input files generated with
+##### moleculaR.Input.Maker. 
+
+#' Text Input file parser to moleculaR's main function
 #'
-#' Generate user inputs for future use.
-#' The input can be used directly with the moleculaR function.
-#' No input is needed. User is guided with questions and answers.
-#' See the full manual for rules of use and options.
-#' @return csv file with all features and a input file for future
-#'  use and documentation
-#' @aliases moleculaR.input.maker.rerun
+#' Transform into list form.
 #' @keywords internal
-
-moleculaR.input.maker.rerun <- function() {
+#' @return list form of input file
+parse_txt_inputfile_to_list <- function(input_file_path) {
+  # Initialize the overall list
+  Input.File <- list()
   
-  ### steRimol
+  # Read in the text file
+  lines <- readLines(input_file_path)
   
-  sterimol.answer <- svDialogs::dlg_message(
-    "Would you like to use steRimol?",
-    type = 'yesno')$res
-  if (sterimol.answer == 'yes') {
-    radii.system <- svDialogs::dlg_list(choices = list(
-      'CPK','Pyykko'
-    ), preselect = 'Pyykko',
-    title = 'Please select the raddi system you wish to use.'
-    )$res
-    
-    if (radii.system == 'CPK') CPK <- T else CPK <- F
-    
-    only.sub <- svDialogs::dlg_message(
-      "Only account for substituent?",
-      type = 'yesno'
-    )$res
-    
-    if (only.sub == 'yes') only.sub <- T else only.sub <- F
-    
-    # drop is not accounted for, as it is a non standard use of steRimol.
-    # See documentation and use steRimol directly to apply it.
-    
-    input.vector <- svDialogs::dlg_input(
-      "Please enter atom pairs (min of one pair).
-Separate atom pair by a single comma.
-
-If you choose to enter more than one pair,
-separate your answers with a space.
-
-example: to use atom pairs 1,2 and 3,4
-as primary axes, our answer should be - 1,2 3,4,
-
-Note: Directionality matters. 1,2 and 2,1 are different."
-    )$res
-    
-    input.vector <- stringr::str_split(input.vector, ' ')
-    input.vector <- lapply(input.vector,
-                           function(x) gsub(',', ' ', x))[[1]]
-    
-    sterimol.inputs <- list(input.vector,
-                            CPK,
-                            only.sub)
-    names(sterimol.inputs) <- c('input.vector',
-                                'CPK',
-                                'only.sub')
-  } else {
-    sterimol.inputs <- NA
-  }
+  # Variables to keep track of the current primary list and secondary list
+  current_primary <- NULL
   
-  ### NBO
-  
-  nbo.answer <- svDialogs::dlg_message(
-    "Would you like to use NBO charges?",
-    type = 'yesno')$res
-  if (nbo.answer == 'yes') {
-    
-    atom_indices <- svDialogs::dlg_input(
-      "Please enter atoms, separated by a comma"
-    )$res
-    
-    atom_indices <- gsub(',', ' ', atom_indices)
-    
-    diff.answer <- svDialogs::dlg_message(
-      "Would you like to use NBO charge differences?",
-      type = 'yesno')$res
-    
-    if (diff.answer == 'yes') {
-      
-      difference_indices <- svDialogs::dlg_input(
-        "Please enter atom pairs, atoms separated by a comma
-and pairs by a space"
-      )$res
-      
-      difference_indices <- gsub(',', ' ', difference_indices)
+  # Helper function to convert "Yes"/"No" to TRUE/FALSE
+  convert_to_logical <- function(value) {
+    if (tolower(value) == "yes") {
+      return(TRUE)
+    } else if (tolower(value) == "no") {
+      return(FALSE)
     } else {
-      difference_indices <- '-'
+      return(value)
     }
-    
-    nbo.inputs <- list(atom_indices,
-                       difference_indices)
-    names(nbo.inputs) <- c('atom_indices',
-                           'difference_indices')
-  } else {
-    nbo.inputs <- NA
   }
   
+  # Helper function to split characters and replace commas with spaces
+  process_characters <- function(value) {
+    # Split at spaces, tabs, underscores, colons, or semicolons
+    value <- strsplit(value, "[ \t_:;]+")[[1]]
+    # Remove leading and trailing spaces and replace commas with spaces
+    value <- trimws(gsub(",", " ", value))
+    return(value)
+  }
   
-  ### Dipole
-  
-  dipole.answer <- svDialogs::dlg_message(
-    "Would you like to use dipole moment(s)?",
-    type = 'yesno')$res
-  
-  if (dipole.answer == 'yes') {
-    change.coor.sys <- svDialogs::dlg_message(
-      "Would you like to perform any change of coordinates system?
-
-This is a must if you wish to use any dipole manipulation.",
-type = 'yesno'
-    )$res
+  # Loop through each line
+  for (line in lines) {
+    # Trim any leading or trailing whitespace
+    line <- trimws(line)
     
-    if (change.coor.sys == 'yes') {
-      coor_atoms <- svDialogs::dlg_input(
-        "
-  Please enter three atom indices.
-  The first being the origin atom,
-  the y direction atom, and the xy plane atom.
-  The answer should be 3 numbers, separated by a comma (e.g. 1,2,3).
-  
-  If you choose to enter more than one triad,
-  separate your answers with a space.
-        "
-      )$res
-      
-      coor_atoms <- stringr::str_split(coor_atoms, ' ')
-      coor_atoms <- lapply(coor_atoms,
-                           function(x) gsub(',', ' ', x))[[1]]
-      
-      center_of_substructure <- svDialogs::dlg_message(
-        "Would you like to use the centeroid
-of a substructure as the origin of the dipole components?",
-type = 'yesno'
-      )$res
-      
-      if (center_of_substructure == 'no') {
-        center_of_substructure <- F
-        subunits_input_vector <- NULL
-        center_of_mass <- F
-      } else {
-        center_of_mass <- F
-        center_of_substructure <- T
-        subunits_input_vector <- svDialogs::dlg_input(
-          "Please enter the subunit's atoms (min of one subunit).
-Separate atom pair by a single comma.
-
-If you choose to enter more than one subunit,
-separate your answers with a space.
-
-example: if we wish to use atom pairs 1,2,3,4 and 5,6,7,8
-as primary axes, our answer should be - 1,2,3,4 and 5,6,7,8"
-        )$res
+    # Skip empty lines
+    if (nchar(line) == 0) next
+    
+    # Check if the line ends with a colon (indicates a primary list)
+    if (grepl(":$", line)) {
+      # Extract the primary list name (remove the colon)
+      primary_name <- sub(":", "", line)
+      # Initialize a new primary list in Input.File
+      Input.File[[primary_name]] <- list()
+      current_primary <- primary_name
+    } else if (!is.null(current_primary)) {
+      # Split the line at the first colon
+      parts <- strsplit(line, ":", fixed = TRUE)[[1]]
+      if (length(parts) == 2) {
+        # Extract the secondary list name and value
+        secondary_name <- trimws(parts[1])
+        value <- convert_to_logical(trimws(parts[2]))
+        # Process characters if the value is not logical (TRUE/FALSE)
+        if (!is.logical(value)) {
+          value <- process_characters(value)
+        }
         
-        subunits_input_vector <- stringr::str_split(subunits_input_vector, ' ')
-        subunits_input_vector <- lapply(subunits_input_vector,
-                                        function(x) gsub(',', ' ', x))[[1]]
+        # Handle special cases
+        if (current_primary == "Sterimol" && secondary_name == "Radii" && value == "CPK") {
+          value <- TRUE
+        }
+        
+        # Store the value in the corresponding primary list
+        Input.File[[current_primary]][[secondary_name]] <- value
       }
-    } else {
-      coor_atoms <- ''
-      center_of_mass <- F
-      center_of_substructure <- F
-      subunits_input_vector <- NULL
+    }
+  }
+  
+  # Ensure "Dipole Moment", "Angles", and "Distances" are treated as primary lists
+  for (special_list in c("Dipole Moment", "Angles", "Distances")) {
+    if (!is.null(Input.File[[special_list]])) {
+      next  # Already handled
     }
     
-    dipole.inputs <- list(coor_atoms,
-                          center_of_substructure,
-                          subunits_input_vector,
-                          center_of_mass)
-    names(dipole.inputs) <- c('coor_atoms',
-                              'center_of_substructure',
-                              'subunits_input_vector',
-                              'center_of_mass')
-  } else {
-    dipole.inputs <- NA
+    # Look for the special primary list in the remaining text lines
+    for (line in lines) {
+      if (startsWith(line, special_list)) {
+        # Extract the value after the colon
+        value <- sub(paste0(special_list, ":"), "", line)
+        value <- convert_to_logical(trimws(value))
+        if (!is.logical(value)) {
+          value <- process_characters(value)
+        }
+        Input.File[[special_list]] <- value
+      }
+    }
   }
   
+  # Remove specific nested elements
+  Input.File$Sterimol$`Dipole Moment` <- NULL
+  Input.File$Vibrations$Angles <- NULL
+  Input.File$Vibrations$Distances <- NULL
   
-  ###### Vibrations
-  
-  ### Bond Vibrations
-  
-  bond.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use bond vibrations?",
-    type = 'yesno')$res
-  
-  if (bond.vibrations.answer == 'yes') {
-    atom_pairs <- svDialogs::dlg_input(
-      "
-Please enter atom pairs. Each pair should be separated by a comma
-and different pairs should be separated by a space (e.g. 1,2 3,4)
-
-"
-    )$res
-    atom_pairs <- stringr::str_split(atom_pairs, ' ')
-    atom_pairs <- paste(lapply(atom_pairs,
-                               function(x) gsub(',', ' ', x))[[1]],
-                        collapse =  ' ')
-    stretch.inputs <- list(atom_pairs)
-    names(stretch.inputs) <- 'atom_pairs'
-  } else {
-    stretch.inputs <- NA
-  }
-  
-  ### Ring Vibrations
-  
-  ring.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use ring vibrations?",
-    type = 'yesno')$res
-  
-  if (ring.vibrations.answer == 'yes') {
-    inputs_vector <- svDialogs::dlg_input(
-      "
-
-Please enter sets of ring atoms by order (para, primary, o, o, m, m).
-
-You may input more than one set. All atoms in a set are to be separated
-by a comma, and different sets by a space.
-
-
-")$res
-    
-    inputs_vector <- stringr::str_split(inputs_vector, ' ')
-    inputs_vector <- lapply(inputs_vector,
-                            function(x) gsub(',', ' ', x))[[1]]
-    ring.inputs <- list(inputs_vector)
-    names(ring.inputs) <- 'inputs_vector'
-  } else {
-    ring.inputs <- NA
-  }
-  
-  ### Bending Vibrations
-  
-  bending.vibrations.answer <- svDialogs::dlg_message(
-    "Would you like to use bending vibrations?",
-    type = 'yesno')$res
-  
-  if (bending.vibrations.answer == 'yes') {
-    atom_pairs <- svDialogs::dlg_input(
-      "
-Please enter atom pairs. Each pair should be separated by a comma
-and different pairs should be separated by a space (e.g. 1,2 3,4)
-
-
-"
-    )$res
-    atom_pairs <- stringr::str_split(atom_pairs, ' ')
-    atom_pairs <- paste(lapply(atom_pairs,
-                               function(x) gsub(',', ' ', x))[[1]],
-                        collapse =  ' ')
-    bend.inputs <- list(atom_pairs)
-    names(bend.inputs) <- 'atom_pairs'
-  } else {
-    bend.inputs <- NA
-  }
-  
-  ### Angles
-  
-  angles.answer <- svDialogs::dlg_message(
-    "Would you like to use angles and/or dihedrals?",
-    type = 'yesno')$res
-  
-  if (angles.answer == 'yes') {
-    atom_sets <- svDialogs::dlg_input(
-      "
-Please enter atom triads for angles or quartets for dihedrals.
-Each atom in the triad/quartet should be separated by a comma,
-and different sets should be separated by a space (e.g. 1,2,3 1,2,3,4).
-
-
-"
-    )$res
-    
-    inputs_vector <- stringr::str_split(atom_sets, ' ')
-    inputs_vector <- lapply(inputs_vector,
-                            function(x) gsub(',', ' ', x))[[1]]
-    mol.angle.inputs <- list(inputs_vector)
-    names(mol.angle.inputs) <- 'inputs_vector'
-  } else {
-    mol.angle.inputs <- NA
-  }
-  
-  ### Distances
-  
-  distance.answer <- svDialogs::dlg_message(
-    "Would you like to use atom distances?",
-    type = 'yesno')$res
-  
-  if (distance.answer == 'yes') {
-    atom_sets <- svDialogs::dlg_input(
-      "
-Please enter atom pairs for which you wish to the distance between.
-Each atom should be separated by a comma,
-and different pairs should be separated by a space (e.g. 1,2,3 1,2,3,4).
-
-
-"
-    )$res
-    
-    inputs_vector <- stringr::str_split(atom_sets, ' ')
-    inputs_vector <- paste(lapply(inputs_vector,
-                                  function(x) gsub(',', ' ', x))[[1]],
-                           collapse =  ' ')
-    distances.inputs <- list(inputs_vector)
-    names(distances.inputs) <- 'inputs_vector'
-  } else {
-    distances.inputs <- NA
-  }
-  
-  ### Polarizability
-  
-  polariz.answer <- svDialogs::dlg_message(
-    "Would you like to use iso an anisotropic polarizabilty?",
-    type = 'yesno')$res
-  
-  polar.inputs <- list(polariz.answer)
-  names(polar.inputs) <- 'polariz.answer'
-  
-  
-  
-  
-  #####################################################################
-  ###################   Output File Preparation   #####################
-  #####################################################################
-  
-  inputs.list <- list(sterimol.inputs,
-                      nbo.inputs,
-                      dipole.inputs,
-                      stretch.inputs,
-                      ring.inputs,
-                      bend.inputs,
-                      mol.angle.inputs,
-                      distances.inputs,
-                      polar.inputs)
-  names(inputs.list) <- c('steRimol',
-                          'NBO',
-                          'Dipole',
-                          'Bond Vibs',
-                          'Ring Vibs',
-                          'Bend Vibs',
-                          'Angles',
-                          'Distances',
-                          'Polarizability')
-  
-  name.of.file <- svDialogs::dlg_input(
-    "
-How do you want to call the input file?
-
-Do not add a file extension."
-  )$res
-  
-  svDialogs::dlg_message(
-    "
-Please choose where to save the input file.",
-type = 'ok'
-  )
-  where.to.save <- svDialogs::dlg_dir()$res
-  saveRDS(inputs.list,paste0(where.to.save,
-                             '/',
-                             name.of.file,
-                             '.RData'))
-} 
+  return(Input.File)
+}
 ##### moleculaR - generates final results csv file
 ##### from user inputs file (.RData), after running GUI for the first time
 
@@ -786,102 +463,105 @@ moleculaR <- function(input_file = NULL) {
   #####################################################################
 
   if (is.null(input_file)) {
-    input_file <- readRDS(svDialogs::dlg_open(title =
-                                              "Please choose an .RData input file",
+    input_file <- parse_txt_inputfile_to_list(svDialogs::dlg_open(title =
+                                              "Please choose a moleculaR.Input.Maker generated input file",
                                             getwd())$res)
   } else {
-    input_file <- readRDS(input_file)
+    input_file <- parse_txt_inputfile_to_list(input_file)
   }
   results <- list()
 
   ### steRimol
 
-  if (!any(is.na(input_file$steRimol))) {
-    sterimol.result <- list(steRimol.multi(input_file$steRimol$input.vector,
-                                               input_file$steRimol$CPK,
-                                               input_file$steRimol$only.sub))
+  if ('Sterimol' %in% names(input_file)) {
+    sterimol.result <- list(steRimol.multi(input_file$Sterimol$`Axis (or axes)`,
+                                           input_file$Sterimol$Radii,
+                                           input_file$Sterimol$`Only substituent?`,
+                                           input_file$Sterimol$`Drop any atoms?`))
     results <- c(results, sterimol.result)
   }
 
   ### Charges
 
-  if (!any(is.na(input_file$NBO))) {
+  if ('Charges' %in% names(input_file)) {
     
     if (length(list.files(pattern = 'nbo.csv',
-                          list.dirs(recursive = F))) > 0){
-      nbo.result <- list(nbo.df(input_file$NBO$atom_indices,
-                                input_file$NBO$difference_indices))
+                          list.dirs(recursive = F))) > 0 &
+                          'NPA' %in% input_file$Charges$`Charge Methods`) {
+      nbo.result <- list(nbo.df(input_file$Charges$`Atom indices`,
+                                paste(input_file$Charges$Differences, collapse = ' ')))
       results <- c(results, nbo.result)
     }
 
     if (length(list.files(pattern = 'Hirshfeld.csv',
-                          list.dirs(recursive = F))) > 0){
-      hirsh.result <- list(hirsh.df(input_file$NBO$atom_indices,
-                                    input_file$NBO$difference_indices))
+                          list.dirs(recursive = F))) > 0 &
+        'Hirshfeld' %in% input_file$Charges$`Charge Methods`) {
+      hirsh.result <- list(hirsh.df(input_file$Charges$`Atom indices`,
+                                    paste(input_file$Charges$Differences, collapse = ' ')))
       results <- c(results, hirsh.result)
     }
     
     if (length(list.files(pattern = 'CM5.csv',
-                          list.dirs(recursive = F))) > 0){
-      cm5.result <- list(cm5.df(input_file$NBO$atom_indices,
-                                input_file$NBO$difference_indices))
+                          list.dirs(recursive = F))) > 0 &
+        'Hirshfeld' %in% input_file$Charges$`Charge Methods`) {
+      cm5.result <- list(cm5.df(input_file$Charges$`Atom indices`,
+                                  paste(input_file$Charges$Differences, collapse = ' ')))
       results <- c(results, cm5.result)
     }
   }
 
   ### Dipole
 
-  if (!any(is.na(input_file$Dipole))) {
-    dipole.result <- list(dip.gaussian.multi(input_file$Dipole$coor_atoms,
-                                             input_file$Dipole$center_of_substructure,
-                                             input_file$Dipole$subunits_input_vector,
-                                             input_file$Dipole$center_of_mass))
+  if ("Dipole Moment" %in% names(input_file)) {
+    dipole.result <- list(dip.gaussian.multi(input_file$`Dipole Moment`))
     results <- c(results, dipole.result)
   }
 
   ###### Vibrations
 
   ### Bond Vibrations
-
-  if (!is.na(input_file$`Bond Vibs`)) {
-    bond.vibrations.result <- list(stretch.vib.df(input_file$`Bond Vibs`$atom_pairs))
-    results <- c(results, bond.vibrations.result)
-  }
-
-  ### Ring Vibrations
-
-  if (!is.na(input_file$`Ring Vibs`)) {
-    ring.vibrations.result <- list(ring.vib.multi(input_file$`Ring Vibs`$inputs_vector))
-    results <- c(results, ring.vibrations.result)
-  }
-
-  ### Bending Vibrations
-
-  if (!is.na(input_file$`Bend Vibs`)) {
-    bend.vibrations.result <- list(bend.vib.df(input_file$`Bend Vibs`$atom_pairs))
-    results <- c(results, bend.vibrations.result)
+  if ("Vibrations" %in% names(input_file)) {
+    if ("Bond Vibrations" %in% names(input_file$Vibrations)) {
+      bond.vibrations.result <- list(stretch.vib.df(input_file$Vibrations$`Bond Vibrations`))
+      results <- c(results, bond.vibrations.result)
+    }
+  
+    ### Ring Vibrations
+  
+    if ("Ring Vibrations" %in% names(input_file$Vibrations)) {
+      ring.vibrations.result <- list(ring.vib.multi(input_file$Vibrations$`Ring Vibrations`))
+      results <- c(results, ring.vibrations.result)
+    }
+  
+    ### Bending Vibrations
+  
+    if ("Bend Vibrations" %in% names(input_file$Vibrations) &
+        isTRUE(input_file$Vibrations$`Bend Vibrations`)) {
+      bend.vibrations.result <- list(bend.vib.df(input_file$Vibrations$`Bend Vibrations`))
+      results <- c(results, bend.vibrations.result)
+    }
   }
 
   ### Angles
 
-  if (!is.na(input_file$Angles)) {
-    angles.result <- list(mol.angles.multi(input_file$Angles$inputs_vector))
+  if ("Angles" %in% names(input_file)) {
+    angles.result <- list(mol.angles.multi(input_file$Angles))
     results <- c(results, angles.result)
   }
 
   ### Distances
 
-  if (!is.na(input_file$Distances)) {
-    distances.result <- list(atoms.distance.df(input_file$Distances$inputs_vector))
+  if ("Distances" %in% names(input_file)) {
+    distances.result <- list(atoms.distance.df(input_file$Distances))
     results <- c(results, distances.result)
   }
 
-  ### Polarizability
-
-  if (input_file$Polarizability[1] == 'yes') {
-    polar.result <- list(polar.df())
-    results <- c(results, polar.result)
-  } 
+  # ### Polarizability
+  # 
+  # if (input_file$Polarizability[1] == 'yes') {
+  #   polar.result <- list(polar.df())
+  #   results <- c(results, polar.result)
+  # } 
 
 
 
@@ -901,7 +581,7 @@ Do not add a file extension."
 
   svDialogs::dlg_message(
     "
-Please choose where to save the csv file, and inputs.",
+Please choose where to save the feature's set file (.csv)",
 type = 'ok'
   )
   where.to.save <- svDialogs::dlg_dir()$res
