@@ -66,7 +66,7 @@ moleculaR.Input.Maker <- function() {
     fluidRow(
       column(4, 
              div(class = "section-container",
-                 h3("Sterimol", span("\\u2139\\ufe0f", id = "sterimolInfoBtn", class = "info-btn")),
+                 h3("Sterimol", span("\u2139\ufe0f", id = "sterimolInfoBtn", class = "info-btn")),
                  div(id = "sterimolInfoBox", class = "info-box", style = "white-space: pre-wrap;",
                      "Enter pairs of integers separated by a space,
   '_', tab, ':', or ';'
@@ -89,7 +89,7 @@ moleculaR.Input.Maker <- function() {
   
   column(4, 
          div(class = "section-container",
-             h3("Dipole Moment", span("\\u2139\\ufe0f", id = "dipoleInfoBtn", class = "info-btn")),
+             h3("Dipole Moment", span("\u2139\ufe0f", id = "dipoleInfoBtn", class = "info-btn")),
              div(id = "dipoleInfoBox", class = "info-box", style = "white-space: pre-wrap;",
                  "Enter vectors of integers separated by a space,
   '_', tab, ':', or ';'
@@ -105,7 +105,7 @@ moleculaR.Input.Maker <- function() {
   
   column(4, 
          div(class = "section-container",
-             h3("Charges", span("\\u2139\\ufe0f", id = "chargesInfoBtn", class = "info-btn")),
+             h3("Charges", span("\u2139\ufe0f", id = "chargesInfoBtn", class = "info-btn")),
              div(id = "chargesInfoBox", class = "info-box", style = "white-space: pre-wrap;",
                  "Atom indices input line:
   Enter a vector of integers. Separate indices with commas.
@@ -134,7 +134,7 @@ moleculaR.Input.Maker <- function() {
   fluidRow(
     column(4, 
            div(class = "section-container",
-               h3("Vibrations", span("\\u2139\\ufe0f", id = "vibrationsInfoBtn", class = "info-btn")),
+               h3("Vibrations", span("\u2139\ufe0f", id = "vibrationsInfoBtn", class = "info-btn")),
                div(id = "vibrationsInfoBox", class = "info-box", style = "white-space: pre-wrap;",
                    "Bond vibrations input line: 
   Enter pairs of integers separated by space, '_', tab, ':', or ';'. 
@@ -174,7 +174,7 @@ moleculaR.Input.Maker <- function() {
   
   column(4, 
          div(class = "section-container",
-             h3("Geometric Measurements", span("\\u2139\\ufe0f", id = "additionalInfoBtn", class = "info-btn")),
+             h3("Geometric Measurements", span("\u2139\ufe0f", id = "additionalInfoBtn", class = "info-btn")),
              div(id = "additionalInfoBox", class = "info-box", style = "white-space: pre-wrap;",
                  "Angles input line: 
   Enter vectors of 3 or 4 integers separated by space, '_', tab, ':', or ';'. 
@@ -204,7 +204,7 @@ moleculaR.Input.Maker <- function() {
   fluidRow(
     column(12, 
            div(class = "section-container",
-               h3("Molecule Visualization", span("\\u2139\\ufe0f", id = "molVizInfoBtn", class = "info-btn")),
+               h3("Molecule Visualization", span("\u2139\ufe0f", id = "molVizInfoBtn", class = "info-btn")),
                div(id = "molVizInfoBox", class = "info-box", "Molecule Visualization Information: This section handles molecule visualization."),
                checkboxInput("molViz", "Molecule Visualization", value = FALSE),
                conditionalPanel(
