@@ -17,7 +17,7 @@
 moleculaR.Input.Maker <- function() {
   # UI
   ui <- fluidPage(
-    theme = shinytheme("cosmo"),  # Apply a modern theme
+    theme = shinythemes::shinytheme("cosmo"),  # Apply a modern theme
     
     tags$head(
       tags$script(HTML("
