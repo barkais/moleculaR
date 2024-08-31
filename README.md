@@ -7,7 +7,7 @@
 
 Currently, as the package is still under development (yet to be submitted to CRAN), installations proceed with the help of the `remotes` package.
 
-It is highly recommended to use [RStudio]('https://posit.co/'), although applicable otherwise as well. Mac and Windows installations should not expect any weird behaviors with molecular visualizations and model plots, while the same can not be stated with linux installations (requires OpenGL). 
+We recommend using [RStudio]('https://posit.co/'), although applicable otherwise as well. Mac and Windows installations should not expect any weird behaviors with molecular visualizations and model plots, while the same can not be stated with linux installations (requires OpenGL). 
 
 ### Installation from Github 
 
