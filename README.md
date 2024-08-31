@@ -45,14 +45,14 @@ Make sure the common substructure is numbered correctly.
 Make sure all log files you want to analyze are in one location. 
 
 ```
-# Run extRactoR.auto (while in the .log files' directory)
-extRactoR.auto()
+# Run extractoR() (while in the .log files' directory)
+extractoR()
 ```
 Expect the following message, indicating everything worked fine. 
 
 `Done!`
 
-**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs. As it is reasonable to assume that most users will prefer working on local machines, it is still recommended to avoid transferring heavy log files to a local machine, and it is best practice to install `moleculaR` on both the remote and the local, and to transfer only the resulting .feather files to the local.**
+**This action results in a set of .feather files, which are light weight files that hold all the information `moleuclaR` needs. As we assume most users will prefer working on local machines, and to avoid transferring heavy log files to a local machine, it is best practice to install `moleculaR` on both the remote and the local, and to transfer only the resulting .feather files to the local.**
 
 #### Step 2 - Unwrap feather files (either locally or remotely)
 
@@ -74,23 +74,23 @@ Once finished, the function suggests to change your working directory. It is rec
 
 ```
 # Run moleuclaR input maker
-moleculaR.input.maker()
+moleculaR.Input.Maker()
 ```
 
 **In case you opt to generate a 3D visualization, it is best practice to use one of the molecules found in the `Optimized_structures_xyz`.**
 
 **Make sure to you do not save the input file in the moleculaR_csv_files folder. There should not be anything else in the moleculaR_csv_files folder.**
 
-#### This step results in creating an input file in .RData format - containing the arguments for feature generation in `moleculaR()` - for future uses and documentation.
+#### This step results in creating an input file in .txt format - containing the arguments for feature generation in `moleculaR()` - for future uses and documentation.
 
 #### The resulting input file can now be passed to the main function `moleculaR()` as an argument. 
 
 #### Step 4 - Get molecular features
 ```
-# Use an input file generated with moleculaR.input.maker().
+# Use an input file generated with moleculaR.Input.Maker().
 # Pass the input file location to moleculaR's main function `moleculaR()`.
 # Indicate the path to the input file as an argument.
-moleculaR('path/to/input/file.RData')
+moleculaR('path/to/input/file.txt')
 ```
 
 ### Command Line Usage
@@ -101,9 +101,9 @@ See `Command Line Usage` in articles for a detailed guide
 
 ### Modeling 
 
-The package includes a set of linear regression modeling tools that allow users to input a dataset and get a cross validated (3-fold, 5-fold and LOO) model, along with a nice plot. 
+The package includes a set of linear and logistic regression modeling tools that allow users to input a dataset and get a cross validated (3-fold, 5-fold and LOO) model, along with nice plots. 
 
-* To be able to use this functionality, user must add an _output_ column to the features.csv files resulted from running `moleculaR()` or `moleculaR.input()`. The column *MUST* have the name 'output' (lower case intended). It is highly advised to pay close attention that the correct experimental observations are attached, specifically - pay attention to molecule names.
+* To be able to use this functionality, user must add an _output_ or a _class_ column to the features.csv files resulted from running `moleculaR()`. The column *MUST* have the name 'output'/'class' (lower case intended). It is advised to make sure that the correct values are inserted in terms of order and naming - to prevent misleading model results.
 
 See `Modeling` in articles for a detailed guide
 
