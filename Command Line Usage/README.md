@@ -78,7 +78,7 @@ steRimol.xyz.multi(c('1 2', '1 3')) # for a set of xyz files
 The structure of `steRimol.multi()` is presented, but is identical to that of `steRimol.xyz.multi()`
 ```
 steRimol.multi(coordinates_vector,
-                CPK = F,
+                CPK = T,
                 only_sub = T,
                 drop = NULL)
 ```
