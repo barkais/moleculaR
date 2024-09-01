@@ -203,6 +203,7 @@ find_paths_with_nodes <- function(bonds, node1, node2) {
 #' @keywords internal
 #' @return sterimol values for a single molecule
 steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
+  name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   mol <- list.files(pattern = '.xyz')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
@@ -285,6 +286,7 @@ steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
   L <- max(substi$L)
   loc.B5 <- min(substi$V3[which(substi$Bs == B5)])
   result <- unique(round(data.frame(B1, B5, L, loc.B5, loc.B1), 2))
+  names(result) <- paste0(names(result), '_', name_of_axis)
   return(result)
 }
 
@@ -301,6 +303,7 @@ steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL) {
 #' @keywords internal
 #' @return sterimol values for a single molecule
 steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL) {
+  name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
   bonds <- extract.connectivity(mol)
@@ -382,6 +385,7 @@ steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL) {
   L <- max(substi$L)
   loc.B5 <- min(substi$V3[which(substi$Bs == B5)])
   result <- unique(round(data.frame(B1, B5, L, loc.B5, loc.B1), 2))
+  names(result) <- paste0(names(result), '_', name_of_axis)
   return(result)
 }
 
@@ -475,9 +479,9 @@ steRimol.multi <- function(coordinates_vector, CPK = T, only_sub = T, drop = NUL
                                    drop)
                      }
   )
-  for (i in 1:length(multi.df)) {
-    names(multi.df[[i]]) <- paste0(names(multi.df[[i]]), paste0('_', as.character(i)))
-  }
+  # for (i in 1:length(multi.df)) {
+  #   names(multi.df[[i]]) <- paste0(names(multi.df[[i]]), paste0('_', as.character(i)))
+  # }
   multi.df.result <- data.frame(do.call(cbind, multi.df))
   multi.df.result <- multi.df.result[!duplicated(as.list(multi.df.result))]
   return(multi.df.result)
@@ -504,9 +508,9 @@ steRimol.xyz.multi <- function(coordinates_vector, CPK = T, only_sub = T, drop =
                                        drop)
                      }
   )
-  for (i in 1:length(multi.df)) {
-    names(multi.df[[i]]) <- paste0(names(multi.df[[i]]), paste0('_', as.character(i)))
-  }
+  # for (i in 1:length(multi.df)) {
+  #   names(multi.df[[i]]) <- paste0(names(multi.df[[i]]), paste0('_', as.character(i)))
+  # }
   multi.df.result <- data.frame(do.call(cbind, multi.df))
   multi.df.result <- multi.df.result[!duplicated(as.list(multi.df.result))]
   return(multi.df.result)
