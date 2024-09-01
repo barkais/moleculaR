@@ -53,25 +53,24 @@ Once finished, the function suggests to change your working directory. It is rec
 
 **Note that you will have to set the working directory in order to work with `moleculaR()`**
 
-## Run moleculaR
+## Run moleculaR.Input.Maker
 
 Assuming everything went fine, and your working directory is set to *moleculaR_csv_files*
 
 ```{r mol, eval=FALSE}
-# Run moleuclaR 
-moleculaR()
+# Run moleuclaR.Input.Maker
+moleculaR.Input.Maker()
 ```
 
 <center><img src="figures/mol_1.png" class="center"></center>
 
-**Users are then presented with the option to quit, and to generate a 3D visualization of one of**
-**the molecules in the set. It is crucial you have such a visualization, whether you choose to use a different**
-**software or moleculaR's `plot_molecule`**
+**Users can generate a 3D visualization of one of the molecules in the set, using the built-in molecular visualization.**
+**Feature extraction relies on atom indices, and it is therefore important to have such a visualization open while preparing the input file.**
+
 
 <center><img src="figures/mol_2.png" class="center"></center>
 
 For instance, in the presented example, we have chosen to visualize *Et.xyz* from the *Optimized_structures_xyz* folder. 
-This image will serve us in answering moleculaR's questions - as the entire process depends on atom indexing.
 
 <center><img src="figures/plot_mol.png" width="500" height="450"></center>
 
