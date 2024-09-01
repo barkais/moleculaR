@@ -212,4 +212,4 @@ This will run the requested calculations, and will end with a prompt asking to n
 
 The inputs file is saved in a .txt format.
 
-<center><img src="figures/input_file_1.png" class="center"></center>
+<center><img src="figures/input_file.png" class="center"></center>
