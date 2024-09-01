@@ -96,8 +96,8 @@ unwRapper.single <- function(feather_file) {
 #' @export
 unwRapper <- function() {
   svDialogs::dlg_message('
-    Please choose the output files directory, resulted from
-    running extRactoR().',
+    Please choose the feather files directory, resulted from
+    running extractoR().',
     type = 'ok')$res
   output.files.dir <- svDialogs::dlg_dir()$res
 
@@ -109,13 +109,6 @@ unwRapper <- function() {
   }
 
   dir.create('moleculaR_csv_files')
-
-  if (dir.exists('Optimized_structures_xyz')) {
-    # If the folder exists, delete it
-    unlink('Optimized_structures_xyz', recursive = TRUE)
-  }
-
-  dir.create('Optimized_structures_xyz')
 
   for (file in list.files(pattern = '.feather')) {
     name <- tools::file_path_sans_ext(file)
@@ -130,33 +123,57 @@ unwRapper <- function() {
                           full.names = T)
   names <- basename(list.dirs('moleculaR_csv_files/',
                               recursive = F))
-  for (file in xyz_files) {
-    invisible(file.copy(file,
-              paste0('Optimized_structures_xyz/', 
-                     names[[match(file, xyz_files)]], '.xyz'),
-              overwrite = T
-    ))
-  }
 
-  svDialogs::dlg_message(
+  change_opt_xyz <- svDialogs::dlg_message(
   "
   Two new folders were created:
   
-  1) Optimized_structures_xyz, which contains
-  all xyz files for graphic uses and convenience.
+  1) Optimized_structures_xyz.
 
-  2) moleculaR_csv_files, which contains all of the extracted information.
+  2) moleculaR_csv_files, - all of the extracted information.
 
 
-  Feel free changing the xyz folder's name, but do NOT chnage the csv folder's name.",
-  type = 'ok'
-  )
-
+  Feel free changing the xyz folder's name, but do NOT chnage the csv folder's name.
+  
+  (Press 'Yes' to continue and 'No' to change the xyz folder's name.)",
+  type = 'yesno'
+  )$res
+  
+  if (change_opt_xyz == 'yes') {
+    if (dir.exists('Optimized_structures_xyz')) {
+      # If the folder exists, delete it
+      unlink('Optimized_structures_xyz', recursive = TRUE)
+    }
+    dir.create('Optimized_structures_xyz')
+    for (file in xyz_files) {
+      invisible(file.copy(file,
+                          paste0('Optimized_structures_xyz/', 
+                                 names[[match(file, xyz_files)]], '.xyz'),
+                          overwrite = T
+      ))
+    }
+  } else {
+    xyz_name <- svDialogs::dlg_input('What would you like to call the xyz files folder?')$res
+    if (dir.exists(xyz_name)) {
+      # If the folder exists, delete it
+      unlink(xyz_name, recursive = TRUE)
+    }
+    dir.create(xyz_name)
+    for (file in xyz_files) {
+      invisible(file.copy(file,
+                          paste0(xyz_name, '/', 
+                                 names[[match(file, xyz_files)]], '.xyz'),
+                          overwrite = T
+      ))
+    }
+  }
+  
   answer <- svDialogs::dlg_message(
-    'Would you like to set the working directory to moleculaR_csv_files?
-
-    NOTE - moleculaR() expects to be run while the working directory is
-    set to "moleculaR_csv_files". it is recommended to do that now.',
+    'moleculaR() will only run when the working directory is
+    set to "moleculaR_csv_files"
+    
+    Would you like to set the working directory to moleculaR_csv_files now?
+',
     type = 'yesno')$res
   if (answer == 'yes') {
     setwd('moleculaR_csv_files/')
