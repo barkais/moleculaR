@@ -11,7 +11,7 @@ For user convenience, we demonstrate usage with a small number of molecules, suc
 ## Run extRactoR (while in the directory with the .log files)
 
 ```{r ex, eval=FALSE}
-# While in a directory with the log files you wish to analyze - Run extractoR
+# While in a directory with the Gaussian log files you wish to analyze - Run extractoR
 extractoR()
 ```
 
