@@ -17,7 +17,7 @@
 moleculaR.Input.Maker <- function() {
   # UI
   ui <- fluidPage(
-    theme = shinythemes::shinytheme("cosmo"),  # Apply a modern theme
+    theme = shinythemes::shinytheme("lumen"),  # Apply a modern theme
     
     tags$head(
       tags$script(HTML("
@@ -61,7 +61,7 @@ moleculaR.Input.Maker <- function() {
       "))
     ),
     
-    titlePanel("moleculaR - Input Maker"),
+    titlePanel("moleculaR - Input File Maker"),
     
     fluidRow(
       column(4, 
@@ -219,7 +219,7 @@ moleculaR.Input.Maker <- function() {
   fluidRow(
     column(12,
            div(class = "section-container",
-               downloadButton("downloadFile", "Download Output"),
+               downloadButton("downloadFile", "Download input file"),
                textOutput("outputText")
            )
     )
