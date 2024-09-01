@@ -72,73 +72,47 @@ moleculaR.Input.Maker()
 
 For instance, in the presented example, we have chosen to visualize *Et.xyz* from the *Optimized_structures_xyz* folder. 
 
-<center><img src="figures/plot_mol.png" width="500" height="450"></center>
-
 ## Features
-
-**For each possible feature, you will be asked if you would like to use it. In cases where you choose not to,**
-**the program will move on to the next feature. The guide assumes answers to be yes, and excludes the quetion windows.** 
 
 Each of the features and their options are depicted in detail in `Features - Definitions and Practice`.
 
 
 #### steRimol - B5, B1, L, loc.B1 and loc.B5 (the location of B1 and B5 vectors along the primary axis L)
 
-<center><img src="figures/mol_ste_4.png" class="center"></center>
+<center><img src="figures/ster_1.png" class="center"></center>
 
-There are two radii systems implemented in this version, the first being Pyykko's [covalent radii]('https://pubs.acs.org/doi/pdf/10.1021/jp5065819') and the second being CPK (VDW radii). The default is set to covalent radii as it holds a definituve value for all elements of the periodic table, while CPK is only defined for a small subset of them.
+**Sterimol - options**
 
-<center><img src="figures/mol_ste_5.png" class="center"></center>
+*Axis or axes*
+
+Two atom indices that define the primary axis for sterimol features. Users can apply sterimol to multiple axes at the same time by separating axis pairs as instructed. 
+
+*Radii*
+
+There are two radii systems implemented in this version, the first being CPK (VDW radii), and the second being Pyykko's [covalent radii]('https://pubs.acs.org/doi/pdf/10.1021/jp5065819').
+
+*Only substituent* 
 
 Should steRimol account for parts of the molecule that are not an extension of the primary axis? Namely, steRimol uses a graph-based "cut" of atoms that are not directly bonded to the defining axis. This is set to default as it is the generl case.
 
-<center><img src="figures/mol_ste_6.png" class="center"></center>
+*Drop*
 
-steRimol allows for the use of either a singal primary axis or several primary axes simultaneously:
+Users can define atoms that should be avoided during sterimol computation. This is relevant in cases where users wish to measure a substituent that holds a large moiety that takes over in B5 or L calculation, while there is a subunit of interest that is not rperesented. 
 
-User should input primary axis atoms separated by a comma, and different primary axes separated by a space. 
-  
-For instance, in this example, we can imagine a scenario in which bonds 1-2, 1-3 and 1-15 can be of interest, so our answer    should be _1,2 1,3 1,15_ 
+#### Dipole moments
 
-#### NBO (or NPA) charges - atomic values and differences 
-
-<center><img src="figures/mol_nbo_8.png" class="center"></center>
-
-Simple usage, with hardly any explanation needed. answers should be atoms separated by a comma. 
-
-In cases where user chooses to use NBO charges, they will be preseted with the option to also use the difference in charge between atoms. 
-
-<center><img src="figures/mol_nbo_9.png" class="center"></center>
-
-<center><img src="figures/mol_nbo_10.png" class="center"></center>
-
-Answers should be pairs of atoms, with each pair of atoms separated by a comma, and a space between different pairs.
-
-#### Dipole moments - Directly extracted from Gaussian or manipulated
+<center><img src="figures/dip_1.png" class="center"></center>
 
 Possible manipulations include:
 
-  1. Change of coordinate system - dipole's vector components with respect to a coordinate system of choice allows the use of the dipole's components as [independent features]("https://www.nature.com/articles/s41557-019-0258-1")
+  1. Change of coordinate system - the dipole vector components taken with respect to a coordinate system of choice allows the use of the dipole components as [independent features]("https://www.nature.com/articles/s41557-019-0258-1")
   
-  2. Given that the coordinate system was changed - should the origin be the center of mass of a subset of atoms (user defined)? This classifies as an esoteric use, and is recommended to use with attention to definitions.
-  
-  3. Given That the coordinate system was changed, and that option 2 wasn't used - should the origin of the coordinate system be the center of mass of the "basic" structure? This classifies as an esoteric use, and is recommended to use with attention to definitions.
-  
-  In most cases - the coordinate system will be changed, but options 2 and 3 will be left out. 
+  2. Upon chnaging the coordinate system - the origin can be defined as either a single atom or the centeroid of a subset of atoms (user defined).
 
-Assuming users wish to use the dipole moment as a feature, they will be presented with the option to manipulate it:
 
-<center><img src="figures/mol_dip_12.png" class="center"></center>
+In case users wish to use the dipole moment as is (Gaussian's vector), inputs can be left empty.
 
-Answering "no" will leave the original dipole moment, as it given in Gaussian, which means taken with respect to the molecule's center of mass (serving as the origin). 
-
-It is stated that this is a must in case you wish to use any of the options, as they require the transformation of coordinate systems. the y axis and the xy plane will remain as user defines them, while the only thing changing is the origin. 
-
-answering "yes" will generate the prompt
-
-<center><img src="figures/mol_dip_13.png" class="center"></center>
-
-answers are given in one of two forms:
+answers should be given in one of two forms:
 
   1. 3 atoms, separated by a comma - define: 
           
@@ -146,40 +120,36 @@ answers are given in one of two forms:
         ii) atom 2 - the y direction
         iii) atom 3 - the xy plane
           
-  2. 4 atoms, separated by a comma - define:
+  2. multiple atoms, separated by a comma - define:
   
-        i) atoms 1 and 2  - center point between the two is the origin 
-        ii) atom 3 - the y direction
-        iii) atom 4 - the xy plane
+        i) atoms 1 to two before last  - centroid of this set is the origin 
+        ii) one before last - the y direction
+        iii) last - the xy plane
 
-Following the definition of coordinate system, user is prompted with:
+Users can apply this to multiple coordinate systems at the same time by separating sets of indices as instructed. 
 
-<center><img src="figures/mol_dip_14.png" class="center"></center>
+#### Charges - atomic values and differences 
 
-**Which, in case answered "yes" will request the user to define:**
+<center><img src="figures/charges_1.png" class="center"></center>
 
-<center><img src="figures/mol_dip_16.png" class="center"></center>
+Answers should be atom indices separated by a comma. 
 
-This option allows the user to use several substructures as origins, while reatining the y diretion and xy plane definitions. To use one or more substructures, sets of atoms of each substructure should be separated by a comma, and different subsets should be separated by a space.   
+In cases where user chooses to use charges, they will be preseted with the option to also use the charge difference between atoms. 
 
-**Otherwise, if user chooses to pass this option, another option will be presented:**
-
-<center><img src="figures/mol_dip_15.png" class="center"></center>
-
-**NOTE - this requires the presence of a file named basic.log, which can be whatever you find to be the "baseline" structure. it is usually the case that the smallest molecule that still holds the common substructure will serve as that structure** 
+There are three charge models implemented. Users can apply all three at the same time. 
 
 #### Vibrational Frequencies - Stretch, bend and ring vibrations
+
+<center><img src="figures/vibs_1.png" class="center"></center>
 
 moleculaR includes the identification and extraction of vibrational frequencies that reoccur throughout sets of molecules. 
 
 These include:
   1. Bonded atoms stretching vibrations
-  2. Two characteristic ring vibrations (only for 6 member rings)
-  3. Bending vibrations of two atoms that share a center atom (mostly hydrogens)
+  2. Two characteristic ring vibrations (only for 6 membered rings)
+  3. Bending vibrations of two atoms that share a center atom (relevant for terminal atoms)
 
 ##### Bond Stretch
-
-<center><img src="figures/mol_vib_18.png" class="center"></center>
 
 User should enter pairs of atoms, with pair atoms separated by a comma and different pairs separated by a space. 
 Note that atoms must be bonded, and that submitting non-bonded atoms will crash the program with an error message. 
@@ -190,25 +160,25 @@ Ring vibrations are defined with the ring's six atoms, in an ordered fashion.
 
 <center><img src="figures/rings.png"  width="600" height="382"></center>
 
-Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure, though it really doesn't matter. Once this atom is defined, the rest are relative to it, the one directly opposite to it is the "para" atom, the two next to is are the "ortho" atoms, and the rest are the "meta" atoms. 
+Users arbitrarily choose a "primary" atom - it is most convenient to choose the first atom on the ring, that connects the ring to the common substructure though it really doesn't matter. Once this atom is defined, the rest are automatically assigned.
 
-<center><img src="figures/mol_vib_20.png" class="center"></center>
+Note that it is possible to extract vibrations for multiple rings, following the instructions. 
 
-Note that it is possible to extract vibrations for as many rings as they wish, with similar rules on input as before - same ring atoms, by the defined order, separated by a comma, and different rings separated by a space. 
-
-In this instance, our answer would have been _6,3,4,8,5,7 18,15,16,20,17,19_ with _6,3,4,8,5,7_ for the ring on the right, and _18,15,16,20,17,19_ for the ring on the left.
-
-**Be patient and make sure you do this correctly, as series that break this rule will work, but will produce wrong results. **
+In the example, our answer would have been _3 15_ with _3_ for the ring on the right, and _15_ for the ring on the left.
 
 ##### Bending Vibrations 
-
-<center><img src="figures/mol_vib_22.png" class="center"></center>
 
 User should enter pairs of atoms, with pair atoms separated by a comma and different pairs separated by a space. 
 Note that atoms must share a center atom (both bonded to it), and that submitting non-bonded atoms will crash the program with an error message. 
 
 
-#### Angles
+
+
+#### Goemetric Features
+
+<center><img src="figures/geom_1.png" class="center"></center>
+
+*Angles or dihedrals*
 
 answers are given in one of two forms:
 
@@ -217,20 +187,14 @@ answers are given in one of two forms:
   2. 4 atoms, separated by a comma - define a dihedral between two bonds
   
 Users may insert as many triads/quartets as they wish.
-
-<center><img src="figures/mol_ang_24.png" class="center"></center>
   
-#### Distances (or bond lengths)
+*Distances (or bond lengths)*
 
 Same rules for input as most prompts - pairs of atoms separated by a comma, and different pairs by a space. 
 
-<center><img src="figures/mol_dis_26.png" class="center"></center>
+#### Input file download
 
-#### Polarizabilities 
-
-A simple "yes" or "no" - if answered "yes", will extract iso- and anisotropic polarizabilities. 
-
-<center><img src="figures/mol_pol_27.png" class="center"></center>
+<center><img src="figures/download_1.png" class="center"></center>
 
 ## Producing Results
 
