@@ -196,74 +196,20 @@ Same rules for input as most prompts - pairs of atoms separated by a comma, and 
 
 <center><img src="figures/download_1.png" class="center"></center>
 
-## Producing Results
+## Run moleculaR (while in the moleculaR_csv_files directory)
 
-moleculaR will note it is done with its request to name the output file, followed by choosing the location in which you want to save both the output and the resulting inputs file - which can be used in future extractions. 
+Pass the input file location as the argument to `moleculaR()`
 
-<center><img src="figures/mol_28.png" class="center"></center>
-<center><img src="figures/mol_29.png" class="center"></center>
-
-#### Inputs file 
-
-The inputs file is saved in a .RData format, which is only readable using R. To see its contents (and for advanced use - edit it for different uses) use `readRDS()`. 
-
+```{r ex, eval=FALSE}
+# While in the moleculaR_csv_files directory
+moleculaR('location/of/Input_file.txt')
 ```
-$steRimol
-$steRimol$input.vector
-[1] "1 2" "1 3"
+This will run the requested calculations, and will end with a prompt asking to name the results file. 
 
-$steRimol$CPK
-[1] FALSE
+<center><img src="figures/moleculaR.png" class="center"></center>
 
-$steRimol$only.sub
-[1] TRUE
+#### Input file 
 
+The inputs file is saved in a .txt format.
 
-$NBO
-$NBO$atom_indices
-[1] "1 2 3 15"
-
-$NBO$difference_indices
-[1] "1 2 1 3 1 15"
-
-
-$Dipole
-$Dipole$coor_atoms
-[1] "1 2 3"
-
-$Dipole$center_of_mass
-[1] FALSE
-
-$Dipole$center_of_mass_substructure
-[1] FALSE
-
-$Dipole$subunits_input_vector
-NULL
-
-
-$`Bond Vibs`
-$`Bond Vibs`$atom_pairs
-[1] "1 27"
-
-
-$`Ring Vibs`
-$`Ring Vibs`$inputs_vector
-[1] "6 3 4 8 5 7"
-
-
-$`Bend Vibs`
-[1] NA
-
-$Angles
-$Angles$inputs_vector
-[1] "4 3 1 2"
-
-
-$Distances
-[1] NA
-
-$Polarizability
-$Polarizability$polariz.answer
-[1] "yes"
-
-```
+<center><img src="figures/input_file_1.png" class="center"></center>
