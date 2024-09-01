@@ -8,50 +8,26 @@ Once downloaded and unzipped, you are ready to go!
 
 For user convenience, we demonstrate usage with a small number of molecules, such that downloading the log files directly to a local machine will stay within memory-usage reason. As stated on the home page, it is generally not the case. 
 
-## Run extRactoR
+## Run extRactoR (while in the directory with the .log files)
 
 ```{r ex, eval=FALSE}
-# Run extRactoR (no need to change working directory - extRactoR does it for you)
-extRactoR()
+# While in a directory with the log files you wish to analyze - Run extractoR
+extractoR()
 ```
 
-#### Choosing log files location
-
-<center><img src="figures/ex_1.png" class="center"></center>
-
-
-**Choose the location (the directory and not a specific file) of the log files**
-
-
-#### Naming the directory
-
-<center><img src="figures/ex_2.png" class="center"></center>
-
-
-**Name your directroy - this directory will contain the resulting .feather files.**
-
-#### Allowing moleculaR workflow
-
-<center><img src="figures/ex_3.png" class="center"></center>
-
-**Unless it is a real deal breaker, allow moleculaR do its thing - will make your life easier (and mine)**
-
-**In case you decide not to - answer "no" and choose a location that will make sense**
-
-This is the slowest part of the process, and it a takes a few seconds per molecule - be patient, if the program doesn't collapse with an error message, it means its running!
+This is the slowest part of the process and it takes a few seconds
+per molecule.
 
 Once done, you will receive a message on your console:
 
 `Done!`
-` `      
-`Current working directory is set to path/to/example_log_files/Name_Chosen_By_User`
 
-##### Usually, this is the folder you should transfer (assuming you wish to run locally) to your local. 
+##### This is the folder you should transfer to your local (assuming you wish to run locally).
 
 ## Run unwRapper
 
 ```{r un, eval=FALSE}
-# Run unwRapper (no need to change working directory - unwRapper does it for you)
+# Run unwRapper (choose the directory with the feather files)
 unwRapper()
 ```
 
