@@ -27,9 +27,9 @@ plot_molecule <- function(xyz_file) {
   
   # Plot atoms with reduced opacity
   rgl::plot3d(xyz[,2:4], col = col_and_size$V2[atomic.numbers],
-              size = col_and_size$V3[atomic.numbers] * 2.2,                   # Increase atom size for visibility
+              size = col_and_size$V3[atomic.numbers] * 0.3,                   # Increase atom size for visibility
               type = 's',
-              alpha = 0.5,                 # Lower opacity for better text visibility
+              alpha = 0.9,                 # Lower opacity for better text visibility
               axes = F,
               box = F)
   
@@ -41,7 +41,7 @@ plot_molecule <- function(xyz_file) {
   # Add text with improved visibility
   for (i in 1:nrow(xyz)) {
     rgl::text3d(xyz[i,2:4], texts = as.character(i),
-                cex = 1.5,                  # Font size for visibility
+                cex = 1,                  # Font size for visibility
                 col = 'black',              # Text color
                 fixedSize = FALSE, 
                 add = T, 
