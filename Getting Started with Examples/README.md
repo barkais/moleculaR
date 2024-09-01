@@ -35,19 +35,23 @@ unwRapper()
 
 <center><img src="figures/un_1.png" class="center"></center>
 
-**As long as you allowed extRactoR do what it wanted, you will only need to confirm your location**
-
 #### unwRapper's message
 
 Running `unwRapper` results in the creation of two new folders
 
+The default name for the xyz files' folder is "Optimized_structures_xyz". Users can choose a different name by clicking 'No'.
+
 <center><img src="figures/un_2.png" class="center"></center>
+
+The default name for the xyz files' folder is "Optimized_structures_xyz". Users can choose a different name by clicking 'No', which leads them to the input line:
+
+<center><img src="figures/un_2_1.png" class="center"></center>
 
 Once finished, the function suggests to change your working directory. It is recommended to allow. 
 
 <center><img src="figures/un_3.png" class="center"></center>
 
-**If you do not allow - note that you will have to in order to work with `moleculaR()`**
+**Note that you will have to set the working directory in order to work with `moleculaR()`**
 
 ## Run moleculaR
 
