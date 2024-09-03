@@ -411,7 +411,7 @@ model.report.from.list <- function(dataset, model.list,
   row.names(mod_data) <- RN
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
-  models <- data.frame(data.table::fread(model.list)[, -1])
+  models <- data.frame(data.table::fread(model.list))
   tab <- knitr::kable(models)
   print(tab)
   if (is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
