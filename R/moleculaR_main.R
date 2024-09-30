@@ -14,6 +14,9 @@
 #' @return csv file with all features and a input file for future
 #'  use and documentation
 #' @export
+#' @import shiny
+#' @import shinythemes
+#' @import shinyjs
 moleculaR.Input.Maker <- function() {
   # UI
   ui <- fluidPage(
@@ -204,8 +207,7 @@ moleculaR.Input.Maker <- function() {
   fluidRow(
     column(12, 
            div(class = "section-container",
-               h3("Molecule Visualization", span("\u2139\ufe0f", id = "molVizInfoBtn", class = "info-btn")),
-               div(id = "molVizInfoBox", class = "info-box", "Molecule Visualization Information: This section handles molecule visualization."),
+               h3("Molecule Visualization"),
                checkboxInput("molViz", "Molecule Visualization", value = FALSE),
                conditionalPanel(
                  condition = "input.molViz == true",
@@ -513,7 +515,11 @@ moleculaR <- function(input_file = NULL) {
   ### Dipole
 
   if ("Dipole Moment" %in% names(input_file)) {
-    dipole.result <- list(dip.gaussian.multi(input_file$`Dipole Moment`))
+    if (length(input_file$`Dipole Moment`) > 0) {
+      dipole.result <- list(dip.gaussian.multi(input_file$`Dipole Moment`))
+    } else {
+      dipole.result <- list(dip.gaussian.multi())
+    }
     results <- c(results, dipole.result)
   }
 

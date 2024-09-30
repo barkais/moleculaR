@@ -188,8 +188,8 @@ extRact.spectrum <- function() {
   text <- main
   pattern1 <- 'Harmonic'
   pattern2 <- 'Thermochemistry'
-  first_index <- grep(pattern1, text)
-  last_index <- grep(pattern2,text)
+  first_index <- max(grep(pattern1, text))
+  last_index <- max(grep(pattern2,text))
   text <- text[first_index:last_index]
   freqs.text <- text[grep('Frequencies', text)]
   intens.text <- text[grep('IR', text)[-1]]
@@ -212,23 +212,33 @@ extRact.spectrum <- function() {
 #' No Parameters
 #' @keywords internal
 #' @return A 2 column data frame with polarizabilities
+
+
 extRact.polarizability <- function() {
-  text <- main
-  index <- max(grep('Dipole polarizability', text))
-  text <- text[index:(index + 10)]
-  line.aniso <- grep('aniso', text, value = T)
-  tokens.an <- strsplit(line.aniso, "\\s+")[[1]]
-  tokens.an <- stringr::str_replace_all(tokens.an, 'D', 'E')
-  numerics.an <- as.numeric(tokens.an[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
-                            scientific = T)[1]
-  line.iso <- grep('iso', text, value = T)
-  tokens.iso <- strsplit(line.iso, "\\s+")[[1]]
-  tokens.iso <- stringr::str_replace_all(tokens.iso, 'D', 'E')
-  numerics.iso <- as.numeric(tokens.iso[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
-                             scientific = T)[1]
-  result <- data.frame(t(c(numerics.iso, numerics.an)))
-  names(result) <- c('Isotropic_Polar', 'Anisotropic_Polar')
-  return(result)
+  suppressWarnings(tryCatch({
+    text <- main
+    index <- max(grep('Dipole polarizability', text))
+    text <- text[index:(index + 10)]
+    
+    line.aniso <- grep('aniso', text, value = TRUE)
+    tokens.an <- strsplit(line.aniso, "\\s+")[[1]]
+    tokens.an <- stringr::str_replace_all(tokens.an, 'D', 'E')
+    numerics.an <- as.numeric(tokens.an[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
+                              scientific = TRUE)[1]
+    
+    line.iso <- grep('iso', text, value = TRUE)
+    tokens.iso <- strsplit(line.iso, "\\s+")[[1]]
+    tokens.iso <- stringr::str_replace_all(tokens.iso, 'D', 'E')
+    numerics.iso <- as.numeric(tokens.iso[complete.cases(suppressWarnings(as.numeric(tokens.an)))],
+                               scientific = TRUE)[1]
+    
+    result <- data.frame(t(c(numerics.iso, numerics.an)))
+    names(result) <- c('Isotropic_Polar', 'Anisotropic_Polar')
+    return(result)
+    
+  }, error = function(e) {
+    data.frame(matrix(nrow = 1, ncol = 2))  # Return NA if any error occurs
+  }))
 }
 
 #' Pull atom movement vectors from Gaussian log files
@@ -243,8 +253,8 @@ extRact.vectors <- function() {
   text <- main
   pattern1 <- 'Harmonic'
   pattern2 <- 'Thermochemistry'
-  first_index <- grep(pattern1, text)
-  last_index <- grep(pattern2,text)
+  first_index <- max(grep(pattern1, text))
+  last_index <- max(grep(pattern2,text))
   text <- text[first_index:last_index]
   text <- stringr::str_trim(text)
   start.count <- min(grep("Atom ", text, value = F))
