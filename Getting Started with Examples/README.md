@@ -10,7 +10,7 @@ For user convenience, we demonstrate usage with a small number of molecules, suc
 
 ## Run extRactoR (while in the directory with the .log files)
 
-```{r ex, eval=FALSE}
+```r
 # While in a directory with the Gaussian log files you wish to analyze - Run extractoR
 extractoR()
 ```
@@ -26,7 +26,7 @@ Once done, you will receive a message on your console:
 
 ## Run unwRapper
 
-```{r un, eval=FALSE}
+```r
 # Run unwRapper (choose the directory with the feather files)
 unwRapper()
 ```
@@ -57,7 +57,7 @@ Once finished, the function suggests to change your working directory. It is rec
 
 Assuming everything went fine, and your working directory is set to *moleculaR_csv_files*
 
-```{r mol, eval=FALSE}
+```r
 # Run moleuclaR.Input.Maker
 moleculaR.Input.Maker()
 ```
@@ -200,7 +200,7 @@ Same rules for input as most prompts - pairs of atoms separated by a comma, and 
 
 Pass the input file location as the argument to `moleculaR()`
 
-```{r ex, eval=FALSE}
+```r
 # While in the moleculaR_csv_files directory
 moleculaR('location/of/Input_file.txt')
 ```
