@@ -4,7 +4,7 @@
 
 Note that there are some additional features that were not included in `moleculaR()` and are only available with interactive use. 
 
-```
+```r
 # Load moleculaR
 library(moleculaR)
 ```
@@ -14,7 +14,7 @@ library(moleculaR)
 
 moleculaR's visual aid is accessible from the command line (for Mac and Windows installations).
 
-```
+```r
 # To generate a plot of an xyz file, use:
 
 plot_molecule(xyz_file)
@@ -55,7 +55,7 @@ CLU for both cases is identical, and depends solely on the type of files you hav
 
 #### TL;DR
 
-```
+```r
 #Classic Use - for primary axis 1-2 use:
 
 steRimol.multi('1 2') # for moleculaR's csv files
@@ -76,7 +76,7 @@ steRimol.xyz.multi(c('1 2', '1 3')) # for a set of xyz files
 #### Function Structure
 
 The structure of `steRimol.multi()` is presented, but is identical to that of `steRimol.xyz.multi()`
-```
+```r
 steRimol.multi(coordinates_vector,
                 CPK = T,
                 only_sub = T,
@@ -102,7 +102,7 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   For example: 
   1. say a user wants to compute sterimol values for axis 1-2
   
-  ```
+  ```r
   # explicitly 
   steRimol.multi(coordinates_vector = '1 2')
   
@@ -113,7 +113,7 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
     
   2. say a user wants to compute sterimol values for axes 1-2 and 1-3
   
-  ```
+  ```r
   # explicitly 
   steRimol.multi(coordinates_vector = c('1 2', '1 3'))
   
@@ -130,7 +130,7 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   
   say a user wants to compute sterimol values for axes 1-2 and 1-3, with Pyykko's covalent radii values
   
-  ```
+  ```r
   # explicitly 
   steRimol.multi(coordinates_vector = c('1 2', '1 3'), CPK = F)
   
@@ -147,7 +147,7 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
   
 Users can avoid this step by setting `only_sub = F`
 
-  ```
+  ```r
   # CPK is either T or F
   
   # explicitly 
@@ -165,7 +165,7 @@ Users can avoid this step by setting `only_sub = F`
 
 In the example above, drop was set to 15. Note that for `drop`, user input is an integer and not a character. It is enough to indicate the first atom on the substructure that should be dropped. Multiple substructures can be dropped by using `drop = c(atom, another atom, ...)`.
 
-  ```
+  ```r
   # CPK is either T or F
   # only_sub is set to T, but can be F as well
   
@@ -182,7 +182,7 @@ Users can extract NBO, Hirshfeld, and CM5 charges, and differences between those
 
 #### TL;DR
 
-```
+```r
 # To extract NBO charges for atoms 1,2 and 3, use:
 
 # explicitly
@@ -205,7 +205,7 @@ nbo.df('1 2 3', '1 2 1 3')
 
 #### Function Structure
 
-```
+```r
 nbo.df(atom_indices,
        difference_indices = NA)
 ```
@@ -249,7 +249,7 @@ Users can extract the dipole moment for multiple coordinate systems.
 
 #### TL;DR
 
-```         
+```r        
 # Dipole Moment = DM
 # Coordinate System = CS
 
@@ -292,7 +292,7 @@ dip.gaussian.multi(c('3 1 4', '3 4 5 6 7 8 1 4', ''))
 
 #### Function Structure
 
-```         
+```r         
 dip.gaussian.multi(
   coor_atoms = c("")
 )
@@ -329,7 +329,7 @@ In this instance
 
 #### TL;DR
 
-```
+```r
 # To extract the dipole moments as they appear in the figure above,
 # the coordinate system should be defined as follows:
 # 1. The origin is set to the moddle point between atoms 15 and 18
@@ -349,7 +349,7 @@ npa.dipole.subunit.multi('15 18 1 20',
 ```
 #### Function Structure
 
-```
+```r
 npa.dipole.subunit.multi(coor_atoms,
                          subunits_inputs_vector)
 ```
@@ -395,7 +395,7 @@ Users can directly extract the stretching vibrational frequencies of bonded pair
 
 #### TL;DR
 
-```
+```r
 # To extract vibrational frequencies of bond 1-27 and 11-12, use:
 
 # explicitly 
@@ -407,7 +407,7 @@ stretch.vib.df('1 27 11 12')
 
 #### Function Structure
 
-```
+```r
 stretch.vib.df(atom.pairs,
                threshold = 1350)
 ```
@@ -443,7 +443,7 @@ In this instance, our input would be `c(3, 15)` with `3` being the primary for t
 
 #### TL;DR
 
-```         
+```r       
 # To extract ring vibrations for two rings, indexed 3-8 and 15-20
 # (having the structures in the figure above as reference). Define, for instance,
 # atoms 3 and 15 as primaries -> get the following inputs:
@@ -462,7 +462,7 @@ ring.vib.multi(c(3, 15))
 
 #### Function Structure
 
-```         
+```r         
 ring.vib.multi(inputs_vector)
 ```
 
@@ -479,7 +479,7 @@ Users can directly extract the bending vibrational frequencies of atoms that sha
 
 #### TL;DR
 
-```
+```r
 # This is a dummy example that is not relevant to the example files supplied, as they do not have 
 # any relevant vibrational modes. 
 
@@ -495,7 +495,7 @@ bend.vib.df('1 3 4 6')
 
 #### Function Structure
 
-```
+```r
 bend.vib.df(atom_pairs)
 ```
 
@@ -513,7 +513,7 @@ Users can extract how many angles and dihedrals as wanted. Note that there are n
 
 #### TL;DR
 
-```
+```r
 To extract the angle created by bonds 1-2 and 2-3, use:
 
 # explicitly 
@@ -535,7 +535,7 @@ mol.angles.multi(c('1 2 3', '4 3 2 1'))
 
 #### Function Structure
 
-```
+```r
 mol.angles.multi(atoms_vector)
 ```
 
@@ -551,7 +551,7 @@ Users can extract distances between pairs of atoms, without any limitation.
 
 #### TL;DR
 
-```
+```r
 # To extract the distance between atoms 1-2 and 1-15, use:
 
 # explicitly
@@ -563,7 +563,7 @@ atoms.distance.df('1 2 1 3')
 
 #### Function Structure
 
-```
+```r
 atoms.distance.df(atom_pairs)
 ```
 
@@ -578,7 +578,7 @@ Input is given as a string of indices (must be an even number of indices). The f
 
 Very simple usage:
 
-```
+```r
 polar.df() # no arguments
 ```
 
