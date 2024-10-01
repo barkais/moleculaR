@@ -7,6 +7,7 @@ features.}
 \usage{
 model.subset(
   data,
+  leave.out = "",
   out.col = dim(data)[2],
   min = 2,
   max = floor(dim(data)[1]/5),
@@ -17,6 +18,8 @@ model.subset(
 }
 \arguments{
 \item{data}{data frame with output column}
+
+\item{leave.out}{vector of row names to leave out of data}
 
 \item{out.col}{number of output column}
 
