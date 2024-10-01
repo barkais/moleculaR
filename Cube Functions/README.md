@@ -16,7 +16,7 @@ As with other cases of 3D visualizations in moleculaR, the 3D visual tool that i
 
 ***
 
-```
+```r
 # Load moleculaR
 library(moleculaR)
 
@@ -32,7 +32,7 @@ For example, using the supplied cube files, measuring sterimol values using steR
 
 <center><img src="figures/cdx.png" width="152" height="180"></center>
 
-```
+```r
 # Make xyz files from cube files:
 xyz.from.cube('Ad.cube')
 xyz.from.cube('Bn.cube')
@@ -44,7 +44,7 @@ steRimol.xyz.multi('1 15', CPK = T)
 
 Gives:
 
-```
+```r
        B1_1 B5_1  L_1 loc.B5_1 loc.B1_1
 Ad.xyz  1.7 3.28 7.04     4.06     3.22
 Bn.xyz  1.7 3.26 7.03     4.07     3.22
@@ -53,14 +53,14 @@ Cy.xyz  1.7 3.23 7.03     4.10     3.22
 
 Now do the same with steRimol.cube:
 
-```
+```r
 # Compute cube steRimols with:
 steRimol.cube.df('1 15')
 ```
 
 Which gives:
 
-```
+```r
        B1     B5      L loc.B5 loc.B1 time.taken
 Ad 1.6473 3.4252 6.9813 1.7597 3.1770     7.6715
 Bn 1.6436 3.5738 7.2337 4.1364 1.8079     7.1501
@@ -82,7 +82,7 @@ steRimol.cube searches for density regions within a certain range of densities, 
 
 Using this functionality also allows the visualization of the chosen molecule and of the computed B1, B5 and L axes. 
 
-```
+```r
 # For example, extracting sterimol values for the file Bn.cube, along the axis of 1-3:
 steRimol.cube(cubefile = 'Bn.cube',
               coordinates = '1 3')
@@ -99,7 +99,7 @@ steRimol.cube(cubefile = 'Bn.cube',
 
 Gives:
 
-```
+```r
       B1     B5      L loc.B5 loc.B1 time.taken
 1 1.7405 6.0796 4.4315 3.2115 1.9695     7.1286
 ```
@@ -120,13 +120,13 @@ Using `plot = T` also produces a 3D visualization of the molecule:
 
 For example, using the cube files we have, producing steRimol.cube values along the axis of 1-2:
 
-```
+```r
 steRimol.cube.df('1 2')
 ```
 
 Gives:
 
-```
+```r
        B1     B5      L loc.B5 loc.B1 time.taken
 Ad 3.1523 3.7729 6.5829 4.0966 0.2460     8.7802
 Bn 1.7405 6.0796 4.4315 3.2115 1.9695     6.8076
@@ -139,6 +139,6 @@ Visualization is not available for multiple files. To add visualization, first u
 
 A simple function, needed for different reasons. Existing xyz files will be removed by `steRimol.cube()` and `steRimol.cube.df()` once executed.
 
-```
+```r
 xyz.from.cube(cube_file)
 ```
