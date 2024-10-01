@@ -1,6 +1,6 @@
 # Modeling 
 
-```
+```r
 library(moleculaR)
 ```
 
@@ -29,7 +29,7 @@ To use the function, data must be a numeric data frame that is loaded into the g
 
 For a minimal case usage, with no changes made to defaults - `model.subset()` will search for all possible models with 2 variables and up to the number of samples divided by 5. It will then retain models with R<sup>2</sup> above the `cutoff` (If there are any. If not, it will lower the cutoff down.) and pass them through a `folds` CV, which defaults to leave-one-out. The cross terms option adds all `:` interactions between variables - it is highly recommended to avoid it in cases with a lot of variables. 
 
-```
+```r
 ### Function structure ###
 
 model.subset(
@@ -46,7 +46,7 @@ model.subset(
 
 In R or RStudio console:
 
-```
+```r
 ### Minimal (default) usage ###
 
 # Load data
@@ -66,7 +66,7 @@ This returns all models above R<sup>2</sup> = 0.85:
 
 Note the assignment of results to a variable named 'models', which is recommended for later use of `model.plot()`.
 
-```
+```r
 models
                                                formula      R.sq      Q.sq        MAE Model
 1      `output` ~ `Dist.10..17.` + `Total` + `NBO.B.2` 0.9183105 0.8638877 0.06189765     1
@@ -79,14 +79,14 @@ models
 ### Model Plot
 
 To produce a nice, yet minimal plot of the linear model, with predicted values vs. measured ones, use `model.plot()`. Assuming the user saved `model.subset()`s result with 'models', `model.plot()` will default to plot the highest ranking model.
-```
+```r
 ### Function Structure ###
 model.plot(model = models[1, 1], data)
 ```
 
 In R or RStudio console:
 
-```
+```r
 # Produce plot (default)
 model.plot(data = data)
 ```
@@ -118,7 +118,7 @@ This is a wrapper function that uses both `model.subset()` and `model.plot()` un
 
 In addition to default usage, the function also allows for outliers handling and out-of-sample predictions to be considered. To do so, users should indicate the names of sample as they appear in the original data (e.g. 'p_F' or c('p_F', 'm_Me')) in the `leave.out` argument. By indicating `predict` as `TRUE`, they will be treated as out-of-sample predictions. 
 
-```
+```r
 ### Function Structure ###
 model.report(
   dataset,
@@ -131,7 +131,7 @@ model.report(
 
 Normal usgae, for our example file:
 
-```
+```r
 model.report('path/to/Linear_Example_Dataset.csv',
              min = 3,
              max = 3,
@@ -142,7 +142,7 @@ model.report('path/to/Linear_Example_Dataset.csv',
 First produces `model.subset()` results, and prompts for the model (number) you wish to plot and report.
 
 * showing only the 4 top ranked
-```
+```r
 Linear_Example_Dataset
 
 |formula                                              |      R.sq|      Q.sq|       MAE| Model|
@@ -158,7 +158,7 @@ After answering the prompt '1' (in the console):
 
 * Note the out-of-sample (OOS) result
 
-```
+```r
 Choose the model you would like to plot (line number): 1
 
   Model Coefficients
@@ -223,7 +223,7 @@ To use the function, data must be a numeric data frame that is loaded into the g
 For a minimal case usage, with no changes made to defaults - `model.subset.log.ordinal()` will search for all possible models with 2 variables and up to the number of samples divided by 5. It will then rank the models according to their McFadden pseudo R<sup>2</sup> <sup>3</sup>.
 
 
-```
+```r
 ### Function structure ###
 
 model.subset.log.ordinal(
@@ -236,7 +236,7 @@ model.subset.log.ordinal(
 
 In R or RStudio console:
 
-```
+```r
 ### Minimal (default) usage ###
 
 # Load data
@@ -258,7 +258,7 @@ models <- model.subset.log.ordinal(data = data, min = 3, max = 3)
 
 Which returns:
 
-```
+```r
 models
                                          formula McFadden R2
 1         `class` ~ `X.2.3.` + `NPA_1` + `NPA_3`       0.543
@@ -280,7 +280,7 @@ To perform a general summary of the model, users must first manually run and sav
 **This step is a must in order to manually produce visualizations with `ct.plot()` and `prob.heatmap()`**
 
 For OMLR - applying MASS::polr()
-```
+```r
 # Define model formula
 test.form <- models[1, 1] # This example uses the highest ranked model
 
@@ -298,7 +298,7 @@ test <- MASS::polr(test.form,
 ```
 
 And for MLR - applying nnet::multinom
-```
+```r
 # Define model formula
 test.form <- models[1, 1] # Assuming model.subset.logistic() was first run
 
@@ -314,11 +314,10 @@ test <- nnet::multinom(test.form,
 
 `test` is a model object, which can now be passed to `mod.info.log.ordinal()` or `mod.info.logistic()`. The data argument exceptsthe same data loaded for `model.subset.log.ordinal()`
 
-```
+```r
 ### Function Structure ###
 
-mod.info.log.ordinal(model,
-                     data)
+mod.info.log.ordinal(model, data)
 ```
 
 The function produces two results directly to the console
@@ -327,7 +326,7 @@ The function produces two results directly to the console
 2. A table with model coefficients.
 
 But, more importantly, it saves a classification table (ct) to the variable it was assigned to (`test.info` in this example). This will be used later on. 
-```
+```r
 test.info <- mod.info.log.ordinal(test, data)
 
 
@@ -354,7 +353,7 @@ test.info <- mod.info.log.ordinal(test, data)
 * Percentage in yellow boxes is classification precision.
 * Percetage in the blue box is the overall model accuracy.
 
-```
+```r
 # Produce ct.plot
 ct.plot(test.info)
 ```
@@ -373,7 +372,7 @@ Sample name changes color according to the correctness of prediction:
 * Red colored names are wrong
 
 
-```
+```r
 # Produce probabilities heatmap
 prob.heatmap(test, data)
 ```
@@ -389,7 +388,7 @@ Produce a complete report for a data set (csv file).
 
 This is a wrapper function that uses all of the functions above under the hood, but also includes a smallest-group-size-fold CV, as well as a LOOCV. Produces visualizations and model summary automatically. Defaults to reporting the top ranked model, which is changeable with `model.number`.
 
-```
+```r
 ### Function Structure ###
 model.report.log.ordinal(dataset,
                          min = 1,
@@ -399,7 +398,7 @@ model.report.log.ordinal(dataset,
 
 Normal usgae, for our example file(using min = max = 2)
 
-```
+```r
 model.report.log.ordinal('path/to/Logistic_Dataset_Example.csv',
                          min = 2,
                          max = 2)
@@ -407,7 +406,7 @@ model.report.log.ordinal('path/to/Logistic_Dataset_Example.csv',
 
 Produces
 
-```
+```r
 Logistic_Dataset_Example
 
 |formula                          | McFadden R2|
@@ -493,7 +492,7 @@ For example, in the following illustration, a sample of 6 representatives is tak
 
 As an example, consider balancing the data set we have, such that we will end with 11 samples of each group (size of the smallest group, also the default setting) 
 
-```
+```r
 ### Function Structure ###
 simi.sampler(
   data,
@@ -505,7 +504,7 @@ simi.sampler(
 ```
 The function returns a vector of row numbers that represent the sampled subset. 
 
-```
+```r
 # Load data
 data <- data.frame(data.table::fread('path/to/downloaded/Logistic_Dataset_Example.csv'))
 
@@ -527,7 +526,7 @@ As a start, we can sample out based on similarity of each group with itself (def
 
 A nice plot is also available. 
 
-```
+```r
 simi.sampler(data = data, class = 1, plot = T)
 
 # Gives the vector of samples as output (row numbers to be sampled)
