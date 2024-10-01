@@ -114,7 +114,7 @@ model.subset <- function(data, leave.out = '', out.col = dim(data)[2],
   forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
   if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
   for (i in 1:dim(forms.cut)[1]) {
-    stts <- moleculaR:::model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
+    stts <- model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
     q2.list[[i]] <- stts[2]
     mae.list[[i]] <- stts[1]
   }

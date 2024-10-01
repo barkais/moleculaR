@@ -534,7 +534,8 @@ moleculaR <- function(input_file = NULL) {
   
     ### Ring Vibrations
   
-    if ("Ring Vibrations" %in% names(input_file$Vibrations)) {
+    if ("Ring Vibrations" %in% names(input_file$Vibrations) &
+        isTRUE(input_file$Vibrations$`Ring Vibrations`)) {
       ring.vibrations.result <- list(ring.vib.multi(input_file$Vibrations$`Ring Vibrations`))
       results <- c(results, ring.vibrations.result)
     }
