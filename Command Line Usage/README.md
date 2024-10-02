@@ -1,8 +1,8 @@
 # Command Line Usage - Guide
 
-**This guide will demonstrate the use of moleculaR's stand-alone functionalities.**
+**This guide demonstrates the use of moleculaR's stand-alone functionalities.**
 
-Note that there are some additional features that were not included in `moleculaR()` and are only available with interactive use. 
+Note that there are some additional features that were not included in the `moleculaR()` function and are only available with interactive use. 
 
 ```r
 # Load moleculaR
@@ -12,7 +12,7 @@ library(moleculaR)
 
 ## Molecule Visualization 
 
-moleculaR's visual aid is accessible from the command line (for Mac and Windows installations).
+moleculaR's visual aid is accessible from the command line (for Mac and Windows installations, Linux users may be required to install openGL first).
 
 ```r
 # To generate a plot of an xyz file, use:
@@ -36,8 +36,6 @@ plot_molecule(xyz_file)
   
 
 ## steRimol
-
-See `Features - Definitions and Practice` for a detailed definition of sterimol features.
  
 moleculaR's sterimol implementation for the calculation of sterimol values based on xyz structures. 
 
@@ -89,7 +87,7 @@ CPK, only_sub and drop all have default values, which allow immediate use with o
 
   **coordinates_vector:** 
   
-  An R vector of strings. Each string denotes a primary axis, with the structure 'atom1 atom2', where the 3D vector of atom1 to atom2 will         define sterimol's primary axis. 
+  An R vector of strings. Each string denotes a primary axis, with the structure 'atom1 atom2', where the 3D vector of atom1 to atom2 will define sterimol's primary axis. 
   
   The function expects at least one primary axis, when only one primary axis is wanted, user defines it with the argument:
   
