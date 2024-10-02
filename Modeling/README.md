@@ -74,7 +74,6 @@ models
 3 `output` ~ `Dist.16..17.` + `Total` + `diff.H16.O17` 0.9020966 0.7913756 0.07490688     3
 4 `output` ~ `Dist.10..17.` + `Total` + `diff.H16.O17` 0.8606321 0.7632980 0.08346307     4
 ```
-**Don't be startled by the warning, which is due to a small number of observations in this specific data**
 
 ### Model Plot
 
