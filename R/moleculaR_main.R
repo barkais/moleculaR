@@ -445,7 +445,7 @@ parse_txt_inputfile_to_list <- function(input_file_path) {
   return(Input.File)
 }
 ##### moleculaR - generates final results csv file
-##### from user inputs file (.RData), after running GUI for the first time
+##### from user inputs file (.txt), resulting from moleculaR.Input.Maker().
 
 #' User function for the extraction of all possible features
 #' based on a ready input file
