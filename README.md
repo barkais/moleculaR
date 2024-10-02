@@ -7,21 +7,21 @@
 
 Currently, as the package is still under development (yet to be submitted to CRAN), installations proceed with the help of the `remotes` package.
 
-We recommend using [RStudio]('https://posit.co/'), although applicable otherwise as well. Mac and Windows installations should not expect any weird behaviors with molecular visualizations and model plots, while the same can not be stated with linux installations (requires OpenGL). 
+We recommend using [RStudio]('https://posit.co/')
 
 ### Installation from Github 
 
 First, install the `remotes` package from CRAN.
 The `repos = getCRANmirrors()[1,"URL"]` addition helps installation in linux interactive sessions.
 
-```
+```r
 install.packages('remotes', repos = getCRANmirrors()[1,"URL"])
 ```
 
 Once `remotes` is properly installed, use the `install_github` function to install `moleculaR`.
 For convenience, load the package.
 
-```
+```r
 # Install
 remotes::install_github('https://github.com/barkais/moleculaR.git')
 
@@ -38,13 +38,13 @@ Make sure the common substructure is numbered correctly.
 
 ### Featurization
 
-**See `Getting Started with Examples` in articles for a detailed guide**
+**See `Getting Started with Examples` for a detailed guide**
 
 #### Step 1 - Pull information from Gaussain log files
 
 Make sure all log files you want to analyze are in one location. 
 
-```
+```r
 # Run extractoR() (while in the .log files' directory)
 extractoR()
 ```
@@ -56,37 +56,37 @@ Expect the following message, indicating everything worked fine.
 
 #### Step 2 - Unwrap feather files (either locally or remotely)
 
-```
-# Change working directory to folder containing the feather files resulted from running `extRactoR.auto()`
+```r
+# Change working directory to folder containing the feather files resulted from running `extractoR()`
 # Run unwRapper
 unwRapper()
 ```
 
-This command unwraps the feather files (compressed information from log files) and results in two new directories:
+This command unwraps the feather files and results in two new directories:
 
-  1. Optimized_structures_xyz - containing xyz files extracted from the optimization.
+  1. Optimized_structures_xyz - containing xyz files extracted from Gauusian's optimization.
   
-  2. moleculaR_csv_files - A master directory that holds a sub directory for each of the molecules in the set. The sub directories contain csv files with all the information moleculaR needs, in human            readable format. 
+  2. moleculaR_csv_files - A master directory that holds a sub directory for each of the molecules in the set. The sub directories contain csv files with all the information moleculaR needs, in human readable format. 
 
 Once finished, the function suggests to change your working directory. It is recommended to allow. 
 
 #### Step 3 - Create moleculaR's input file
 
-```
+```r
 # Run moleuclaR input maker
 moleculaR.Input.Maker()
 ```
 
 **In case you opt to generate a 3D visualization, it is best practice to use one of the molecules found in the `Optimized_structures_xyz`.**
 
-**Make sure to you do not save the input file in the moleculaR_csv_files folder. There should not be anything else in the moleculaR_csv_files folder.**
+**Make sure you do not save the input file in the moleculaR_csv_files folder. There should not be anything else in the moleculaR_csv_files folder.**
 
-#### This step results in creating an input file in .txt format - containing the arguments for feature generation in `moleculaR()` - for future uses and documentation.
+#### This step results in creating an input file in .txt format - containing the arguments for feature generation in `moleculaR()`, as well as for future use and documentation.
 
 #### The resulting input file can now be passed to the main function `moleculaR()` as an argument. 
 
 #### Step 4 - Get molecular features
-```
+```r
 # Use an input file generated with moleculaR.Input.Maker().
 # Pass the input file location to moleculaR's main function `moleculaR()`.
 # Indicate the path to the input file as an argument.
@@ -97,15 +97,13 @@ moleculaR('path/to/input/file.txt')
 
 It is possible to compute and extract all features directly from the command line in an interactive R session or as a part of a workflow. 
 
-See `Command Line Usage` in articles for a detailed guide
+See `Command Line Usage` for a detailed guide
 
 ### Modeling 
 
 The package includes a set of linear and logistic regression modeling tools that allow users to input a dataset and get a cross validated (3-fold, 5-fold and LOO) model, along with nice plots. 
 
-* To be able to use this functionality, user must add an _output_ or a _class_ column to the features.csv files resulted from running `moleculaR()`. The column *MUST* have the name 'output'/'class' (lower case intended). It is advised to make sure that the correct values are inserted in terms of order and naming - to prevent misleading model results.
-
-See `Modeling` in articles for a detailed guide
+See `Modeling` for a detailed guide
 
 ### Cube files
 
