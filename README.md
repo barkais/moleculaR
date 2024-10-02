@@ -2,7 +2,7 @@
 <img src="moleculaR_logo.png" width="600" height="120">
 
 **An R package for the physical-organic chemist - designed for easy, chemical-intuition based molecular features extraction and statistical modeling.**
->**See moleculaR's [web page](https://barkais.github.io/) for detailed guides and  documenntation**
+
 ## Installation 
 
 Currently, as the package is still under development (yet to be submitted to CRAN), installations proceed with the help of the `remotes` package.
