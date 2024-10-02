@@ -39,8 +39,7 @@ model.subset(
   max = floor(dim(data)[1]/5),
   folds = nrow(data),
   iterations = 1,
-  cutoff = 0.85,
-  cross.terms = F
+  cutoff = 0.85
 )
 ```
 
