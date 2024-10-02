@@ -2,8 +2,8 @@
 ####### -------------moleculaR Main Functions---------------#####
 ####### ----------------------------------------------------#####
 
-##### moleculaR input maker - generates Q&A, final results csv file
-##### and user inputs file (.RData) for future use and documentation
+##### moleculaR input maker - generates a form filling format
+##### and user inputs file (.txt) for future use and documentation
 
 #' User interface for the extraction of all possible features
 #'
