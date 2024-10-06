@@ -3,7 +3,7 @@
 
 #' Screen for models, cross validate them and plot. Designed for interactive work.
 #' @return csv file with model list, and a plot
-#'  use and documentation
+#' @importFrom utils capture.output
 #' @export
 model.report.GUI <- function() {
   # Define UI for the app
