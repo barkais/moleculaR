@@ -253,14 +253,14 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
+  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
+  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
@@ -447,14 +447,14 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
+  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
+  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
@@ -579,7 +579,7 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
                                             panel.grid.major = ggplot2::element_blank(),
                                             panel.grid.minor = ggplot2::element_blank(),
                                             panel.border = ggplot2::element_blank(), panel.background = ggplot2::element_blank(),
-                                            legend.position = c(2,2)) +
+                                            legend.position.inside = c(2,2)) +
                              ggplot2::scale_color_manual('', values = c(Ph = "black", meta = 'tan1',
                                                                         para = '#66a182',ortho = '#d1495b', external = 'steelblue4')) +
                              ggplot2::xlim(min(plot.dat[1:nrow(mod_data),3]), max(plot.dat[1:nrow(mod_data),4])) +

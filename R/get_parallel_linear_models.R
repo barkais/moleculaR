@@ -10,7 +10,7 @@
 #' @param out.col column number with output
 #' @param folds define K
 #' @param iterations Number of iterations
-#'
+#' @export
 #' @return averaged MAE and Q2
 model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
   model.single.cv.iterator <- function(i) {
@@ -239,7 +239,7 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- moleculaR:::model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
+  cv_3fold <- model.cv.parallel(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('

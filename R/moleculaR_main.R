@@ -2,8 +2,8 @@
 ####### -------------moleculaR Main Functions---------------#####
 ####### ----------------------------------------------------#####
 
-##### moleculaR input maker - generates a form filling format
-##### and user inputs file (.txt) for future use and documentation
+##### moleculaR input maker - generates Q&A, final results csv file
+##### and user inputs file (.RData) for future use and documentation
 
 #' User interface for the extraction of all possible features
 #'
@@ -14,9 +14,8 @@
 #' @return csv file with all features and a input file for future
 #'  use and documentation
 #' @export
-#' @import shiny
 #' @import shinythemes
-#' @import shinyjs
+#' @import shiny
 moleculaR.Input.Maker <- function() {
   # UI
   ui <- fluidPage(
@@ -445,7 +444,7 @@ parse_txt_inputfile_to_list <- function(input_file_path) {
   return(Input.File)
 }
 ##### moleculaR - generates final results csv file
-##### from user inputs file (.txt), resulting from moleculaR.Input.Maker().
+##### from user inputs file (.RData), after running GUI for the first time
 
 #' User function for the extraction of all possible features
 #' based on a ready input file

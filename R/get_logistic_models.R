@@ -1,3 +1,4 @@
+
 #' Stratify data sets by a group
 #'
 #' User defined stratification by a class column. 
@@ -337,7 +338,7 @@ k.fold.logistic <- function(formula, data, folds = NULL,
 #' @return list of models, ranked by McFadden's pseudo R squared
 #' @export
 model.subset.log.ordinal <- function(data, out.col = which(colnames(data) == 'class'),
-                              min = 1, max = floor(dim(data)[1]/5)) {
+                                     min = 1, max = floor(dim(data)[1]/5)) {
   output <- stringr::str_c('`',names(data[out.col]),'`')
   vars <- names(data[,-out.col])
   vars <- vars[vars != 'flag']
@@ -447,9 +448,9 @@ model.subset.logistic <- function(data, out.col = which(colnames(data) == 'class
 #' @return model stats
 #' @keywords internal
 kf.iter.log.ordinal <- function(formula, data, folds = NULL, out.col=which(colnames(data) == 'class'),
-                            stratify = F,
-                            sample.vector = floor(round(summary(data$class)/min(summary(data$class)))),
-                            iterations, verbose = F) {
+                                stratify = F,
+                                sample.vector = floor(round(summary(data$class)/min(summary(data$class)))),
+                                iterations, verbose = F) {
   iter.list <- list()
   ct.list <- list()
   for (i in 1:iterations) {
@@ -753,19 +754,19 @@ prob.heatmap <- function(model,data) {
   }
   col_vec <- vector(mode = 'numeric')
   coloring <- c("darkgoldenrod4", "slateblue", 'darksalmon',
-                                'darkblue', 'navajowhite4',
-                                'darkcyan', 'chocolate4',
-                                "coral3","cornsilk4",'darkslateblue')
-                                for (i in 1:length(long[long$variable == 'Exp',4])) {
-                                  col_vec[i] <- coloring[long[long$variable == 'Exp',4][i]]
-                                }
+                'darkblue', 'navajowhite4',
+                'darkcyan', 'chocolate4',
+                "coral3","cornsilk4",'darkslateblue')
+  for (i in 1:length(long[long$variable == 'Exp',4])) {
+    col_vec[i] <- coloring[long[long$variable == 'Exp',4][i]]
+  }
   
   label.vec <- as.character(long[long$variable == 'Exp',4])
   
   prob.heatmap <- ggplot2::ggplot(mapping = ggplot2::aes(x = variable,
                                                          y = ordered(Name, 
-                                                                    levels = rev(factor(pro.df$Name, 
-                                                                                       levels = pro.df$Name))))) +
+                                                                     levels = rev(factor(pro.df$Name, 
+                                                                                         levels = pro.df$Name))))) +
     ggplot2::geom_tile(data = long[long$variable != 'Exp',], 
                        color = 'black', ggplot2::aes(fill = value))+
     ggplot2::coord_fixed(ratio = 0.2)+
