@@ -27,7 +27,6 @@ Imports:
     reshape2,
     rgl,
     shiny,
-    shinyjs,
     shinythemes,
     stats,
     stringr,
