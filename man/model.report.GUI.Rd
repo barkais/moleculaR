@@ -8,7 +8,6 @@ model.report.GUI()
 }
 \value{
 csv file with model list, and a plot
- use and documentation
 }
 \description{
 Screen for models, cross validate them and plot. Designed for interactive work.
