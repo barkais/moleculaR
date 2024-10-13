@@ -28,7 +28,7 @@ remotes::install_github('https://github.com/barkais/moleculaR.git')
 # Load
 library('moleculaR')
 ```
-In case `library('moleculaR')` faild on Linux based systems, it may stem from a graphics driver mismatch with one of the required dependencies (`rgl`).
+In case `library('moleculaR')` fails on Linux based systems, it may stem from a graphics driver mismatch with one of the required dependencies (`rgl`).
 To solve this:
 
 ```r
