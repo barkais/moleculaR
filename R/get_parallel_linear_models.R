@@ -23,36 +23,52 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
   return(list(MAE.validation, q2.validation))
 }
 
-#' Brute force model search with a min and max number of
-#' features. A parallel computation version. 
+#' Parallelized Subset Feature Selection with Correlation Threshold
 #'
-#' Ranks models based on K-fold CV Q2
+#' This function generates all possible subsets of features in a user-defined range (min to max),
+#' ensuring that no two variables in a subset have a Pearson correlation coefficient above the
+#' specified correlation threshold (`cor.threshold`). It performs parallel computation for faster execution.
 #'
-#' @param data data frame with output column
-#' @param out.col number of output column
-#' @param min minimum # of features (default = 2)
-#' @param max max # of features (defaults = # of observations / 5)
-#' @param folds  defaults to nrow(data)
-#' @param iterations defaults to 1 (LOOCV)
-#' @param cutoff search for Q2 above 0.85 (if there isn't will look for lower)
-#'
-#' @return table with 10 best models (at max)
+#' @param data A data frame containing the features and the target column.
+#' @param out.col An integer indicating the column index of the target variable (default: last column).
+#' @param min The minimum number of features to include in a subset (default: 2).
+#' @param max The maximum number of features to include in a subset (default: floor(nrow(data) / 5)).
+#' @param folds Number of folds for cross-validation (default: number of rows in `data`).
+#' @param iterations Number of iterations for cross-validation (default: 1).
+#' @param cutoff R-squared cutoff for model selection (default: 0.85).
+#' @param cor.threshold Pearson correlation threshold for feature selection (default: 0.7).
+#' @return A data frame with the best models, their R-squared, Q-squared, and MAE values.
 #' @export
+
 model.subset.parallel <- function(data, out.col = dim(data)[2],
                                   min = 2, max = floor(dim(data)[1] / 5),
                                   folds = nrow(data), iterations = 1,
-                                  cutoff = 0.85) {
+                                  cutoff = 0.85, cor.threshold = 0.7) {
+  
+  # Get the output variable and feature names
   output <- stringr::str_c("`", names(data[out.col]), "`")
   vars <- names(data[, -out.col])
   for (i in 1:length(vars)) {
     vars[i] <- stringr::str_c("`", vars[i], "`")
   }
+  
+  # Compute the correlation matrix and apply the correlation threshold
+  cor_matrix <- cor(data[, -out.col])
+  
+  # Identify pairs of features with a correlation greater than the threshold
+  high_cor_pairs <- which(abs(cor_matrix) > cor.threshold, arr.ind = TRUE)
+  
+  # Remove duplicate pairs and self-correlations
+  high_cor_pairs <- high_cor_pairs[high_cor_pairs[, 1] < high_cor_pairs[, 2], ]
+  
   comb.list <- list()
   ols.list <- list()
   q2.list <- list()
   mae.list <- list()
+  
+  # Generate all combinations of features within the specified range
   for (i in min:max) {
-    comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
+    comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = FALSE)
     comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
       paste,
       c(comb.list[[i]][names(comb.list[[i]])],
@@ -60,20 +76,41 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
       )
     )
     names(comb.list[[i]])[dim(comb.list[[i]])[2]] <- "formula"
+    
+    # Remove features that violate the correlation threshold
+    for (row in 1:nrow(comb.list[[i]])) {
+      comb_features <- comb.list[[i]][row, 1:i]
+      feature_indices <- which(colnames(cor_matrix) %in% comb_features)
+      feature_cor <- cor_matrix[feature_indices, feature_indices]
+      if (any(abs(feature_cor[upper.tri(feature_cor)]) > cor.threshold)) {
+        comb.list[[i]][row, ] <- NA
+      }
+    }
+    
+    comb.list[[i]] <- na.omit(comb.list[[i]])
+    
+    # Clean up unused columns
     for (co in names(comb.list[[i]])[1:length(names(comb.list[[i]])) - 1]) {
       comb.list[[i]][co] <- NULL
     }
   }
+  
+  # Combine all combinations into a single data frame
   comb.list <- plyr::compact(comb.list)
   forms <- do.call(rbind, comb.list)
   rm(list = 'comb.list')
+  
+  # Generate formulas for the models
   forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
   
+  # If the max number of features is small, compute R-squared directly in parallel
   if (max <= 3) {
     ols.list <- parallel::mclapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
     forms[, 2] <- do.call(rbind, ols.list)
     names(forms)[2] <- "R.sq"
+    forms.cut <- dplyr::arrange(forms, desc(forms$R.sq))
   } else {
+    # Split the formulas into smaller chunks for parallel processing
     split_list <- function(input_list, max_size) {
       num_sublists <- ceiling(length(input_list) / max_size)
       sublists <- vector("list", length = num_sublists)
@@ -86,10 +123,9 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     }
     
     sublists <- split_list(forms$formula, 10000)
-    
     rm(list = 'forms')
     
-    # Apply the function to each sublist and store the resulting lists in separate variables
+    # Apply parallel processing to each sublist
     for (i in seq_along(sublists)) {
       x.list <- parallel::mclapply(sublists[[i]], function(x) data.frame(x, summary(lm(x, data = data))$r.squared))
       x.list <- do.call(rbind, x.list)
@@ -105,19 +141,22 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
         x.list.cut <- x.list.cut[1:10, ]
       } 
       write.table(x.list.cut, file = 'results_df.csv',
-                  append = TRUE, col.names = F) 
+                  append = TRUE, col.names = FALSE) 
     }
     
     num_of_sublists <- seq_along(sublists)
     rm(list = 'sublists')
-   
-    # Combine all the resulting lists into a single list
+    
+    # Combine results from all sublists
     ols.list <- data.frame(data.table::fread('results_df.csv'))[, 2:3]
     names(ols.list) <- c('formula', 'R.sq')
     forms.cut <- dplyr::arrange(ols.list, desc(ols.list$R.sq))
   }
   
-  if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
+  # Select the top 10 models
+  if (nrow(forms.cut) >= 50) forms.cut <- forms.cut[1:50, ]
+  
+  # Perform cross-validation on the top models
   for (i in 1:dim(forms.cut)[1]) {
     stts <- model.cv.parallel(formula = forms.cut[i, 1],
                               data = data,
@@ -127,12 +166,17 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     q2.list[[i]] <- stts[2]
     mae.list[[i]] <- stts[1]
   }
+  
+  # Add Q-squared and MAE to the final results
   forms.cut[, 3] <- data.table::transpose(do.call(rbind, q2.list))
   forms.cut[, 4] <- data.table::transpose(do.call(rbind, mae.list))
   names(forms.cut)[3:4] <- c("Q.sq", "MAE")
+  
+  # Sort by Q-squared and add a model number column
   forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$Q.sq))
   forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
-  return(forms.cut)
+  
+  return(forms.cut[1:15, ])
 }
 
 ####### ----------------------------------------------------#####
@@ -386,5 +430,5 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
 
 
 
-
+library(moleculaR)
 
