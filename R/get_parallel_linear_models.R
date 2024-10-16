@@ -429,6 +429,3 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
 }
 
 
-
-library(moleculaR)
-
