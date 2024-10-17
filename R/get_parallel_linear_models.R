@@ -33,6 +33,7 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
 #' @param out.col An integer indicating the column index of the target variable (default: last column).
 #' @param min The minimum number of features to include in a subset (default: 2).
 #' @param max The maximum number of features to include in a subset (default: floor(nrow(data) / 5)).
+#' @param results_name Name of file containing results. The function writes results on the fly, to free up RAM.
 #' @param folds Number of folds for cross-validation (default: number of rows in `data`).
 #' @param iterations Number of iterations for cross-validation (default: 1).
 #' @param cutoff R-squared cutoff for model selection (default: 0.85).
@@ -42,6 +43,7 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
 
 model.subset.parallel <- function(data, out.col = dim(data)[2],
                                   min = 2, max = floor(dim(data)[1] / 5),
+                                  results_name = 'results_df.csv',
                                   folds = nrow(data), iterations = 1,
                                   cutoff = 0.85, cor.threshold = 0.7) {
   
@@ -140,7 +142,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
       if (nrow(x.list.cut) > 10) {
         x.list.cut <- x.list.cut[1:10, ]
       } 
-      write.table(x.list.cut, file = 'results_df.csv',
+      write.table(x.list.cut, file = results_name,
                   append = TRUE, col.names = FALSE) 
     }
     
@@ -148,7 +150,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     rm(list = 'sublists')
     
     # Combine results from all sublists
-    ols.list <- data.frame(data.table::fread('results_df.csv'))[, 2:3]
+    ols.list <- data.frame(data.table::fread(results_name))[, 2:3]
     names(ols.list) <- c('formula', 'R.sq')
     forms.cut <- dplyr::arrange(ols.list, desc(ols.list$R.sq))
   }
@@ -190,6 +192,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 #' @param dataset a dataframe with outcome column (must be named 'output')
 #' @param min minimum # of features (default = 2)
 #' @param max max # of features (defaults = # of observations / 5)
+#' @param results_name Name of file containing results. The function writes results on the fly, to free up RAM.
 #' @param leave.out name of observations to leave out (e.g. 'p_Br')
 #' @param folds number of folds for CV
 #' @param iterations number of iterations for CV
@@ -199,6 +202,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 models.list.parallel <- function(dataset,
                                   min = 2,
                                   max = floor(dim(mod_data)[1] / 5),
+                                  results_name = 'results_df.csv',
                                   leave.out = '',
                                   folds = nrow(mod_data), 
                                   iterations = 1) {
@@ -218,6 +222,7 @@ models.list.parallel <- function(dataset,
   models <- model.subset.parallel(mod_data,
                                   min = min,
                                   max = max,
+                                  results_name = results_name,
                                   folds = folds, 
                                   iterations = iterations)
   tab <- knitr::kable(models)
@@ -427,5 +432,4 @@ model.report.parallel <- function(dataset, min = 2, max = floor(dim(mod_data)[1]
     ggplot2::ggtitle(equation)
   plot
 }
-
 
