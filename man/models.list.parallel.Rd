@@ -9,6 +9,7 @@ models.list.parallel(
   dataset,
   min = 2,
   max = floor(dim(mod_data)[1]/5),
+  results_name = "results_df.csv",
   leave.out = "",
   folds = nrow(mod_data),
   iterations = 1
@@ -20,6 +21,8 @@ models.list.parallel(
 \item{min}{minimum # of features (default = 2)}
 
 \item{max}{max # of features (defaults = # of observations / 5)}
+
+\item{results_name}{Name of file containing results. The function writes results on the fly, to free up RAM.}
 
 \item{leave.out}{name of observations to leave out (e.g. 'p_Br')}
 

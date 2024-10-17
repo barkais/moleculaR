@@ -2,37 +2,44 @@
 % Please edit documentation in R/get_parallel_linear_models.R
 \name{model.subset.parallel}
 \alias{model.subset.parallel}
-\title{Brute force model search with a min and max number of
-features. A parallel computation version.}
+\title{Parallelized Subset Feature Selection with Correlation Threshold}
 \usage{
 model.subset.parallel(
   data,
   out.col = dim(data)[2],
   min = 2,
   max = floor(dim(data)[1]/5),
+  results_name = "results_df.csv",
   folds = nrow(data),
   iterations = 1,
-  cutoff = 0.85
+  cutoff = 0.85,
+  cor.threshold = 0.7
 )
 }
 \arguments{
-\item{data}{data frame with output column}
+\item{data}{A data frame containing the features and the target column.}
 
-\item{out.col}{number of output column}
+\item{out.col}{An integer indicating the column index of the target variable (default: last column).}
 
-\item{min}{minimum # of features (default = 2)}
+\item{min}{The minimum number of features to include in a subset (default: 2).}
 
-\item{max}{max # of features (defaults = # of observations / 5)}
+\item{max}{The maximum number of features to include in a subset (default: floor(nrow(data) / 5)).}
 
-\item{folds}{defaults to nrow(data)}
+\item{results_name}{Name of file containing results. The function writes results on the fly, to free up RAM.}
 
-\item{iterations}{defaults to 1 (LOOCV)}
+\item{folds}{Number of folds for cross-validation (default: number of rows in `data`).}
 
-\item{cutoff}{search for Q2 above 0.85 (if there isn't will look for lower)}
+\item{iterations}{Number of iterations for cross-validation (default: 1).}
+
+\item{cutoff}{R-squared cutoff for model selection (default: 0.85).}
+
+\item{cor.threshold}{Pearson correlation threshold for feature selection (default: 0.7).}
 }
 \value{
-table with 10 best models (at max)
+A data frame with the best models, their R-squared, Q-squared, and MAE values.
 }
 \description{
-Ranks models based on K-fold CV Q2
+This function generates all possible subsets of features in a user-defined range (min to max),
+ensuring that no two variables in a subset have a Pearson correlation coefficient above the
+specified correlation threshold (`cor.threshold`). It performs parallel computation for faster execution.
 }
