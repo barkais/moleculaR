@@ -526,7 +526,8 @@ moleculaR <- function(input_file = NULL) {
 
   ### Bond Vibrations
   if ("Vibrations" %in% names(input_file)) {
-    if ("Bond Vibrations" %in% names(input_file$Vibrations)) {
+    if ("Bond Vibrations" %in% names(input_file$Vibrations) &
+        !isFALSE(input_file$Vibrations$`Bond Vibrations`)) {
       bond.vibrations.result <- list(stretch.vib.df(input_file$Vibrations$`Bond Vibrations`))
       results <- c(results, bond.vibrations.result)
     }
@@ -534,7 +535,7 @@ moleculaR <- function(input_file = NULL) {
     ### Ring Vibrations
   
     if ("Ring Vibrations" %in% names(input_file$Vibrations) &
-        isTRUE(input_file$Vibrations$`Ring Vibrations`)) {
+        !isFALSE(input_file$Vibrations$`Ring Vibrations`)) {
       ring.vibrations.result <- list(ring.vib.multi(input_file$Vibrations$`Ring Vibrations`))
       results <- c(results, ring.vibrations.result)
     }
@@ -542,7 +543,7 @@ moleculaR <- function(input_file = NULL) {
     ### Bending Vibrations
   
     if ("Bend Vibrations" %in% names(input_file$Vibrations) &
-        isTRUE(input_file$Vibrations$`Bend Vibrations`)) {
+        !isFALSE(input_file$Vibrations$`Bend Vibrations`)) {
       bend.vibrations.result <- list(bend.vib.df(input_file$Vibrations$`Bend Vibrations`))
       results <- c(results, bend.vibrations.result)
     }
