@@ -117,12 +117,6 @@ unwRapper <- function() {
                              '/',
                              name))
   }
-  xyz_files <- list.files(list.dirs('moleculaR_csv_files/',
-                                    recursive = T),
-                          pattern = '.xyz',
-                          full.names = T)
-  names <- basename(list.dirs('moleculaR_csv_files/',
-                              recursive = F))
 
   change_opt_xyz <- svDialogs::dlg_message(
   "
@@ -145,10 +139,11 @@ unwRapper <- function() {
       unlink('Optimized_structures_xyz', recursive = TRUE)
     }
     dir.create('Optimized_structures_xyz')
-    for (file in xyz_files) {
-      invisible(file.copy(file,
-                          paste0('Optimized_structures_xyz/', 
-                                 names[[match(file, xyz_files)]], '.xyz'),
+    
+    for (dir in list.dirs('moleculaR_csv_files/', recursive = F)) {
+      invisible(file.copy(list.files(dir, pattern = '.xyz', full.names = T),
+                          paste0('Optimized_structures_xyz/',
+                                 basename(dir), '.xyz'),
                           overwrite = T
       ))
     }
@@ -159,10 +154,10 @@ unwRapper <- function() {
       unlink(xyz_name, recursive = TRUE)
     }
     dir.create(xyz_name)
-    for (file in xyz_files) {
-      invisible(file.copy(file,
-                          paste0(xyz_name, '/', 
-                                 names[[match(file, xyz_files)]], '.xyz'),
+    for (dir in list.dirs('moleculaR_csv_files/', recursive = F)) {
+      invisible(file.copy(list.files(dir, pattern = '.xyz', full.names = T),
+                          paste0(xyz_name,
+                                 basename(dir), '.xyz'),
                           overwrite = T
       ))
     }
