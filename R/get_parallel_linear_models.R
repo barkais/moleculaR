@@ -43,7 +43,7 @@ model.cv.parallel <- function(formula, data, out.col, folds, iterations) {
 
 model.subset.parallel <- function(data, out.col = dim(data)[2],
                                   min = 2, max = floor(dim(data)[1] / 5),
-                                  results_name = 'results_df.csv',
+                                  results_name = 'results_df',
                                   folds = nrow(data), iterations = 1,
                                   cutoff = 0.85, cor.threshold = 0.7) {
   
@@ -142,7 +142,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
       if (nrow(x.list.cut) > 10) {
         x.list.cut <- x.list.cut[1:10, ]
       } 
-      write.table(x.list.cut, file = results_name,
+      write.table(x.list.cut, file = paste0(results_name, format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
                   append = TRUE, col.names = FALSE) 
     }
     
@@ -150,9 +150,24 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     rm(list = 'sublists')
     
     # Combine results from all sublists
-    ols.list <- data.frame(data.table::fread(results_name))[, 2:3]
-    names(ols.list) <- c('formula', 'R.sq')
-    forms.cut <- dplyr::arrange(ols.list, desc(ols.list$R.sq))
+    # List all files matching the pattern
+    file_list <- list.files(pattern = results_name)
+    
+    # Read each file and extract the second and third columns
+    ols.list <- lapply(file_list, function(file) {
+      # Read the file
+      data <- data.table::fread(file)
+      # Extract the second and third columns
+      return(data[, 2:3])
+    })
+    
+    # Combine all data frames into one
+    ols_df <- do.call(rbind, ols.list)
+    
+    # Convert to data frame if needed
+    ols_df <- as.data.frame(ols_df)
+    names(ols_df) <- c('formula', 'R.sq')
+    forms.cut <- dplyr::arrange(ols_df, desc(ols_df$R.sq))
   }
   
   # Select the top 10 models
@@ -202,7 +217,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 models.list.parallel <- function(dataset,
                                   min = 2,
                                   max = floor(dim(mod_data)[1] / 5),
-                                  results_name = 'results_df.csv',
+                                  results_name = 'results_df',
                                   leave.out = '',
                                   folds = nrow(mod_data), 
                                   iterations = 1) {
@@ -228,7 +243,12 @@ models.list.parallel <- function(dataset,
   tab <- knitr::kable(models)
   print(tab)
   write.csv(models, paste0(tools::file_path_sans_ext(basename(dataset)),
+                           '_',
+                           as.character(min),
+                           '_',
+                           as.character(max),
                         '_models.list.csv'))
+  unlink(list.files(pattern = results_name))
 }
 
 #'  Generate models and a plot. A parallel computation version.
