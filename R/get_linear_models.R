@@ -57,72 +57,123 @@ model.cv <- function(formula, data, out.col, folds, iterations) {
   return(list(MAE.validation, q2.validation))
 }
 
-#' Brute force model search with a min and max number of
-#' features.
+#' Create Subsets of Features Based on Correlation Threshold and R-squared
 #'
-#' Ranks models based on K-fold CV Q2
+#' This function generates all possible subsets of features in a user-defined range (min to max), while ensuring
+#' no two variables in a subset have a Pearson correlation coefficient of `cor.threshold` or higher. 
+#' It returns the top models based on R-squared and further evaluates them using cross-validation to calculate Q-squared and MAE.
 #'
-#' @param data data frame with output column
-#' @param leave.out vector of row names to leave out of data
-#' @param out.col number of output column
-#' @param min minimum # of features (default = 2)
-#' @param max max # of features (defaults = # of observations / 5)
-#' @param folds  defaults to nrow(data)
-#' @param iterations defaults to 1 (LOOCV)
-#' @param cutoff search for Q2 above 0.85 (if there isn't will look for lower)
-#'
-#' @return table with 10 best models (at max)
+#' @param data A data frame containing the dataset.
+#' @param leave.out A vector of row names to exclude from the data (default is an empty string).
+#' @param out.col The index of the output column in the data (default is the last column).
+#' @param min Minimum number of variables in a subset (default is 2).
+#' @param max Maximum number of variables in a subset (default is floor(n/5)).
+#' @param folds Number of folds for cross-validation (default is number of rows in data).
+#' @param iterations Number of iterations for cross-validation (default is 1).
+#' @param cutoff R-squared cutoff for model selection (default is 0.85).
+#' @param cor.threshold Pearson correlation threshold to filter highly correlated variables (default is 0.7).
 #' @export
+#' @return A data frame containing the top 10 models based on R-squared, Q-squared, and MAE.
 model.subset <- function(data, leave.out = '', out.col = dim(data)[2],
-                      min = 2, max = floor(dim(data)[1] / 5),
-                      folds = nrow(data), iterations = 1,
-                      cutoff = 0.85) {
+                         min = 2, max = floor(dim(data)[1] / 5),
+                         folds = nrow(data), iterations = 1,
+                         cutoff = 0.85, cor.threshold = 0.7) {
+  
+  # Exclude specified rows
   data <- data[!(row.names(data) %in% leave.out), ]
+  
+  # Get output variable name
   output <- stringr::str_c("`", names(data[out.col]), "`")
+  
+  # Get names of all predictor variables
   vars <- names(data[, -out.col])
   for (i in 1:length(vars)) {
     vars[i] <- stringr::str_c("`", vars[i], "`")
   }
+  
   comb.list <- list()
   ols.list <- list()
   q2.list <- list()
   mae.list <- list()
-  for (i in 1:max) {
-    comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
-    comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
-      paste,
-      c(comb.list[[i]][names(comb.list[[i]])],
-        sep = " + "
-      )
-    )
-    names(comb.list[[i]])[dim(comb.list[[i]])[2]] <- "formula"
-    for (co in names(comb.list[[i]])[1:length(names(comb.list[[i]])) - 1]) {
-      comb.list[[i]][co] <- NULL
+  
+  # Calculate correlation matrix and apply the correlation threshold filter
+  cor.matrix <- cor(data[, -out.col], method = "pearson")
+  
+  for (i in min:max) {
+    # Get combinations of variables for the current subset size
+    combinations <- aperm(combn(vars, i))
+    valid.combinations <- list()
+    
+    # Check correlation threshold for each combination
+    for (j in 1:nrow(combinations)) {
+      subset.vars <- gsub("`", "", combinations[j, ])
+      
+      # Extract correlation values for the subset of variables
+      cor.subset <- cor.matrix[subset.vars, subset.vars]
+      cor.upper <- cor.subset[upper.tri(cor.subset)]
+      
+      # If all correlations are below the threshold, add to valid combinations
+      if (all(abs(cor.upper) < cor.threshold)) {
+        valid.combinations[[length(valid.combinations) + 1]] <- combinations[j, ]
+      }
     }
-  }
-  comb.list <- plyr::compact(comb.list)
-  forms <- do.call(rbind, comb.list)
-  forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
-  ols.list <- lapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
-  forms[, 2] <- do.call(rbind, ols.list)
-  names(forms)[2] <- "R.sq"
-  forms.cut <- forms[forms$R.sq > cutoff, ]
-  while (nrow(forms.cut) <= 10) {
-    cutoff <- cutoff - 0.1
+    
+    # Store valid combinations
+    comb.list <- do.call(rbind, valid.combinations)
+    
+    # Create formulas for valid combinations
+    for (i in 1:max) {
+      comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = F)
+      comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
+        paste,
+        c(comb.list[[i]][names(comb.list[[i]])],
+          sep = " + "
+        )
+      )
+      names(comb.list[[i]])[dim(comb.list[[i]])[2]] <- "formula"
+      for (co in names(comb.list[[i]])[1:length(names(comb.list[[i]])) - 1]) {
+        comb.list[[i]][co] <- NULL
+      }
+    }
+    comb.list <- plyr::compact(comb.list)
+    forms <- do.call(rbind, comb.list)
+    forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
+    
+    # Evaluate R-squared for each formula
+    ols.list <- lapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
+    forms[, 2] <- do.call(rbind, ols.list)
+    names(forms)[2] <- "R.sq"
+    
+    # Apply R-squared cutoff
     forms.cut <- forms[forms$R.sq > cutoff, ]
+    
+    # If not enough models pass the cutoff, lower the cutoff incrementally
+    while (nrow(forms.cut) <= 10) {
+      cutoff <- cutoff - 0.1
+      forms.cut <- forms[forms$R.sq > cutoff, ]
+    }
+    
+    # Select the top 10 models by R-squared
+    forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
+    if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
+    
+    # Perform cross-validation for each model to calculate Q-squared and MAE
+    for (i in 1:nrow(forms.cut)) {
+      stts <- model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
+      q2.list[[i]] <- stts[2]
+      mae.list[[i]] <- stts[1]
+    }
+    
+    # Add Q-squared and MAE to the results
+    forms.cut[, 3] <- data.table::transpose(do.call(rbind, q2.list))
+    forms.cut[, 4] <- data.table::transpose(do.call(rbind, mae.list))
+    names(forms.cut)[3:4] <- c("Q.sq", "MAE")
+    
+    # Add model numbering and arrange by Q-squared
+    forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$Q.sq))
+    forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
   }
-  forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
-  if (nrow(forms.cut) >= 10) forms.cut <- forms.cut[1:10, ]
-  for (i in 1:dim(forms.cut)[1]) {
-    stts <- model.cv(forms.cut[i, 1], data, out.col, folds, iterations)
-    q2.list[[i]] <- stts[2]
-    mae.list[[i]] <- stts[1]
-  }
-  forms.cut[, 3] <- data.table::transpose(do.call(rbind, q2.list))
-  forms.cut[, 4] <- data.table::transpose(do.call(rbind, mae.list))
-  names(forms.cut)[3:4] <- c("Q.sq", "MAE")
-  forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$Q.sq))
-  forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
+  
   return(forms.cut)
 }
 
@@ -247,7 +298,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   print(tab)
   if (is.null(what.model)) what.model <- readline('Choose the model you would like to plot (line number): ')
   if (is.character(what.model)) what.model <- as.numeric(what.model)
-  mod.sum <- summary(lm(models[what.model, 1], mod_data))$coefficients
+  mod.sum <- summary(lm(models$formula[what.model], mod_data))$coefficients
   cat('
   Model Coefficients')
   colnames(mod.sum)[4] <- 'p value'
@@ -268,7 +319,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
   tab_dt5 <- knitr::kable(dt5)
   print(tab_dt5)
   if (predict == T) {
-    prediction <- predict(lm(models[what.model, 1], mod_data), pred.data)
+    prediction <- predict(lm(models$formula[what.model], mod_data), pred.data)
     real <- pred.data$output
     prd.tab <- data.frame(prediction, real)
     names(prd.tab) <- c('OOS Pred', 'OOS Measured')
@@ -276,7 +327,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
     print(k.prd.tab)
   }
   mod_data_unn <- data.frame(data.table::fread(dataset, header = T))
-  mod.sum.unnormalized <- summary(lm(models[what.model, 1], mod_data_unn))$coefficients
+  mod.sum.unnormalized <- summary(lm(models$formula[what.model], mod_data_unn))$coefficients
   cat('
   Unnormalized Data Model Coefficients')
   colnames(mod.sum.unnormalized)[4] <- 'p value'
@@ -312,7 +363,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                                   text4),
                                 collapse = "\n")
 
-  model = models[what.model, 1]
+  model = models$formula[what.model]
   best.mod <- lm(model, data = mod_data)
   pred_interval <- predict(best.mod,
                            newdata = mod_data,
@@ -385,7 +436,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
                                             panel.grid.major = ggplot2::element_blank(),
                                             panel.grid.minor = ggplot2::element_blank(),
                                             panel.border = ggplot2::element_blank(), panel.background = ggplot2::element_blank(),
-                                            legend.position = c(2,2)) +
+                                            legend.position.inside = c(2,2)) +
                              ggplot2::scale_color_manual('', values = c(Ph = "black", meta = 'tan1',
                                                                         para = '#66a182',ortho = '#d1495b', external = 'steelblue4')) +
                              ggplot2::xlim(min(plot.dat[1:nrow(mod_data),3]), max(plot.dat[1:nrow(mod_data),4])) +
@@ -425,7 +476,7 @@ model.report <- function(dataset, min = 2, max = floor(dim(mod_data)[1] / 5),
 #' @export
 model.report.from.list <- function(dataset, model.list, out.col = 'output',
                                    leave.out = '', predict = F,
-                                   what.model = NULL) {
+                                   what.model = 1) {
   default::default(data.frame) <- list(check.names = FALSE)
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T))
@@ -441,20 +492,20 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
   models <- data.frame(data.table::fread(model.list))
-  mod.sum <- summary(lm(models[what.model, 1], mod_data))$coefficients
+  mod.sum <- summary(lm(models$formula[what.model], mod_data))$coefficients
   cat('
   Model Coefficients')
   colnames(mod.sum)[4] <- 'p value'
   k.mod <- knitr::kable(mod.sum)
   print(k.mod)
-  cv_3fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 3, 50)
+  cv_3fold <- model.cv(models$formula[what.model], mod_data, dim(mod_data)[2], 3, 50)
   dt3 <- data.frame(cv_3fold[[2]], cv_3fold[[1]])
   names(dt3) <- c('Q2', 'MAE')
   cat('
   3-fold CV')
   tab_dt3 <- knitr::kable(dt3)
   print(tab_dt3)
-  cv_5fold <- model.cv(models[what.model,1], mod_data, dim(mod_data)[2], 5, 50)
+  cv_5fold <- model.cv(models$formula[what.model], mod_data, dim(mod_data)[2], 5, 50)
   dt5 <- data.frame(cv_5fold[[2]], cv_5fold[[1]])
   names(dt5) <- c('Q2', 'MAE')
   cat('
@@ -462,7 +513,7 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
   tab_dt5 <- knitr::kable(dt5)
   print(tab_dt5)
   if (predict == T) {
-    prediction <- predict(lm(models[what.model, 1], mod_data), pred.data)
+    prediction <- predict(lm(models$formula[what.model], mod_data), pred.data)
     real <- pred.data[, dim(mod_data)[2]]
     prd.tab <- data.frame(prediction, real)
     names(prd.tab) <- c('OOS Pred', 'OOS Measured')
@@ -470,7 +521,7 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
     print(k.prd.tab)
   }
   mod_data_unn <- data.frame(data.table::fread(dataset, header = T))
-  mod.sum.unnormalized <- summary(lm(models[what.model, 1], mod_data_unn))$coefficients
+  mod.sum.unnormalized <- summary(lm(models$formula[what.model], mod_data_unn))$coefficients
   cat('
   Unnormalized Data Model Coefficients')
   colnames(mod.sum.unnormalized)[4] <- 'p value'
@@ -479,8 +530,8 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
   
   ## model.plot
   info.table <- data.frame(matrix(ncol = 1, nrow = 4))
-  info.table[1,1] <- as.character(round(models[what.model, 2], 2))
-  info.table[2,1] <- as.character(round(models[what.model, 3], 2))
+  info.table[1,1] <- as.character(round(models$R.sq[what.model], 2))
+  info.table[2,1] <- as.character(round(models$Q.sq[what.model], 2))
   info.table[3,1] <- as.character(round(dt5[1, 1], 2))
   info.table[4,1] <- as.character(round(dt3[1, 1], 2))
   row.names(info.table) <-  c('R2', 'Q2_loo', 'Q2_5fold', 'Q2_3fold')
@@ -506,7 +557,7 @@ model.report.from.list <- function(dataset, model.list, out.col = 'output',
                                   text4),
                                 collapse = "\n")
   
-  model = models[what.model, 1]
+  model = models$formula[what.model]
   best.mod <- lm(model, data = mod_data)
   pred_interval <- predict(best.mod,
                            newdata = mod_data,
