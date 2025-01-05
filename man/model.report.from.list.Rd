@@ -10,7 +10,7 @@ model.report.from.list(
   out.col = "output",
   leave.out = "",
   predict = F,
-  what.model = NULL
+  what.model = 1
 )
 }
 \arguments{
