@@ -344,7 +344,7 @@ model.report.parallel.GUI <- function() {
           shiny::tags$li(shiny::strong("Output Column: "), metadata$output_column),
           shiny::tags$li(shiny::strong("Variables Range: "), paste(metadata$min_vars, "to", metadata$max_vars)),
           shiny::tags$li(shiny::strong("Cross-validation: "), paste(metadata$folds, "folds,", metadata$iterations, "iterations")),
-          shiny::tags$li(shiny::strong("R² Cutoff: "), metadata$cutoff),
+          shiny::tags$li(shiny::strong("R^2 Cutoff: "), metadata$cutoff),
           shiny::tags$li(shiny::strong("Correlation Threshold: "), metadata$correlation_threshold),
           shiny::tags$li(shiny::strong("Left-out Method: "), metadata$leave_out_method),
           shiny::tags$li(shiny::strong("Left-out Samples: "), paste(metadata$left_out_samples, collapse = ", "))
