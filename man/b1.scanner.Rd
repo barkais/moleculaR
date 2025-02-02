@@ -4,12 +4,14 @@
 \alias{b1.scanner}
 \title{scans for B1 vectors}
 \usage{
-b1.scanner(i, substi)
+b1.scanner(i, substi, plot.B1 = F)
 }
 \arguments{
 \item{i}{degree}
 
-\item{substi}{truncated xyz}
+\item{plot.B1}{should a plot of B1 and B5 box be presented}
+
+\item{plane}{a 2D projection of the substituent's xyz, perpendicular to L axis}
 }
 \value{
 list of B1 vectors

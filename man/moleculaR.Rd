@@ -2,6 +2,7 @@
 % Please edit documentation in R/moleculaR_main.R
 \name{moleculaR}
 \alias{moleculaR}
+\alias{moleculaR.input}
 \title{User function for the extraction of all possible features
 based on a ready input file}
 \usage{

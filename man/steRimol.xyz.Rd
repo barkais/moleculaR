@@ -4,7 +4,7 @@
 \alias{steRimol.xyz}
 \title{Verloop's sterimol values from xyz files}
 \usage{
-steRimol.xyz(mol, coordinates, CPK = T, only_sub = T, drop = NULL)
+steRimol.xyz(mol, coordinates, CPK = T, only_sub = T, drop = NULL, plot.B1 = T)
 }
 \arguments{
 \item{coordinates}{primary axis, a two atom character}
@@ -16,6 +16,8 @@ if FALSE will use Pyykko's covalent radii}
 from the primary axis onward}
 
 \item{drop}{numeric value of an atom, from which onward atoms will be dropped from calculation}
+
+\item{plot.B1}{should a plot of B1 and B5 box be presented}
 }
 \value{
 sterimol values for a single molecule
