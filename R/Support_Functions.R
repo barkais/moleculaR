@@ -190,11 +190,12 @@ coor.trans.file <- function(coor_atoms, molecule) {
 #' If used directly, be sure to input or else a non stable behavior is expected.
 #' @param threshold_distance The upper limit of distance counted as bonded.
 #'  Default includes H bonding at 2.02 Å.
+#' @param keep.HB should keep H bonds or not? (logical)
 #' @return A data frame of bonds
 #' @aliases extract.connectivity
 #' @export
 extract.connectivity <- function(xyz_file = list.files(pattern = '.xyz'),
-                                 threshold_distance = 2.12) {
+                                 threshold_distance = 2.12, keep.HB = T) {
   # Read in the XYZ file as a data frame
   xyz_data <- read.table(xyz_file, sep = "", header = FALSE, skip = 2)
   xyz_data <- tibble::rowid_to_column(xyz_data)
@@ -227,13 +228,18 @@ extract.connectivity <- function(xyz_file = list.files(pattern = '.xyz'),
         (1.5 <= df.distances$value[i] & df.distances$value[i] <= threshold_distance)) {
       if (df.distances[i, 4] == 'H') H.num <- c(df.distances$a1[i], i)
       if (df.distances[i, 5] == 'H') H.num <- c(df.distances$a2[i], i)
-      if (!is.null(H.num)) {
-        examine.df <- df.distances[df.distances$a1 == H.num[1] | df.distances$a2 == H.num[1], ]
-        examine.df <- examine.df[examine.df$value <= threshold_distance, ]
-        if (any(!examine.df$first %in% c('N', 'O', 'F', 'H') | !examine.df$second %in% c('N', 'O', 'F', 'H'))) {
-          remove <- append(remove, H.num[2])
-        }
+      if (!is.null(H.num) & keep.HB == T) {
+          examine.df <- df.distances[df.distances$a1 == H.num[1] | df.distances$a2 == H.num[1], ]
+          examine.df <- examine.df[examine.df$value <= threshold_distance, ]
+          if (any(!examine.df$first %in% c('N', 'O', 'F', 'H') | !examine.df$second %in% c('N', 'O', 'F', 'H'))) {
+            remove <- append(remove, H.num[2])
+          }
+        } 
       }
+    if ((df.distances[i, 4] == 'H' | df.distances[i, 5] == 'H') &
+        (1.5 <= df.distances$value[i] & df.distances$value[i] <= threshold_distance &
+         keep.HB == F)) {
+      remove <- append(remove, i)
     }
   }
   if (length(remove) > 0) df.distances <- df.distances[-remove, ]
