@@ -7,36 +7,36 @@
 #' @export
 model.report.GUI <- function() {
   # Define UI for the app
-  ui <- fluidPage(
-    titlePanel("Feature Selection and Model Report"),
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Feature Selection and Model Report"),
     
-    sidebarLayout(
-      sidebarPanel(
-        fileInput("data_file", "Upload Data File (CSV)", accept = ".csv"),
-        uiOutput("out_col_ui"),  # Dynamic output column selection
-        uiOutput("leave_out_ui"),  # Dynamic leave out samples dropdown
-        numericInput("min", "Minimum # of Variables", value = 2, min = 1),
-        numericInput("max", "Maximum # of Variables", value = NULL),  # Restored maximum variables input
-        uiOutput("folds_ui"),  # Dynamic number of folds dropdown
-        numericInput("iterations", "Number of CV Iterations", value = 1, min = 1),
-        numericInput("cutoff", "Cutoff Value for R^2", value = 0.85, step = 0.05),
-        actionButton("run_model", "Run Model Subset"),
-        actionButton("stop_model", "Stop Execution"),  # Added stop execution button
-        downloadButton("download_results", "Download Results as CSV")  # Added download button
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        shiny::fileInput("data_file", "Upload Data File (CSV)", accept = ".csv"),
+        shiny::uiOutput("out_col_ui"),  # Dynamic output column selection
+        shiny::uiOutput("leave_out_ui"),  # Dynamic leave out samples dropdown
+        shiny::numericInput("min", "Minimum # of Variables", value = 2, min = 1),
+        shiny::numericInput("max", "Maximum # of Variables", value = NULL),
+        shiny::uiOutput("folds_ui"),
+        shiny::numericInput("iterations", "Number of CV Iterations", value = 1, min = 1),
+        shiny::numericInput("cutoff", "Cutoff Value for R^2", value = 0.85, step = 0.05),
+        shiny::actionButton("run_model", "Run Model Subset"),
+        shiny::actionButton("stop_model", "Stop Execution"),
+        shiny::downloadButton("download_results", "Download Results as CSV")
       ),
       
-      mainPanel(
-        tabsetPanel(
+      shiny::mainPanel(
+        shiny::tabsetPanel(
           id = "tabs",
-          tabPanel("Model Subset Selection",
-                   tableOutput("results_table")),
-          tabPanel("Model Report",
-                   fileInput("report_model_list", "Upload Results File (CSV)", accept = ".csv"),
-                   uiOutput("model_number"),
-                   checkboxInput("predict", "Predict Left-Out Samples", value = FALSE),
-                   actionButton("generate_report", "Generate Report"),
-                   plotOutput("model_plot"),
-                   verbatimTextOutput("report_console"))
+          shiny::tabPanel("Model Subset Selection",
+                          shiny::tableOutput("results_table")),
+          shiny::tabPanel("Model Report",
+                          shiny::fileInput("report_model_list", "Upload Results File (CSV)", accept = ".csv"),
+                          shiny::uiOutput("model_number"),
+                          shiny::checkboxInput("predict", "Predict Left-Out Samples", value = FALSE),
+                          shiny::actionButton("generate_report", "Generate Report"),
+                          shiny::plotOutput("model_plot"),
+                          shiny::verbatimTextOutput("report_console"))
         )
       )
     )
@@ -45,17 +45,18 @@ model.report.GUI <- function() {
   # Define server logic
   server <- function(input, output, session) {
     # Reactive value to track if the process should be stopped
-    stop_execution <- reactiveVal(FALSE)
+    stop_execution <- shiny::reactiveVal(FALSE)
     
-    data_reactive <- reactive({
-      req(input$data_file)
-      mod_data <- data.frame(data.table::fread((input$data_file$datapath)),check.names = F)
+    data_reactive <- shiny::reactive({
+      shiny::req(input$data_file)
+      mod_data <- data.frame(data.table::fread(input$data_file$datapath), check.names = F)
       
       # Preprocessing steps
       RN <- mod_data[, 1]  # Save row names
       mod_data <- mod_data[, -1]  # Remove the first column
       mod_data <- mod_data[complete.cases(mod_data), ]  # Remove rows with NA values
       CN <- names(mod_data)  # Save column names
+      shiny::req(input$out_col)  # Ensure output column is selected
       out.col <- which(CN == input$out_col)
       # Scale the data except for the output column
       mod_data <- data.frame(cbind(scale(mod_data[,-out.col], T, T), mod_data[, out.col]))
@@ -64,110 +65,152 @@ model.report.GUI <- function() {
       row.names(mod_data) <- RN  # Restore row names
       
       # Update dynamic default values after loading data
-      updateNumericInput(session, "max", value = floor(nrow(mod_data) / 5))
+      shiny::updateNumericInput(session, "max", value = floor(nrow(mod_data) / 5))
       
       mod_data
     })
     
     # Dynamic output column selection
-    output$out_col_ui <- renderUI({
-      req(input$data_file)
-      selectInput("out_col", "Select Output Column", 
-                  choices = names(data.frame(data.table::fread((input$data_file$datapath)),check.names = F))[-1])
+    output$out_col_ui <- shiny::renderUI({
+      shiny::req(input$data_file)
+      shiny::selectInput("out_col", "Select Output Column", 
+                         choices = names(data.frame(data.table::fread(input$data_file$datapath), check.names = F))[-1])
     })
     
     # Dynamic leave out samples selection
-    output$leave_out_ui <- renderUI({
-      req(data_reactive())
-      selectInput("leave_out", "Leave Out Samples", 
-                  choices = data.frame(data.table::fread((input$data_file$datapath)), check.names = F)[ ,1], multiple = TRUE)
+    output$leave_out_ui <- shiny::renderUI({
+      shiny::req(data_reactive())
+      shiny::selectInput("leave_out", "Leave Out Samples", 
+                         choices = data.frame(data.table::fread(input$data_file$datapath), check.names = F)[, 1], 
+                         multiple = TRUE)
     })
     
     # Dynamic number of folds selection
-    output$folds_ui <- renderUI({
-      selectInput("folds", "Number of CV Folds", 
-                  choices = c("3-fold" = 3, "5-fold" = 5, "10-fold" = 10, "LOO" = nrow(data_reactive())))
+    output$folds_ui <- shiny::renderUI({
+      shiny::req(data_reactive())
+      shiny::selectInput("folds", "Number of CV Folds", 
+                         choices = c("3-fold" = 3, "5-fold" = 5, "10-fold" = 10, 
+                                     "LOO" = nrow(data_reactive())))
     })
     
-    observeEvent(input$run_model, {
+    shiny::observeEvent(input$run_model, {
       stop_execution(FALSE)  # Reset the stop flag when the model is run
     })
     
-    results_reactive <- eventReactive(input$run_model, {
-      req(data_reactive())
+    results_reactive <- shiny::eventReactive(input$run_model, {
+      shiny::req(data_reactive())
       
       model.subset(data = data_reactive(),
-                   out.col = which(names(data_reactive()) == input$out_col),  # Get the index of the selected column
+                   out.col = which(names(data_reactive()) == input$out_col),
                    min = input$min,
                    max = input$max,
-                   folds = as.numeric(input$folds),  # Convert folds selection to numeric
+                   folds = as.numeric(input$folds),
                    iterations = input$iterations,
                    cutoff = input$cutoff,
-                   leave.out = input$leave_out)  # Add leave.out argument
+                   leave.out = input$leave_out)
     })
     
-    observeEvent(input$stop_model, {
-      stop_execution(TRUE)  # Set the stop flag when the stop button is pressed
+    shiny::observeEvent(input$stop_model, {
+      stop_execution(TRUE)
     })
     
-    output$results_table <- renderTable({
-      req(results_reactive())
+    output$results_table <- shiny::renderTable({
+      shiny::req(results_reactive())
       if (stop_execution()) {
-        return(NULL)  # Stop execution if the stop flag is set
+        return(NULL)
       }
       results_reactive()
     })
     
-    # Download handler for saving results as a CSV file
-    output$download_results <- downloadHandler(
+    output$download_results <- shiny::downloadHandler(
       filename = function() {
         paste("model_subset_results", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
-        write.csv(results_reactive(), file, row.names = FALSE)
+        utils::write.csv(results_reactive(), file, row.names = FALSE)
       }
     )
     
-    # Model report section
-    
-    
-    model_list_reactive <- reactive({
-      req(input$report_model_list)
-      data.table::fread(input$report_model_list$datapath)
+    # Model report section - Fixed version
+    model_list_reactive <- shiny::reactive({
+      shiny::req(input$report_model_list)
+      model_list <- data.table::fread(input$report_model_list$datapath)
+      # Ensure the Model column exists and contains valid indices
+      if (!"Model" %in% names(model_list)) {
+        model_list$Model <- seq_len(nrow(model_list))
+      }
+      model_list
     })
     
-    output$model_number <- renderUI({
-      req(input$report_model_list)
-      selectInput("model.num", "Select what Model to Report", choices = row.names(model_list_reactive()), multiple = FALSE)
+    output$model_number <- shiny::renderUI({
+      shiny::req(model_list_reactive())
+      models <- model_list_reactive()$Model
+      shiny::selectInput("model.num", "Select Model Number", 
+                         choices = models,
+                         selected = models[1])
     })
     
-    observeEvent(input$generate_report, {
-      req(model_list_reactive())
+    # Create a reactive value to store the report results
+    report_results <- shiny::reactiveVal(NULL)
+    
+    shiny::observeEvent(input$generate_report, {
+      shiny::req(input$data_file, input$report_model_list, input$model.num)
       
-      # Validate inputs
-      req(input$data_file$datapath, input$report_model_list)
+      # Ensure the data is properly loaded
+      data <- data.frame(data.table::fread(input$data_file$datapath), check.names = F)
+      model_list <- data.table::fread(input$report_model_list$datapath)
       
-      # Call the model report function
-      result <- model.report.from.list(
-        dataset = input$data_file$datapath,
-        model.list = input$report_model_list$datapath,
-        out.col = input$out_col,
-        leave.out = input$leave_out,  # Use leave.out from the first section
-        predict = input$predict,
-        what.model = input$model.num
-      )
-      
-      # Update plot and console
-      output$model_plot <- renderPlot({
-        result
+      # Generate the report
+      tryCatch({
+        # Debug prints
+        print("Debug info:")
+        print(paste("Dataset path:", input$data_file$datapath))
+        print(paste("Model list path:", input$report_model_list$datapath))
+        print(paste("Output column:", input$out_col))
+        print(paste("Leave out:", paste(input$leave_out, collapse=", ")))
+        print(paste("Model number:", input$model.num))
+        
+        result <- model.report.from.list(
+          dataset = input$data_file$datapath,  # Pass the file path instead of data frame
+          model.list = input$report_model_list$datapath,  # Pass the file path instead of data frame
+          out.col = input$out_col,
+          leave.out = input$leave_out,
+          predict = input$predict,
+          what.model = as.numeric(input$model.num)
+        )
+        
+        report_results(result)
+        
+      }, error = function(e) {
+        # Handle any errors that occur during report generation
+        shiny::showNotification(
+          paste("Error generating report:", e$message),
+          type = "error"
+        )
       })
-      
-      output$report_console <- renderPrint({
-        capture.output(result)
-      })
+    })
+    
+    # Render the plot
+    output$model_plot <- shiny::renderPlot({
+      shiny::req(report_results())
+      if (inherits(report_results(), "ggplot")) {
+        report_results()
+      } else if (is.list(report_results()) && "plot" %in% names(report_results())) {
+        report_results()$plot
+      }
+    })
+    
+    # Render the console output
+    output$report_console <- shiny::renderPrint({
+      shiny::req(report_results())
+      if (is.list(report_results()) && "summary" %in% names(report_results())) {
+        report_results()$summary
+      } else {
+        utils::capture.output(report_results())
+      }
     })
   }
   
   # Run the application 
-  shinyApp(ui = ui, server = server)
+  shiny::shinyApp(ui = ui, server = server)
 }
