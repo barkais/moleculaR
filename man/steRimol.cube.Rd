@@ -12,7 +12,8 @@ steRimol.cube(
   drop = NULL,
   plot = T,
   degrees = 90,
-  isovalue = 0.036
+  isovalue = 0.036,
+  plot.B1 = T
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ density surface and sterimol arrows.}
 \item{degrees}{define the rotational scan, defaults to 90 (same as 360)}
 
 \item{isovalue}{what minimal density isovalue should be considered, defaults to 0.036}
+
+\item{plot.B1}{should a plot of the projected substituent plane (perpendicular to L) and the B1 feature be presented}
 }
 \value{
 sterimol values for a single molecule

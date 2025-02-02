@@ -6,7 +6,8 @@
 \usage{
 extract.connectivity(
   xyz_file = list.files(pattern = ".xyz"),
-  threshold_distance = 2.12
+  threshold_distance = 2.12,
+  keep.HB = T
 )
 }
 \arguments{
@@ -15,6 +16,8 @@ If used directly, be sure to input or else a non stable behavior is expected.}
 
 \item{threshold_distance}{The upper limit of distance counted as bonded.
 Default includes H bonding at 2.02 Å.}
+
+\item{keep.HB}{should keep H bonds or not? (logical)}
 }
 \value{
 A data frame of bonds
