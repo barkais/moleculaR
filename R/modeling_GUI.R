@@ -3,8 +3,17 @@
 
 #' Screen for models, cross validate them and plot. Designed for interactive work.
 #' @return csv file with model list, and a plot
-#' @importFrom utils capture.output
 #' @export
+#' 
+#' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel mainPanel
+#' @importFrom shiny tabsetPanel tabPanel fileInput uiOutput selectInput
+#' @importFrom shiny numericInput actionButton downloadButton checkboxInput
+#' @importFrom shiny plotOutput verbatimTextOutput tableOutput
+#' @importFrom shiny renderUI renderTable renderPlot renderPrint
+#' @importFrom shiny reactive reactiveVal req observeEvent eventReactive
+#' @importFrom shiny updateNumericInput showNotification shinyApp
+#' @importFrom data.table fread
+#' @importFrom utils write.csv capture.output
 model.report.GUI <- function() {
   # Define UI for the app
   ui <- shiny::fluidPage(

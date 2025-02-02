@@ -14,8 +14,12 @@
 #' @return csv file with all features and a input file for future
 #'  use and documentation
 #' @export
-#' @import shinythemes
-#' @import shiny
+#' @importFrom shiny fluidPage titlePanel column div tags h3 checkboxInput conditionalPanel
+#' @importFrom shiny textInput selectInput fileInput actionButton downloadButton
+#' @importFrom shiny renderText renderUI downloadHandler req 
+#' @importFrom shiny observeEvent renderPrint
+#' @importFrom rgl rglwidgetOutput renderRglwidget rglwidget
+#' @importFrom shinythemes shinytheme
 moleculaR.Input.Maker <- function() {
   # UI
   ui <- fluidPage(

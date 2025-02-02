@@ -32,6 +32,16 @@
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom DT renderDataTable datatable
 #' @importFrom tools file_path_sans_ext
+#' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel mainPanel
+#' @importFrom shiny tabsetPanel tabPanel fileInput uiOutput selectInput radioButtons
+#' @importFrom shiny numericInput checkboxInput actionButton downloadButton
+#' @importFrom shiny conditionalPanel verbatimTextOutput plotOutput textOutput
+#' @importFrom shiny renderUI renderPrint renderText renderPlot div tags strong h4
+#' @importFrom shiny reactive reactiveVal req observeEvent eventReactive
+#' @importFrom shiny updateNumericInput showNotification shinyApp
+#' @importFrom data.table fread rbindlist
+#' @importFrom DT renderDataTable datatable dataTableOutput
+#' @importFrom utils write.csv
 model.report.parallel.GUI <- function() {
   # Define UI
   ui <- shiny::fluidPage(
