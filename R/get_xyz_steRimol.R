@@ -396,6 +396,12 @@ steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL, plot.B1 = 
 #' @param plot.B1 should a plot of B1 and B5 box be presented
 #' @keywords internal
 #' @return sterimol values for a single molecule
+#'
+#' @import ggplot2
+#' @importFrom stringr str_replace str_split
+#' @importFrom data.table fread
+#' @importFrom tibble rownames_to_column
+#' @importFrom plyr mutate
 steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL, plot.B1 = T) {
   name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
