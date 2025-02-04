@@ -11,17 +11,23 @@
 #' @param plane a 2D projection of the substituent's xyz, perpendicular to L axis
 #' @param plot.B1 should a plot of B1 and B5 box be presented
 #' @keywords internal
+#' @import ggplot2
 #' @importFrom data.table data.table :=
 #' @return list of B1 vectors
 b1.scanner <- function(i, substi, plot.B1 = F) {
   plane <- substi[, c(3, 5, 6)]
   generate_circle <- function(center_x, center_y, radius, n_points = 20) {
     theta <- seq(0, 2 * pi, length.out = n_points)
+    cos_theta <- cos(theta)
+    sin_theta <- sin(theta)
+    
     data.table::data.table(
-      x = center_x + radius * cos(theta),
-      y = center_y + radius * sin(theta)
+      x = c(outer(radius, cos_theta, "*") + center_x),
+      y = c(outer(radius, sin_theta, "*") + center_y),
+      id = rep(seq_along(center_x), each = n_points)
     )
   }
+  
   
   # Generate circles for each point
   circle_points <- plane[, generate_circle(V2, V4, Radius), by = .(id = .I)]
@@ -32,11 +38,9 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
   rot.mat[1, ] <- c(co.deg, -1 * si.deg)
   rot.mat[2, ] <- c(si.deg, co.deg)
   
-  tc <- matrix(nrow = dim(plane)[[1]], ncol = 2)
-  for (row in 1:dim(plane)[[1]]) {
-    tc[row, ] <- aperm(rot.mat %*% as.numeric(plane[row, ]))
-  }
+  tc <- as.matrix(plane) %*% rot.mat
   tc <- round(tc, 3)
+  
   
   # Calculate distances to lines
   max_x <- max(tc[, 1])
@@ -60,22 +64,15 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
   
   
   # B5 for angle between them and for visualization
-  mag <- function(vector) {
-    sqrt(sum((vector)^2))
-  }
+  b5.index <- which.max(rowSums(tc^2))
+  b5.point <- tc[b5.index, ]
+  b5.value <- sqrt(sum(b5.point^2))  # Faster than `mag(b5.point)`
   
-  b5.point <- tc[which.max(apply(tc, 1, mag)), ]
-  b5.value <- mag(b5.point)
   
   
   # Calculate angle between B1 and B5 arrows
-  # Using atan2 for correct quadrant handling
-  angle_b1 <- atan2(b1_coords[2], b1_coords[1])
-  angle_b5 <- atan2(b5.point[2], b5.point[1])    
-  
-  # Ensure angles are positive
-  angle_b1 <- if(angle_b1 < 0) angle_b1 + 2*pi else angle_b1
-  angle_b5 <- if(angle_b5 < 0) angle_b5 + 2*pi else angle_b5
+  angle_b1 <- atan2(b1_coords[2], b1_coords[1]) %% (2 * pi)
+  angle_b5 <- atan2(b5.point[2], b5.point[1]) %% (2 * pi)
   
   # Calculate the smaller angle between the vectors
   angle_diff <- abs(angle_b5 - angle_b1)
@@ -87,8 +84,8 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
   
   B1 <- min_val
   B1_B5_angle <- angle_diff * 180/pi
-
-
+  
+  
   
   # Plot the plane if requested
   if (plot.B1 == T) {
@@ -106,7 +103,7 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
       # Rotate circle points
       rotated <- matrix(nrow = nrow(circle), ncol = 2)
       for (row in 1:nrow(circle)) {
-        rotated[row, ] <- aperm(rot.mat %*% as.numeric(circle[row, ]))
+        rotated[row, ] <- as.numeric(rot.mat %*% unlist(circle[row, .(x, y)]))
       }
       
       data.table::data.table(
@@ -138,29 +135,29 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
       ggplot2::annotate("segment", x = 0, y = 0, xend = max_x, yend = 0, 
                         arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.2, "inches")), 
                         color = arrow_colors[1],
-                        size = 1.2) +
+                        linewidth = 1.2) +
       # Second arrow (min_x)
       ggplot2::annotate("segment", x = 0, y = 0, xend = min_x, yend = 0, 
                         arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.2, "inches")), 
                         color = arrow_colors[2],
-                        size = 1.2) +
+                        linewidth = 1.2) +
       # Third arrow (max_y)
       ggplot2::annotate("segment", x = 0, y = 0, xend = 0, yend = max_y, 
                         arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.2, "inches")), 
                         color = arrow_colors[3],
-                        size = 1.2) +
+                        linewidth = 1.2) +
       # Fourth arrow (min_y)
       ggplot2::annotate("segment", x = 0, y = 0, xend = 0, yend = min_y, 
                         arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.2, "inches")), 
                         color = arrow_colors[4],
-                        size = 1.2) +
+                        linewidth = 1.2) +
       # B5 arrow
       ggplot2::annotate("segment", x = 0, y = 0, 
                         xend = b5.point[1], 
                         yend = b5.point[2], 
                         arrow = ggplot2::arrow(type = "closed", length = ggplot2::unit(0.2, "inches")), 
                         color = "#CD3333",
-                        size = 1.2)
+                        linewidth = 1.2)
     
     # Add text annotations conditionally
     # Single annotation for the minimum value arrow (B1)
@@ -232,7 +229,7 @@ b1.scanner <- function(i, substi, plot.B1 = F) {
                                           max(angle_b1, angle_b5), 
                                           length.out = 100)),
                         color = "gray40",
-                        size = 0.8) +
+                        linewidth = 0.8) +
       # Angle label
       ggplot2::geom_label(
         data = data.frame(
@@ -383,25 +380,26 @@ steRimol <- function(coordinates, CPK = T, only_sub = T, drop = NULL, plot.B1 = 
   steRimol.xyz(mol, coordinates, CPK, only_sub, drop, plot.B1)
 }
 
-#' Verloop's sterimol values from xyz files
+#' Verloop's Sterimol Values from XYZ Files
 #'
-#' Calculate a single molecule's sterimol values
+#' Calculates Sterimol parameters (B1, B5, L) for a given molecule based on atomic coordinates.
 #'
-#' @param coordinates primary axis, a two atom character
-#' @param CPK logical, if TRUE will use CPK radii based on Verloop's atom type,
-#' if FALSE will use Pyykko's covalent radii
-#' @param only_sub if TRUE (default) will account only for atoms directly bonded
-#' from the primary axis onward
-#' @param drop numeric value of an atom, from which onward atoms will be dropped from calculation
-#' @param plot.B1 should a plot of B1 and B5 box be presented
-#' @keywords internal
-#' @return sterimol values for a single molecule
+#' @param mol A data frame representing the molecular structure from an XYZ file.
+#' @param coordinates A character string specifying the primary axis, defined by two atom indices separated by a space.
+#' @param CPK Logical; if TRUE (default), uses CPK radii based on Verloop's atom types; if FALSE, uses Pyykkö's covalent radii.
+#' @param only_sub Logical; if TRUE (default), only considers atoms directly bonded from the primary axis onward.
+#' @param drop Numeric vector; specifies atom indices to exclude from calculations.
+#' @param plot.B1 Logical; if TRUE, generates a plot of the B1 and B5 box.
+#'
+#' @return A data frame containing Sterimol values (B1, B5, L) and related parameters for the given molecule.
 #'
 #' @import ggplot2
 #' @importFrom stringr str_replace str_split
 #' @importFrom data.table fread
 #' @importFrom tibble rownames_to_column
 #' @importFrom plyr mutate
+#'
+#' @keywords internal
 steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL, plot.B1 = T) {
   name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
@@ -463,6 +461,12 @@ steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL, p
   substi <- plyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))
   substi <- plyr::mutate(substi, Bs = substi$magnitude + substi$Radius)
   substi <- plyr::mutate(substi, L = substi$V3 + substi$Radius)
+  
+  # Rough scan for B1 and its location along L
+  scans <- 90 / 5
+  rough.deg.list <- seq(scans, 90, scans)
+  rough.scan.results <- do.call(rbind, mclapply(rough.deg.list,
+                                                function(row) b1.scanner(row, substi), mc.cores = detectCores() - 1))
   
   # Rough scan for B1 and its location along L
   scans <- 90 / 5
