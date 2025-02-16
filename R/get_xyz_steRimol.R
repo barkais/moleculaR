@@ -465,8 +465,7 @@ steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL, p
   # Rough scan for B1 and its location along L
   scans <- 90 / 5
   rough.deg.list <- seq(scans, 90, scans)
-  rough.scan.results <- do.call(rbind, mclapply(rough.deg.list,
-                                                function(row) b1.scanner(row, substi), mc.cores = detectCores() - 1))
+  rough.scan.results <- do.call(rbind, lapply(rough.deg.list, function(row) b1.scanner(row, substi)))
   
   # Rough scan for B1 and its location along L
   scans <- 90 / 5
