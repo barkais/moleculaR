@@ -9,11 +9,11 @@ model.subset.parallel(
   out.col = dim(data)[2],
   min = 2,
   max = floor(dim(data)[1]/5),
-  results_name = "results_df.csv",
+  results_name = "results_df",
   folds = nrow(data),
   iterations = 1,
   cutoff = 0.85,
-  cor.threshold = 0.7
+  cor.threshold = 1
 )
 }
 \arguments{
