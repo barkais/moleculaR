@@ -45,7 +45,53 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
                                   min = 2, max = floor(dim(data)[1] / 5),
                                   results_name = 'results_df',
                                   folds = nrow(data), iterations = 1,
-                                  cutoff = 0.85, cor.threshold = 1) {
+                                  cutoff = 0.85, cor.threshold = 0.7) {
+  
+  # Helper function to process results files in batches
+  process_results_batch <- function(file_list, batch_size=50) {
+    best_models <- data.frame()
+    
+    for(i in seq(1, length(file_list), by=batch_size)) {
+      end_idx <- min(i + batch_size - 1, length(file_list))
+      current_files <- file_list[i:end_idx]
+      
+      # Read and process batch
+      batch_results <- lapply(current_files, function(f) {
+        res <- try({
+          data <- data.table::fread(f)
+          file.remove(f)  # Clean up immediately
+          return(data)
+        }, silent = TRUE)
+        
+        if(inherits(res, "try-error")) {
+          warning(paste("Error reading file:", f))
+          return(NULL)
+        }
+        return(res)
+      })
+      
+      # Remove any NULL results from failed reads
+      batch_results <- Filter(Negate(is.null), batch_results)
+      
+      if(length(batch_results) > 0) {
+        # Combine and filter
+        batch_df <- do.call(rbind, batch_results)
+        batch_df <- dplyr::arrange(batch_df, desc(V2))  # V2 is R.sq
+        if(nrow(batch_df) > 50) batch_df <- batch_df[1:50,]
+        
+        # Update best models
+        best_models <- rbind(best_models, batch_df)
+        best_models <- dplyr::arrange(best_models, desc(V2))
+        if(nrow(best_models) > 50) best_models <- best_models[1:50,]
+      }
+      
+      # Clear memory
+      rm(batch_results, batch_df)
+      gc()
+    }
+    
+    return(best_models)
+  }
   
   # Get the output variable and feature names
   output <- stringr::str_c("`", names(data[out.col]), "`")
@@ -54,143 +100,101 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
     vars[i] <- stringr::str_c("`", vars[i], "`")
   }
   
-  # Compute the correlation matrix and apply the correlation threshold
+  # Compute the correlation matrix
   cor_matrix <- cor(data[, -out.col])
   
-  # Identify pairs of features with a correlation greater than the threshold
-  high_cor_pairs <- which(abs(cor_matrix) > cor.threshold, arr.ind = TRUE)
+  # Process each feature size in range
+  for (i in min:max) {
+    # Calculate combinations in chunks to save memory
+    chunk_size <- min(1000000, choose(length(vars), i))  # Adjust chunk_size based on available memory
+    n_vars <- length(vars)
+    total_combs <- choose(n_vars, i)
+    
+    for(chunk_start in seq(1, total_combs, by=chunk_size)) {
+      chunk_end <- min(chunk_start + chunk_size - 1, total_combs)
+      
+      # Generate only this chunk of combinations
+      current_chunk <- combn(vars, i, simplify=FALSE)[chunk_start:chunk_end]
+      
+      # Process combinations in this chunk
+      chunk_df <- data.frame(
+        formula = sapply(current_chunk, function(x) paste(x, collapse=" + ")),
+        stringsAsFactors = FALSE
+      )
+      
+      # Apply correlation filtering
+      filtered_chunk <- sapply(chunk_df$formula, function(formula) {
+        features <- strsplit(formula, " + ")[[1]]
+        feature_indices <- which(colnames(cor_matrix) %in% gsub("`", "", features))
+        if(length(feature_indices) > 1) {
+          feature_cor <- cor_matrix[feature_indices, feature_indices]
+          !any(abs(feature_cor[upper.tri(feature_cor)]) > cor.threshold)
+        } else {
+          TRUE
+        }
+      })
+      
+      chunk_df <- chunk_df[filtered_chunk,]
+      
+      if(nrow(chunk_df) > 0) {
+        # Add output variable to formulas
+        chunk_df$formula <- paste(output, "~", chunk_df$formula)
+        
+        # Calculate R-squared in parallel
+        r_squared_results <- parallel::mclapply(
+          chunk_df$formula,
+          function(x) try(summary(lm(x, data = data))$r.squared, silent=TRUE),
+          mc.cores = parallel::detectCores() - 1
+        )
+        
+        # Filter out any errors
+        valid_results <- !sapply(r_squared_results, inherits, "try-error")
+        chunk_df <- chunk_df[valid_results,]
+        r_squared_results <- unlist(r_squared_results[valid_results])
+        
+        if(length(r_squared_results) > 0) {
+          chunk_df$R.sq <- r_squared_results
+          
+          # Keep only the best models from this chunk
+          chunk_df <- chunk_df[chunk_df$R.sq > cutoff,]
+          chunk_df <- dplyr::arrange(chunk_df, desc(R.sq))
+          if(nrow(chunk_df) > 10) chunk_df <- chunk_df[1:10,]
+          
+          # Write results if we have any
+          if(nrow(chunk_df) > 0) {
+            write.table(chunk_df,
+                        file = paste0(results_name, format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
+                        append = TRUE, col.names = FALSE)
+          }
+        }
+      }
+      
+      # Clear memory
+      rm(current_chunk, chunk_df)
+      gc()
+    }
+  }
   
-  # Remove duplicate pairs and self-correlations
-  high_cor_pairs <- high_cor_pairs[high_cor_pairs[, 1] < high_cor_pairs[, 2], ]
+  # Process all result files
+  file_list <- list.files(pattern = paste0(results_name, "\\d{8}_\\d{6}\\.csv$"))
   
-  comb.list <- list()
-  ols.list <- list()
+  if(length(file_list) == 0) {
+    stop("No models met the criteria")
+  }
+  
+  # Process results in batches
+  forms.cut <- process_results_batch(file_list)
+  names(forms.cut) <- c('formula', 'R.sq')
+  
+  # Select top 50 models for cross-validation
+  if(nrow(forms.cut) > 50) forms.cut <- forms.cut[1:50,]
+  
+  # Perform cross-validation on the top models
   q2.list <- list()
   mae.list <- list()
   
-  # Generate all combinations of features within the specified range
-  for (i in min:max) {
-    comb.list[[i]] <- data.frame(aperm(combn(vars, i)), stringsAsFactors = FALSE)
-    comb.list[[i]][, dim(comb.list[[i]])[2] + 1] <- do.call(
-      paste,
-      c(comb.list[[i]][names(comb.list[[i]])],
-        sep = " + "
-      )
-    )
-    names(comb.list[[i]])[dim(comb.list[[i]])[2]] <- "formula"
-    
-    # Remove features that violate the correlation threshold
-    for (row in 1:nrow(comb.list[[i]])) {
-      comb_features <- comb.list[[i]][row, 1:i]
-      feature_indices <- which(colnames(cor_matrix) %in% comb_features)
-      feature_cor <- cor_matrix[feature_indices, feature_indices]
-      if (any(abs(feature_cor[upper.tri(feature_cor)]) > cor.threshold)) {
-        comb.list[[i]][row, ] <- NA
-      }
-    }
-    
-    comb.list[[i]] <- na.omit(comb.list[[i]])
-    
-    # Clean up unused columns
-    for (co in names(comb.list[[i]])[1:length(names(comb.list[[i]])) - 1]) {
-      comb.list[[i]][co] <- NULL
-    }
-  }
-  
-  # Combine all combinations into a single data frame
-  comb.list <- plyr::compact(comb.list)
-  forms <- do.call(rbind, comb.list)
-  rm(list = 'comb.list')
-  
-  # Generate formulas for the models
-  forms$formula <- stringr::str_c(output, " ~ ", forms$formula)
-  
-  # If the max number of features is small, compute R-squared directly in parallel
-  if (max <= 3) {
-    ols.list <- parallel::mclapply(forms$formula, function(x) summary(lm(x, data = data))$r.squared)
-    forms[, 2] <- do.call(rbind, ols.list)
-    names(forms)[2] <- "R.sq"
-    forms.cut <- dplyr::arrange(forms, desc(forms$R.sq))
-  } else {
-    # Split the formulas into smaller chunks for parallel processing
-    split_list <- function(input_list, max_size) {
-      num_sublists <- ceiling(length(input_list) / max_size)
-      sublists <- vector("list", length = num_sublists)
-      for (i in seq_len(num_sublists)) {
-        start <- (i - 1) * max_size + 1
-        end <- min(i * max_size, length(input_list))
-        sublists[[i]] <- input_list[start:end]
-      }
-      return(sublists)
-    }
-    
-    sublists <- split_list(forms$formula, 10000)
-    rm(list = 'forms')
-    
-    # Apply parallel processing to each sublist
-    for (i in seq_along(sublists)) {
-      x.list <- parallel::mclapply(sublists[[i]], function(x) data.frame(x, summary(lm(x, data = data))$r.squared))
-      x.list <- do.call(rbind, x.list)
-      names(x.list) <- c('formula', 'R.sq')
-      x.list.cut <- x.list[x.list$R.sq > cutoff, ]
-      x.list.cut <- dplyr::arrange(x.list.cut, desc(x.list.cut$R.sq))
-      while (nrow(x.list.cut) == 0) {
-        cutoff <- cutoff - 0.1
-        x.list.cut <- x.list[x.list$R.sq > cutoff, ]
-        x.list.cut <- dplyr::arrange(x.list.cut, desc(x.list.cut$R.sq))
-      }
-      if (nrow(x.list.cut) > 10) {
-        x.list.cut <- x.list.cut[1:10, ]
-      } 
-      write.table(x.list.cut, file = paste0(results_name, format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"),
-                  append = TRUE, col.names = FALSE) 
-    }
-    
-    num_of_sublists <- seq_along(sublists)
-    rm(list = 'sublists')
-    
-    # Combine results from all sublists
-    # List all files matching the pattern
-    file_list <- list.files(pattern = results_name)
-    
-    # Process files in smaller batches
-    batch_size <- 100  # Adjust based on your system's memory
-    forms.cut <- data.frame()
-    
-    for (i in seq(1, length(file_list), by = batch_size)) {
-      end_idx <- min(i + batch_size - 1, length(file_list))
-      current_batch <- file_list[i:end_idx]
-      
-      # Process current batch
-      batch_results <- lapply(current_batch, function(file) {
-        data <- data.table::fread(file)
-        return(data[, 2:3])
-      })
-      
-      # Combine batch results
-      batch_df <- do.call(rbind, batch_results)
-      batch_df <- as.data.frame(batch_df)
-      names(batch_df) <- c('formula', 'R.sq')
-      
-      # Keep only top results from this batch
-      batch_df <- dplyr::arrange(batch_df, desc(batch_df$R.sq))
-      if (nrow(batch_df) > 50) batch_df <- batch_df[1:50, ]
-      
-      # Combine with previous results
-      forms.cut <- rbind(forms.cut, batch_df)
-      forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$R.sq))
-      
-      # Clean up processed files
-      sapply(current_batch, file.remove)
-    }
-  }
-  
-  # Select the top 50 models
-  if (nrow(forms.cut) >= 50) forms.cut <- forms.cut[1:50, ]
-  
-  # Perform cross-validation on the top models
-  for (i in 1:dim(forms.cut)[1]) {
-    stts <- model.cv.parallel(formula = forms.cut[i, 1],
+  for(i in 1:nrow(forms.cut)) {
+    stts <- model.cv.parallel(formula = forms.cut$formula[i],
                               data = data,
                               out.col = out.col,
                               folds = folds,
@@ -200,15 +204,15 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   }
   
   # Add Q-squared and MAE to the final results
-  forms.cut[, 3] <- data.table::transpose(do.call(rbind, q2.list))
-  forms.cut[, 4] <- data.table::transpose(do.call(rbind, mae.list))
-  names(forms.cut)[3:4] <- c("Q.sq", "MAE")
+  forms.cut$Q.sq <- unlist(q2.list)
+  forms.cut$MAE <- unlist(mae.list)
   
-  # Sort by Q-squared and add a model number column
-  forms.cut <- dplyr::arrange(forms.cut, desc(forms.cut$Q.sq))
-  forms.cut <- dplyr::mutate(forms.cut, Model = seq(1, nrow(forms.cut)))
+  # Sort by Q-squared and add model numbers
+  forms.cut <- dplyr::arrange(forms.cut, desc(Q.sq))
+  forms.cut$Model <- seq_len(nrow(forms.cut))
   
-  return(forms.cut[1:15, ])
+  # Return top 15 models
+  return(forms.cut[1:15,])
 }
 
 ####### ----------------------------------------------------#####
@@ -230,12 +234,29 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
 #' @aliases models.list.parallel
 #' @export
 models.list.parallel <- function(dataset,
-                                  min = 2,
-                                  max = floor(dim(mod_data)[1] / 5),
-                                  results_name = 'results_df',
-                                  leave.out = '',
-                                  folds = nrow(mod_data), 
-                                  iterations = 1) {
+                                 min = 2,
+                                 max = floor(dim(mod_data)[1] / 5),
+                                 results_name = 'results_df',
+                                 leave.out = '',
+                                 folds = nrow(mod_data), 
+                                 iterations = 1) {
+  
+  # Create directory name based on parameters and timestamp
+  dir_name <- paste0(
+    tools::file_path_sans_ext(basename(dataset)),
+    '_min', as.character(min),
+    '_max', as.character(max),
+    '_', format(Sys.time(), "%Y%m%d_%H%M%S")
+  )
+  
+  # Create directory if it doesn't exist
+  if (!dir.exists(dir_name)) {
+    dir.create(dir_name)
+  }
+  
+  # Modify results_name to include directory path
+  results_name <- file.path(dir_name, results_name)
+  
   default::default(data.frame) <- list(check.names = FALSE)
   cat(tools::file_path_sans_ext(basename(dataset)))
   mod_data <- data.frame(data.table::fread(dataset, header = T),
@@ -249,21 +270,36 @@ models.list.parallel <- function(dataset,
   row.names(mod_data) <- RN
   pred.data <- mod_data[row.names(mod_data) %in% leave.out, ]
   mod_data <- mod_data[!(row.names(mod_data) %in% leave.out), ]
+  
   models <- model.subset.parallel(mod_data,
                                   min = min,
                                   max = max,
                                   results_name = results_name,
                                   folds = folds, 
                                   iterations = iterations)
+  
   tab <- knitr::kable(models)
   print(tab)
-  write.csv(models, paste0(tools::file_path_sans_ext(basename(dataset)),
-                           '_',
-                           as.character(min),
-                           '_',
-                           as.character(max),
-                        '_models.list.csv'))
-  unlink(list.files(pattern = results_name))
+  
+  # Save models list in the same directory
+  output_file <- file.path(
+    dir_name,
+    paste0(
+      tools::file_path_sans_ext(basename(dataset)),
+      '_',
+      as.character(min),
+      '_',
+      as.character(max),
+      '_models.list.csv'
+    )
+  )
+  
+  write.csv(models, output_file)
+  
+  # Instead of deleting, just return the directory name
+  cat("\nResults saved in directory:", dir_name, "\n")
+  
+  return(models)
 }
 
 #'  Generate models and a plot. A parallel computation version.
