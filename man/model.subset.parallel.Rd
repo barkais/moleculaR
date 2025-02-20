@@ -13,7 +13,7 @@ model.subset.parallel(
   folds = nrow(data),
   iterations = 1,
   cutoff = 0.85,
-  cor.threshold = 1
+  cor.threshold = 0.7
 )
 }
 \arguments{
