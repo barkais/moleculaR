@@ -2,8 +2,7 @@
 % Please edit documentation in R/get_linear_models.R
 \name{model.subset}
 \alias{model.subset}
-\title{Brute force model search with a min and max number of
-features.}
+\title{Create Subsets of Features Based on Correlation Threshold and R-squared}
 \usage{
 model.subset(
   data,
@@ -13,29 +12,34 @@ model.subset(
   max = floor(dim(data)[1]/5),
   folds = nrow(data),
   iterations = 1,
-  cutoff = 0.85
+  cutoff = 0.85,
+  cor.threshold = 1
 )
 }
 \arguments{
-\item{data}{data frame with output column}
+\item{data}{A data frame containing the dataset.}
 
-\item{leave.out}{vector of row names to leave out of data}
+\item{leave.out}{A vector of row names to exclude from the data (default is an empty string).}
 
-\item{out.col}{number of output column}
+\item{out.col}{The index of the output column in the data (default is the last column).}
 
-\item{min}{minimum # of features (default = 2)}
+\item{min}{Minimum number of variables in a subset (default is 2).}
 
-\item{max}{max # of features (defaults = # of observations / 5)}
+\item{max}{Maximum number of variables in a subset (default is floor(n/5)).}
 
-\item{folds}{defaults to nrow(data)}
+\item{folds}{Number of folds for cross-validation (default is number of rows in data).}
 
-\item{iterations}{defaults to 1 (LOOCV)}
+\item{iterations}{Number of iterations for cross-validation (default is 1).}
 
-\item{cutoff}{search for Q2 above 0.85 (if there isn't will look for lower)}
+\item{cutoff}{R-squared cutoff for model selection (default is 0.85).}
+
+\item{cor.threshold}{Pearson correlation threshold to filter highly correlated variables (default is 0.7).}
 }
 \value{
-table with 10 best models (at max)
+A data frame containing the top 10 models based on R-squared, Q-squared, and MAE.
 }
 \description{
-Ranks models based on K-fold CV Q2
+This function generates all possible subsets of features in a user-defined range (min to max), while ensuring
+no two variables in a subset have a Pearson correlation coefficient of `cor.threshold` or higher. 
+It returns the top models based on R-squared and further evaluates them using cross-validation to calculate Q-squared and MAE.
 }

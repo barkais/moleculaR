@@ -2,20 +2,50 @@
 % Please edit documentation in R/Support_Functions.R
 \name{name_changer}
 \alias{name_changer}
-\title{Change names of files in a directory, based on a matched pattern.}
+\title{Change File Names in a Directory}
 \usage{
-name_changer(dir, from, to)
+name_changer(
+  dir,
+  current_names,
+  new_names,
+  pattern_mode = FALSE,
+  add_extension = TRUE
+)
 }
 \arguments{
-\item{dir}{directory containing files}
+\item{dir}{Character string specifying the directory containing files to rename}
 
-\item{from}{pattern to change}
+\item{current_names}{Character vector of current filenames or a pattern to replace}
 
-\item{to}{change pattern to}
+\item{new_names}{Character vector of replacement filenames or a replacement pattern}
+
+\item{pattern_mode}{Logical, if TRUE treats the inputs as patterns to replace rather than exact filenames}
+
+\item{add_extension}{Logical, whether to automatically append original file extension (only used when pattern_mode=FALSE)}
 }
 \value{
-changes names
+Character vector of the new filenames
 }
 \description{
-Convenient wrapper for stringr::str_replace
+Renames files in a directory either by direct file mapping or by pattern replacement.
+}
+\details{
+The function works in two modes:
+1. Direct renaming (pattern_mode=FALSE): Maps specific files to new names
+2. Pattern replacement (pattern_mode=TRUE): Replaces occurrences of a pattern in filenames
+}
+\examples{
+\dontrun{
+# Direct renaming example
+name_changer("path/to/dir", 
+             c("file1.txt", "file2.txt"), 
+             c("newname1", "newname2"))
+             
+# Pattern replacement example
+name_changer("path/to/dir", 
+             "CE_No_Water", 
+             "conformer_3", 
+             pattern_mode = TRUE)
+}
+
 }

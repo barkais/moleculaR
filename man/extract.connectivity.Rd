@@ -6,7 +6,7 @@
 \usage{
 extract.connectivity(
   xyz_file = list.files(pattern = ".xyz"),
-  threshold_distance = 2.12,
+  threshold_distance = 2.2,
   keep.HB = T
 )
 }
