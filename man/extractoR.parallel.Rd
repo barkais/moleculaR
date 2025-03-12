@@ -2,20 +2,24 @@
 % Please edit documentation in R/extractoR.R
 \name{extractoR.parallel}
 \alias{extractoR.parallel}
-\alias{extRactoR.parallel}
-\title{Extract and compress all needed information from Gaussian log files}
+\alias{extRactoR.auto}
+\title{Extract and compress all needed information from Gaussian log files (parallel version)}
 \usage{
-extractoR.parallel()
+extractoR.parallel(
+  num_cores = max(1, parallel::detectCores() - 1),
+  output_dir = "Feather_Files"
+)
+}
+\arguments{
+\item{num_cores}{Number of cores to use for parallel processing. Default is 
+(detected cores - 1) or 1, whichever is greater.}
+
+\item{output_dir}{Directory to save the feather files. Default is 'Feather_Files'.}
 }
 \value{
-A .feather file for each log file
+A .feather file for each log file in the specified output directory
 }
 \description{
-Parallel Version
-}
-\details{
-This function acts on a set of Gaussian log files.
-No input is needed.
-
-No Parameters
+This function acts on a set of Gaussian log files using parallel processing to improve performance.
+The function processes multiple files simultaneously using the parallel package.
 }
