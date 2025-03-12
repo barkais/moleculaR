@@ -195,7 +195,7 @@ coor.trans.file <- function(coor_atoms, molecule) {
 #' @aliases extract.connectivity
 #' @export
 extract.connectivity <- function(xyz_file = list.files(pattern = '.xyz'),
-                                 threshold_distance = 2.12, keep.HB = T) {
+                                 threshold_distance = 2.20, keep.HB = T) {
   # Read in the XYZ file as a data frame
   xyz_data <- read.table(xyz_file, sep = "", header = FALSE, skip = 2)
   xyz_data <- tibble::rowid_to_column(xyz_data)
@@ -272,24 +272,122 @@ angle <- function(x,y){
   as.numeric(theta)
 }
 
-# name.changer - changes a string in all file names under a requested folder.
-
-#' Change names of files in a directory, based on a matched pattern.
+#' Change File Names in a Directory
 #'
-#' Convenient wrapper for stringr::str_replace
-#' @param dir directory containing files
-#' @param from pattern to change
-#' @param to change pattern to
-#' @return changes names
-#' @aliases name_changer
+#' @description 
+#' Renames files in a directory either by direct file mapping or by pattern replacement.
+#'
+#' @param dir Character string specifying the directory containing files to rename
+#' @param current_names Character vector of current filenames or a pattern to replace
+#' @param new_names Character vector of replacement filenames or a replacement pattern
+#' @param pattern_mode Logical, if TRUE treats the inputs as patterns to replace rather than exact filenames
+#' @param add_extension Logical, whether to automatically append original file extension (only used when pattern_mode=FALSE)
+#' 
+#' @details
+#' The function works in two modes:
+#' 1. Direct renaming (pattern_mode=FALSE): Maps specific files to new names
+#' 2. Pattern replacement (pattern_mode=TRUE): Replaces occurrences of a pattern in filenames
+#'
+#' @return Character vector of the new filenames
+#'
+#' @examples
+#' \dontrun{
+#' # Direct renaming example
+#' name_changer("path/to/dir", 
+#'              c("file1.txt", "file2.txt"), 
+#'              c("newname1", "newname2"))
+#'              
+#' # Pattern replacement example
+#' name_changer("path/to/dir", 
+#'              "CE_No_Water", 
+#'              "conformer_3", 
+#'              pattern_mode = TRUE)
+#' }
+#'
 #' @export
-name_changer <- function(dir, from, to) {
+name_changer <- function(dir, current_names, new_names, pattern_mode = FALSE, add_extension = TRUE) {
+  # Store original working directory
+  original_dir <- getwd()
+  on.exit(setwd(original_dir))
+  
+  # Change to target directory
   setwd(dir)
-  molecules <- list.files(recursive = F, full.names = F)
-  for (molecule in molecules) {
-    file.rename(molecule, stringr::str_replace(molecule, from, to))
+  
+  # Get existing files
+  existing_files <- list.files(recursive = FALSE, full.names = FALSE)
+  
+  # Pattern replacement mode
+  if (pattern_mode) {
+    if (length(current_names) != 1 || length(new_names) != 1) {
+      stop("In pattern mode, current_names and new_names must be single strings")
+    }
+    
+    # Find files matching the pattern
+    pattern_files <- grep(current_names, existing_files, value = TRUE)
+    
+    if (length(pattern_files) == 0) {
+      warning("No files found containing the pattern: ", current_names)
+      return(character(0))
+    }
+    
+    # Create new names by replacing the pattern
+    new_filenames <- gsub(current_names, new_names, pattern_files)
+    
+    # Check for name collisions
+    conflicts <- new_filenames[new_filenames %in% existing_files & 
+                                 new_filenames != pattern_files]
+    if (length(conflicts) > 0) {
+      warning("Some target filenames already exist and will be skipped: ",
+              paste(conflicts, collapse = ", "))
+      
+      # Remove conflicting renames
+      keep <- !(new_filenames %in% conflicts)
+      pattern_files <- pattern_files[keep]
+      new_filenames <- new_filenames[keep]
+    }
+    
+    # Perform renaming
+    for (i in seq_along(pattern_files)) {
+      if (!file.exists(new_filenames[i]) || new_filenames[i] == pattern_files[i]) {
+        file.rename(pattern_files[i], new_filenames[i])
+      }
+    }
+    
+    return(new_filenames)
+    
+  } else {
+    # Direct renaming mode
+    # Input validation
+    if (length(current_names) != length(new_names)) {
+      stop("current_names and new_names must have the same length")
+    }
+    
+    # Extract extensions if needed
+    if (add_extension) {
+      extensions <- tools::file_ext(current_names)
+      new_names <- ifelse(extensions != "",
+                          paste0(new_names, ".", extensions),
+                          new_names)
+    }
+    
+    # Check for existing files to avoid collisions
+    collisions <- new_names[new_names %in% existing_files & 
+                              !(new_names %in% current_names)]
+    if (length(collisions) > 0) {
+      warning("Some target filenames already exist and will be skipped: ",
+              paste(collisions, collapse = ", "))
+    }
+    
+    # Perform renaming 
+    for (i in seq_along(current_names)) {
+      if (current_names[i] %in% existing_files && 
+          !file.exists(new_names[i])) {
+        file.rename(current_names[i], new_names[i])
+      }
+    }
+    
+    return(new_names)
   }
-  setwd("..")
 }
 
 # atom.pairs.num - breaks a string of atoms, separated by spaces, into pairs

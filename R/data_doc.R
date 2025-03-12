@@ -40,3 +40,12 @@ NULL
 #' @name Radii.Pyykko
 #' @docType data
 NULL
+
+#' Radii.MMP
+#'
+#' A data frame with radii values from Molecular Modeling Pro
+#' 
+#' @keywords internal
+#' @name Radii.MMP
+#' @docType data
+NULL

@@ -15,7 +15,7 @@
 #'  use and documentation
 #' @export
 #' @importFrom shiny fluidPage titlePanel column div tags h3 checkboxInput conditionalPanel
-#' @importFrom shiny textInput selectInput fileInput actionButton downloadButton
+#' @importFrom shiny textInput selectInput fileInput actionButton downloadButton span
 #' @importFrom shiny renderText renderUI downloadHandler req 
 #' @importFrom shiny observeEvent renderPrint
 #' @importFrom rgl rglwidgetOutput renderRglwidget rglwidget
@@ -548,7 +548,7 @@ moleculaR <- function(input_file = NULL) {
   
     if ("Bend Vibrations" %in% names(input_file$Vibrations) &
         !isFALSE(input_file$Vibrations$`Bend Vibrations`)) {
-      bend.vibrations.result <- list(bend.vib.df(input_file$Vibrations$`Bend Vibrations`))
+      bend.vibrations.result <- list(bend.vib.df(paste0(input_file$Vibrations$`Bend Vibrations`, collapse = ' ')))
       results <- c(results, bend.vibrations.result)
     }
   }

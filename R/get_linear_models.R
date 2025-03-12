@@ -77,7 +77,7 @@ model.cv <- function(formula, data, out.col, folds, iterations) {
 model.subset <- function(data, leave.out = '', out.col = dim(data)[2],
                          min = 2, max = floor(dim(data)[1] / 5),
                          folds = nrow(data), iterations = 1,
-                         cutoff = 0.85, cor.threshold = 0.7) {
+                         cutoff = 0.85, cor.threshold = 1) {
   
   # Exclude specified rows
   data <- data[!(row.names(data) %in% leave.out), ]

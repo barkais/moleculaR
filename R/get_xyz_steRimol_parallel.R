@@ -46,14 +46,14 @@ steRimol.xyz.parallel <- function(mol, coordinates, CPK = T, only_sub = T, drop 
   name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
-  bonds <- extract.connectivity(mol, threshold_distance = 2.12, keep.HB = F)
+  bonds <- extract.connectivity(mol, threshold_distance = 2.20, keep.HB = F)
   names(bonds) <- c('V1', 'V2')
   if (is.na(bonds[bonds$V1 == direction, ][1, 2])) {
     coordinates <- paste(coordinates, as.character(bonds[bonds$V2 == direction, ][1, 1]), sep = " ")
   } else {
     coordinates <- paste(coordinates, as.character(bonds[bonds$V1 == direction, ][1, 2]), sep = " ")
   }
-  if (as.numeric(unlist(strsplit(coordinates, " "))[[3]]) == origin) {
+  if (unlist(strsplit(coordinates, " "))[[3]] == as.character(origin)) {
     coordinates <- as.numeric(unlist(strsplit(coordinates, " "))[1:2])
     coordinates <- paste(as.character(coordinates[1]), as.character(coordinates[2]), sep = ' ')
     if (is.na(bonds[bonds$V1 == direction, ][1, 2])) {
@@ -69,7 +69,7 @@ steRimol.xyz.parallel <- function(mol, coordinates, CPK = T, only_sub = T, drop 
     if (!is.na(remove.direction[remove.direction$V1 == origin, ][1, 2])) {
       coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V1 == origin, ][1, 2]), sep = " ")
     } else {
-      coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V1 == origin, ][1, 2]), sep = " ")
+      coordinates <- paste(coordinates, as.character(remove.direction[remove.direction$V2 == origin, ][1, 1]), sep = " ")
     }
   }
   coor.trans.file(coordinates, mol)
@@ -91,13 +91,13 @@ steRimol.xyz.parallel <- function(mol, coordinates, CPK = T, only_sub = T, drop 
   }
   substi <- plyr::mutate(substi, Radius = rep(0, nrow(substi)))
   if (CPK == T) {
-    bonds.covalent <- extract.connectivity(mol, threshold_distance = 2.12, keep.HB = F)
+    bonds.covalent <- extract.connectivity(mol, threshold_distance = 2.20, keep.HB = F)
     a.types <- unlist(lapply(1:nrow(substi), function(x) NOB.Atype(x, substi, bonds.covalent)))
     find.radius <- function(atom) cpk.radii$CPK.radius[cpk.radii$A.type == a.types[[atom]]]
     substi$Radius <- unlist(lapply(1:length(a.types), find.radius))
   } else {
     for (i in 1:dim(substi)[1]) {
-      substi$Radius[i] <- Radii.Pyykko$V3[Radii.Pyykko$V2 == substi$V1[i]]
+      substi$Radius[i] <- Radii.MMP$V3[Radii.MMP$V2 == substi$V1[i]]
     }
   }
   substi <- plyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))

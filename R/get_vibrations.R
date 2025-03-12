@@ -157,9 +157,9 @@ find.bend.freq <- function(atom_pair, threshold = 1350) {
     cp.mag <- function(row) {
       mag(t(cross_product(atom.1.vecs[row,], atom.2.vecs[row,])))
     }
-    freq.num <- which.max(lapply(as.vector(which(vib.info[, 1] > threshold)),
+    freq.num <- which.max(lapply(as.vector(which(vib.info[, 1] > threshold & vib.info[, 1] < 3000)),
                                  cp.mag))
-    freq.max <- as.vector(which(vib.info[, 1] > 1350 & vib.info[, 1] < 3000))[freq.num]
+    freq.max <- as.vector(which(vib.info[, 1] > threshold & vib.info[, 1] < 3000))[freq.num]
     return(vib.info[freq.max, 1])
   }
 }
@@ -369,7 +369,7 @@ ring.vib <- function(primary_atom) { # single molecule, single ring
   }
   pvec.filter <- dplyr::filter(prod.vec.sums, prod.vec.sums[, 1] != 0)
   vec.prod.filtered <- dplyr::filter(pvec.filter, pvec.filter$V2 > 1550 &
-                                       abs(pvec.filter[, 1]) > 0.1)
+                                       abs(pvec.filter[, 1]) > 0.01)
   dupli.check <- duplicated(vec.prod.filtered$V3) |
     duplicated(vec.prod.filtered$V3, fromLast = T)
   if (any(dupli.check)) {
@@ -377,6 +377,11 @@ ring.vib <- function(primary_atom) { # single molecule, single ring
     unduplicated <- vec.prod.filtered[dupli.check,][right.one,]
     vec.prod.filtered <- rbind(unduplicated, vec.prod.filtered[!dupli.check,])
   }
+  vec.prod.filtered[, 1] <- abs(vec.prod.filtered[, 1])
+  names(vec.prod.filtered)[1] <- 'dot.prod'
+  vec.prod.filtered <- dplyr::arrange(vec.prod.filtered, desc(dot.prod))[1:2, ]
+  
+  
   result <- data.frame(
     vec.prod.filtered[which.max(vec.prod.filtered[, 3]), 2],
     asin(max(vec.prod.filtered[, 3]))*(180/pi),
@@ -395,7 +400,7 @@ ring.vib <- function(primary_atom) { # single molecule, single ring
     )
     colnames(result) <- c("cross",'cross.angle', "para", 'para.angle')
     print(basename(getwd()))
-    print('Dot products are lower than 0.1 - returning vibrations in the 1750 - 1550 1/cm region')
+    print('Dot products are lower than 0.01 - returning vibrations in the 1750 - 1550 1/cm region')
   }
   return(result)
 }
@@ -479,4 +484,95 @@ bend.vib.df <- function(atom_pairs = NA) {
   row.names(df) <- molecules
   return(df)
 }
+
+#' Get coupled rings characteristic vibrations' frequencies
+#'
+#' @param primary_atom_1 The atom index of the first ring atom bonded to the basic
+#' strcuture.
+#' @param primary_atom_2 The atom index of the second ring atom bonded to the basic
+#' strcuture.
+#' @keywords internal
+#' @return A data frame with stretching frequencies
+ring.vib.conjugated <- function(primary_atom_1, primary_atom_2) { 
+  if (is.character(primary_atom_1)) primary_atom_1 <- as.numeric(primary_atom_1)
+  if (is.character(primary_atom_2)) primary_atom_2 <- as.numeric(primary_atom_2)
+  bonds <- extract.connectivity(list.files(pattern = '.xyz'))
+  ordered_ring_atoms_1 <- find_circular_paths(bonds, primary_atom_1)
+  ordered_ring_atoms_2 <- find_circular_paths(bonds, primary_atom_2)
+  freq <- data.frame(data.table::fread(list.files(pattern = 'IR'),
+                                       col.names = c('Frquency',
+                                                     'Intensity'),
+                                       colClasses = rep('numeric', 2)))
+  atoms_info_1 <- lapply(atom.pairs.num(ordered_ring_atoms_1), as.character)
+  atoms_info_2 <- lapply(atom.pairs.num(ordered_ring_atoms_2), as.character)
+  
+  atom.one.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[1]][[1]], '.csv')))
+  atom.two.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[3]][[1]], '.csv')))
+  atom.three.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[2]][[1]], '.csv')))
+  atom.four.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[1]][[2]], '.csv')))
+  atom.five.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[2]][[2]], '.csv')))
+  atom.six.1 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_1[[3]][[2]], '.csv')))
+  
+  atom.one.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[1]][[1]], '.csv')))
+  atom.two.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[3]][[1]], '.csv')))
+  atom.three.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[2]][[1]], '.csv')))
+  atom.four.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[1]][[2]], '.csv')))
+  atom.five.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[2]][[2]], '.csv')))
+  atom.six.2 <- atom.vectors(list.files(pattern = paste0("_", atoms_info_2[[3]][[2]], '.csv')))
+  
+  mag <- function(vector) {
+    sqrt(vector[[1]]^2 + vector[[2]]^2 + vector[[3]]^2)
+  }
+  
+  all.vecs.1 <- cbind(mag(atom.one.1),
+                      mag(atom.two.1),
+                      mag(atom.three.1),
+                      mag(atom.four.1),
+                      mag(atom.five.1),
+                      mag(atom.six.1))
+  
+  all.vecs.2 <- cbind(mag(atom.one.2),
+                      mag(atom.two.2),
+                      mag(atom.three.2),
+                      mag(atom.four.2),
+                      mag(atom.five.2),
+                      mag(atom.six.2))
+  
+  all.vecs.sum <- rowSums(cbind(all.vecs.1, all.vecs.2))
+  vecs.sum.freq <- data.frame(cbind(all.vecs.sum, freq[, 1]))
+  vecs.sum.freq <- vecs.sum.freq[vecs.sum.freq$V2 > 1600 & vecs.sum.freq$V2 < 1700, ]
+  vec.sum.order <- dplyr::arrange(vecs.sum.freq, V2)
+  
+  result <- data.frame(
+    c.cross.strong = vec.sum.order[1, 2],                    # First row
+    c.cross.weak = vec.sum.order[2, 2],                      # Second row
+    c.para.weak = vec.sum.order[nrow(vec.sum.order)-1, 2],   # Second to last row
+    c.para.strong = vec.sum.order[nrow(vec.sum.order), 2]    # Last row
+  )
+  
+  colnames(result) <- c("cross.c.high",'cross.c.low', "para.c.low", 'para.c.high')
+  return(result)
+}
+
+#' Get a ring's characteristic vibrations frequencies, for a set of molecules
+#'
+#' @param primary_atom_1 The atom index of the first ring atom bonded to the basic
+#' strcuture.
+#' @param primary_atom_2 The atom index of the second ring atom bonded to the basic
+#' strcuture.
+#' @return A data frame with stretching frequencies
+#' @export
+ring.vib.conjugated.df <- function(primary_atom_1, primary_atom_2) {
+  molecules <- list.dirs(recursive = F, full.names = F)
+  ring.vib.list <- list()
+  for (molecule in molecules) {
+    setwd(molecule)
+    ring.vib.list[[match(molecule, molecules)]] <- ring.vib.conjugated(primary_atom_1, primary_atom_2)
+    setwd('..')
+  }
+  ring.vib.dafr <- data.frame(data.table::rbindlist(ring.vib.list))
+  row.names(ring.vib.dafr) <- molecules
+  return(ring.vib.dafr)
+}
+
 

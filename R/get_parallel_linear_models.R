@@ -45,7 +45,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
                                   min = 2, max = floor(dim(data)[1] / 5),
                                   results_name = 'results_df',
                                   folds = nrow(data), iterations = 1,
-                                  cutoff = 0.85, cor.threshold = 0.7) {
+                                  cutoff = 0.85, cor.threshold = 1) {
   
   # Helper function to process results files in batches
   process_results_batch <- function(file_list, batch_size=50) {
@@ -133,8 +133,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
           TRUE
         }
       })
-      
-      chunk_df <- chunk_df[filtered_chunk,]
+      chunk_df <- data.frame(formula = chunk_df[chunk_df$formula %in% names(filtered_chunk), ])
       
       if(nrow(chunk_df) > 0) {
         # Add output variable to formulas
@@ -149,11 +148,11 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
         
         # Filter out any errors
         valid_results <- !sapply(r_squared_results, inherits, "try-error")
+        chunk_df[, 2] <- unlist(r_squared_results)
+        names(chunk_df)[2] <- 'R.sq'
         chunk_df <- chunk_df[valid_results,]
-        r_squared_results <- unlist(r_squared_results[valid_results])
         
         if(length(r_squared_results) > 0) {
-          chunk_df$R.sq <- r_squared_results
           
           # Keep only the best models from this chunk
           chunk_df <- chunk_df[chunk_df$R.sq > cutoff,]
@@ -183,7 +182,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   }
   
   # Process results in batches
-  forms.cut <- process_results_batch(file_list)
+  forms.cut <- data.frame(process_results_batch(file_list))[, 2:3]
   names(forms.cut) <- c('formula', 'R.sq')
   
   # Select top 50 models for cross-validation
@@ -212,7 +211,7 @@ model.subset.parallel <- function(data, out.col = dim(data)[2],
   forms.cut$Model <- seq_len(nrow(forms.cut))
   
   # Return top 15 models
-  return(forms.cut[1:15,])
+  return(forms.cut[1:min(nrow(forms.cut), 15),])
 }
 
 ####### ----------------------------------------------------#####

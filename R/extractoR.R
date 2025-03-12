@@ -354,4 +354,61 @@ Done!
       ')
 }
 
+#' Extract and compress all needed information from Gaussian log files
+#' 
+#' Parallel Version
+#'
+#' This function acts on a set of Gaussian log files.
+#' No input is needed.
+#'
+#' No Parameters
+#' @return A .feather file for each log file
+#' @aliases extRactoR.parallel
+#' @export
+extractoR.parallel <- function() {
+  main <- character()
+  dir.create('Feather_Files')
+  for (file in list.files(pattern = '.log')) {
+    message("Processing ", file)
+    tryCatch(
+      {
+        main.big <- data.table::fread(file, sep = "?", header = FALSE, quote = "")[[1L]]
+        scf.dones <- grep('SCF Done', main.big)
+        sec.to.last <- scf.dones[length(scf.dones) - 1]
+        main <<- main.big[sec.to.last:length(main.big)]
+        raw_data <- (list(
+          extRact.xyz(),
+          extRact.Dipole(),
+          extRact.polarizability(),
+          extRact.NBO(),
+          extRact.Hirsh(),
+          extRact.CM5(),
+          extRact.spectrum(),
+          extRact.vectors()
+        ))
+        df.result <- data.frame(
+          matrix(
+            ncol = sum(unlist(lapply(1:8, function(x) ncol(raw_data[[x]])))),
+            nrow = max(unlist(lapply(1:8, function(x) nrow(raw_data[[x]]))))))
+        df.result[1:nrow(raw_data[[1]]), 1:4] <- raw_data[[1]]
+        df.result[1, 5:8] <- raw_data[[2]]
+        df.result[1:nrow(raw_data[[3]]), 9:10] <- raw_data[[3]]
+        df.result[1:nrow(raw_data[[4]]), 11] <- raw_data[[4]]
+        df.result[1:nrow(raw_data[[5]]), 12] <- raw_data[[5]]
+        df.result[1:nrow(raw_data[[6]]), 13] <- raw_data[[6]]
+        df.result[1:nrow(raw_data[[7]]), 14:15] <- raw_data[[7]]
+        df.result[1:nrow(raw_data[[8]]), 16:ncol(df.result)] <-  raw_data[[8]]
+        feather::write_feather(df.result,
+                               paste0('Feather_Files',
+                                      '/',
+                                      tools::file_path_sans_ext(file),
+                                      '.feather'))
+      }, error = function(e){cat(paste0("Error while extracting from ", file, 
+                                        ' - check for errors in the log file.'))}
+    )
+  }
+  message('
+Done!
+      ')
+}
 
