@@ -350,8 +350,8 @@ steRimol.xyz <- function(mol, coordinates, CPK = T, only_sub = T, drop = NULL, p
   rough.scan.results <- do.call(rbind, lapply(rough.deg.list, function(row) b1.scanner(row, substi)))
   
   # Define region for fine scan of B1 and its location
-  back.ang <- rough.deg.list[which(rough.scan.results == min(rough.scan.results))][1] - scans
-  front.ang <- rough.deg.list[which(rough.scan.results == min(rough.scan.results))][1] + scans
+  back.ang <- rough.deg.list[which(rough.scan.results$B1 == min(rough.scan.results$B1))][1] - scans
+  front.ang <- rough.deg.list[which(rough.scan.results$B1 == min(rough.scan.results$B1))][1] + scans
   fine.deg.list <- seq(back.ang, front.ang, 1)
   fine.scan.results <- do.call(rbind, lapply(fine.deg.list, function(row) b1.scanner(row, substi)))
   row.names(fine.scan.results) <- fine.deg.list
