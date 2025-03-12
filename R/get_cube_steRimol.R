@@ -114,16 +114,6 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
     angle_diff <- abs(angle_b5 - angle_b1)
     if(angle_diff > pi) angle_diff <- 2*pi - angle_diff
     
-    
-    # Identify the minimal distance and corresponding coordinates
-    if (any(which(avs == min(avs)) %in% c(1, 2))) {
-      loc.B1 <- tcs[(which(abs(tc[, 1]) == min(avs), arr.ind = T))[1], 2] * 0.529177249
-    }
-    
-    if (any(which(avs == min(avs)) %in% c(3, 4))) {
-      loc.B1 <- tcs[(which(abs(tc[, 2]) == min(avs), arr.ind = T))[1], 2] * 0.529177249
-    }
-    
     b1 <- min_val
     
     if (plot.b1) {
@@ -268,7 +258,7 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
       print(plot)
     }
     
-    return(data.frame(b1 = min_val, b5.value = b5.value, b1_b5_angle = angle_diff))
+    return(data.frame(b1 = min_val, b5.value = b5.value, b1_b5_angle = angle_diff, b5.point))
   }
   
   dens.to.pt <- function(point) {
@@ -297,6 +287,7 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
   pt.space.block.binder <- function(list) {
     do.call(rbind, lapply(list, pt.space.block))
   }
+  name_of_axis <- stringr::str_replace(coordinates, ' ', '_')
   xyz.from.cube(cubefile)
   origin <- as.numeric(unlist(strsplit(coordinates, " "))[[1]])
   direction <- as.numeric(unlist(strsplit(coordinates, " "))[[2]])
@@ -460,7 +451,7 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
   mag <- function(vector) {
     sqrt(vector[[1]]^2 + vector[[2]]^2)
   }
-  tcs <- dplyr::mutate(tcs, B = (mag(tcs[,c(1,3)]) * 0.529177249))
+  tcs <- dplyr::mutate(tcs, B = (mag(tcs[,c(1,3)]) * 0.529177249^2))
   L <- max(tcs[,2]) * 0.529177249
   plane <- tcs[, c(1, 3)]
   b1s <- do.call(rbind, lapply(1:degrees, function(row) B.scanner(row)))
@@ -469,9 +460,9 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
   B5 <- b1s$b5.value[which.max(b1s$b5.value)]
   if (plot.B1) invisible(B.scanner(which.min(b1s$b1), plot.b1 = T, T, F))
   loc.B5 <- tcs[which.max(tcs[,4]), 2] * 0.529177249
-  if (plot == T) rgl::arrow3d(p0 = c(0, loc.B5, 0),
+  if (plot == T) rgl::arrow3d(p0 = c(0, loc.B5/0.529177249, 0),
                               p1 = c(tcs[which.max(tcs$B), 1],
-                                     loc.B5,
+                                     loc.B5/0.529177249,
                                      tcs[which.max(tcs$B), 3]), barblen = 0.03,
                               type = "rotation",  col = "darkgreen") # plot B5 vector
   
@@ -482,6 +473,7 @@ steRimol.cube <- function(cubefile, coordinates, only.sub = T, drop = NULL, plot
                               type = "rotation",  col = "darkblue") # plot L vector
   result <- data.frame(round(data.frame(B1, B5, L, loc.B5,b1_b5_angle, mol.vol), 3))
   unlink(paste0(tools::file_path_sans_ext(cubefile), '.xyz'))
+  names(result) <- paste0(names(result), '_', name_of_axis)
   return(result)
 }
 
@@ -522,4 +514,34 @@ steRimol.cube.df <- function(coor.atoms,
   return(steri.dafr)
 }
 
-
+#' Calculate cube based sterimol parameters for multiple coordinate sets
+#'
+#' @param coordinates_vector Vector of coordinate strings (e.g. c("1 2", "3 4"))
+#' @param only.sub If TRUE (default) will account only for atoms directly bonded
+#' @param drop Numeric value of atoms to drop from calculation
+#' @param degrees Define rotational scan, defaults to 90
+#' @param isovalue Minimum density isovalue to consider, defaults to 0.036
+#' @return Data frame with sterimol values for each coordinate set
+#' @export
+steRimol.cube.multi <- function(coordinates_vector,
+                                only.sub = T,
+                                drop = NULL,
+                                degrees = 90,
+                                isovalue = 0.036) {
+  
+  multi.df <- lapply(coordinates_vector,
+                     function(x) {
+                       steRimol.cube.df(x,
+                                        only.sub,
+                                        drop,
+                                        degrees,
+                                        isovalue)
+                     }
+  )
+  
+  # Combine results and remove duplicate columns
+  multi.df.result <- data.frame(do.call(cbind, multi.df))
+  multi.df.result <- multi.df.result[!duplicated(as.list(multi.df.result))]
+  
+  return(multi.df.result)
+}
