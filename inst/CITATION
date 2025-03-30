@@ -1,0 +1,15 @@
+citHeader("To cite the moleculaR package in publications, please use:")
+
+citEntry(
+  entry = "Manual",
+  title = "moleculaR: Molecular Feature Extraction from Gaussian log files",
+  author = personList(as.person("Shahar Barkai")),
+  year = "2025",
+  url = "https://github.com/barkais/moleculaR",
+  textVersion = paste(
+    "Barkai, S. (2025). moleculaR: Molecular Feature Extraction.",
+    "R package version 1.0.0.",
+    "https://github.com/barkais/moleculaR"
+  ),
+  note = "R package version 1.0.0"
+)
