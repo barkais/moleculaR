@@ -154,7 +154,6 @@ coor.trans.file <- function(coor_atoms, molecule) {
   new_x <- solve(coef_mat, result_vec)
   new_z <- pracma::cross(new_x, new_y)
   new_basis <- aperm(array(c(new_x, new_y, new_z), dim = c(3, 3)))
-  new_origin <- xyz[numeric.atoms[[1]], 2:4]
   new_coordinates <- matrix(nrow = dim(xyz)[[1]], ncol = 3)
   transformed_coordinates <- matrix(nrow = dim(xyz)[[1]], ncol = 3)
   for (i in 1:dim(xyz)[[1]]) {
