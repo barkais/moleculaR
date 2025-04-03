@@ -184,7 +184,7 @@ model.report.GUI <- function() {
           model.list = input$report_model_list$datapath,  # Pass the file path instead of data frame
           out.col = input$out_col,
           leave.out = input$leave_out,
-          predict = input$predict,
+          save.pred = input$predict,
           what.model = as.numeric(input$model.num)
         )
         
