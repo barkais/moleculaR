@@ -38,7 +38,7 @@ steRimol.parallel <- function(coordinates, CPK = T, only_sub = T, drop = NULL, p
 #' @importFrom stringr str_replace str_split
 #' @importFrom data.table fread
 #' @importFrom tibble rownames_to_column
-#' @importFrom plyr mutate
+#' @importFrom dplyr mutate
 #' @importFrom parallel mclapply detectCores
 #'
 #' @keywords internal
@@ -89,7 +89,7 @@ steRimol.xyz.parallel <- function(mol, coordinates, CPK = T, only_sub = T, drop 
     }
     substi <- substi[substi$rowname %in% rlev, ]
   }
-  substi <- plyr::mutate(substi, Radius = rep(0, nrow(substi)))
+  substi <- dplyr::mutate(substi, Radius = rep(0, nrow(substi)))
   if (CPK == T) {
     bonds.covalent <- extract.connectivity(mol, threshold_distance = 2.20, keep.HB = F)
     a.types <- unlist(lapply(1:nrow(substi), function(x) NOB.Atype(x, substi, bonds.covalent)))
@@ -100,9 +100,9 @@ steRimol.xyz.parallel <- function(mol, coordinates, CPK = T, only_sub = T, drop 
       substi$Radius[i] <- Radii.MMP$V3[Radii.MMP$V2 == substi$V1[i]]
     }
   }
-  substi <- plyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))
-  substi <- plyr::mutate(substi, Bs = substi$magnitude + substi$Radius)
-  substi <- plyr::mutate(substi, L = substi$V3 + substi$Radius)
+  substi <- dplyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))
+  substi <- dplyr::mutate(substi, Bs = substi$magnitude + substi$Radius)
+  substi <- dplyr::mutate(substi, L = substi$V3 + substi$Radius)
   
   # Rough scan for B1 and its location along L
   scans <- 90 / 5

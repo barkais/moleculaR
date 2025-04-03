@@ -276,9 +276,9 @@ steRimol.xyz.wVDW <- function(mol, coordinates, only_sub = T, drop = NULL, plot.
   
   substi <- data.frame(substi, Radii)
   names(substi)[ncol(substi)] <- 'Radius'
-  substi <- plyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))
-  substi <- plyr::mutate(substi, Bs = substi$magnitude + substi$Radius)
-  substi <- plyr::mutate(substi, L = substi$V3 + substi$Radius)
+  substi <- dplyr::mutate(substi, magnitude = mag(substi[, c(3, 5)]))
+  substi <- dplyr::mutate(substi, Bs = substi$magnitude + substi$Radius)
+  substi <- dplyr::mutate(substi, L = substi$V3 + substi$Radius)
   
   # Rough scan for B1 and its location along L
   scans <- 90 / 5
